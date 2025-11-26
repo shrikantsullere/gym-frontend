@@ -80,7 +80,7 @@ import RoleManagement from "./Dashboard/Admin/Settings/RoleManagement";
 
 
 import SuperAdminDashbaord from "./Dashboard/SuperAdmin/SuperAdminDashbaord";
-import SuperAdminBranches from "./Dashboard/SuperAdmin/SuperAdminBranches";
+import SuperAdminOwner from "./Dashboard/SuperAdmin/SuperAdminOwner";
 import Plans from "./Dashboard/SuperAdmin/Plans";
 import Marketing from "./Dashboard/SuperAdmin/Marketing";
 import Staff from "./Dashboard/SuperAdmin/People/Staff";
@@ -164,9 +164,9 @@ function App() {
 
 
                 <Route path="/superadmin/dashboard" element={<SuperAdminDashbaord />} />
-                <Route path="/superadmin/branches" element={<SuperAdminBranches />} />
+                <Route path="/superadmin/Owner" element={<SuperAdminOwner />} />
 
-                <Route path="/superadmin/plans" element={<Plans />} />
+                <Route path="/superadmin/Plans&Pricing" element={<Plans />} />
                 <Route path="/superadmin/marketing" element={<Marketing />} />
 
 
