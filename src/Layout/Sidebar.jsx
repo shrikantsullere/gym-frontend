@@ -91,8 +91,8 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
       {
         name: "Payments",
         icon: faCalculator,
-        key: "payment",
-        subItems: [{ label: "Membership Payment", path: "/admin/payments/membership" }]
+        path: "/admin/payments/membership",
+        // subItems: [{ label: "Membership Payment", path: "/admin/payments/membership" }]
       },
 
       {
