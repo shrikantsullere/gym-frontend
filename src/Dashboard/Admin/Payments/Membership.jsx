@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { FaEye } from 'react-icons/fa';
+import { FaEye, FaCheck, FaTimes, FaSearch } from 'react-icons/fa';
+
 
 const Membership = () => {
     const allMembers = [
@@ -88,6 +89,15 @@ const Membership = () => {
     const [viewModal, setViewModal] = useState(false);
     const [selectedMember, setSelectedMember] = useState(null);
 
+    // Payment related states
+    const [paymentMethod, setPaymentMethod] = useState('');
+    const [cashAmount, setCashAmount] = useState('');
+    const [updatedPayment, setUpdatedPayment] = useState({
+        paidAmount: '',
+        dueAmount: '',
+        paymentStatus: ''
+    });
+
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 3;
@@ -111,6 +121,19 @@ const Membership = () => {
         }
     }, [viewModal]);
 
+    useEffect(() => {
+        // Reset payment states when modal is opened with a new member
+        if (selectedMember) {
+            setPaymentMethod('');
+            setCashAmount('');
+            setUpdatedPayment({
+                paidAmount: selectedMember.paidAmount,
+                dueAmount: selectedMember.dueAmount,
+                paymentStatus: selectedMember.paymentStatus
+            });
+        }
+    }, [selectedMember]);
+
     const closeViewModal = () => {
         setViewModal(false);
         setSelectedMember(null);
@@ -119,6 +142,66 @@ const Membership = () => {
     const openViewModal = (member) => {
         setSelectedMember(member);
         setViewModal(true);
+    };
+
+    const handlePaymentMethodChange = (method) => {
+        setPaymentMethod(method);
+
+        if (method === 'online') {
+            // For online payment, mark as completed
+            const totalAmount = parseFloat(selectedMember.amount);
+            setUpdatedPayment({
+                paidAmount: totalAmount.toString(),
+                dueAmount: '0',
+                paymentStatus: 'Completed'
+            });
+        } else if (method === 'cash') {
+            // Reset to original values for cash selection
+            setUpdatedPayment({
+                paidAmount: selectedMember.paidAmount,
+                dueAmount: selectedMember.dueAmount,
+                paymentStatus: selectedMember.paymentStatus
+            });
+            setCashAmount('');
+        }
+    };
+
+    const handleCashAmountChange = (e) => {
+        const amount = e.target.value;
+        setCashAmount(amount);
+
+        if (amount && !isNaN(amount)) {
+            const totalAmount = parseFloat(selectedMember.amount);
+            const currentPaid = parseFloat(selectedMember.paidAmount);
+            const additionalAmount = parseFloat(amount);
+            const newPaidAmount = currentPaid + additionalAmount;
+            const newDueAmount = Math.max(0, totalAmount - newPaidAmount);
+
+            setUpdatedPayment({
+                paidAmount: newPaidAmount.toString(),
+                dueAmount: newDueAmount.toString(),
+                paymentStatus: newDueAmount === 0 ? 'Completed' : 'Pending'
+            });
+        }
+    };
+
+    const savePaymentChanges = () => {
+        if (selectedMember) {
+            const updatedMembers = members.map(member => {
+                if (member.id === selectedMember.id) {
+                    return {
+                        ...member,
+                        paidAmount: updatedPayment.paidAmount,
+                        dueAmount: updatedPayment.dueAmount,
+                        paymentStatus: updatedPayment.paymentStatus
+                    };
+                }
+                return member;
+            });
+
+            setMembers(updatedMembers);
+            closeViewModal();
+        }
     };
 
     // Get current page members
@@ -130,6 +213,12 @@ const Membership = () => {
         if (page >= 1 && page <= totalPages) {
             setCurrentPage(page);
         }
+    };
+
+    const getStatusBadgeClass = (status) => {
+        return status === 'Completed'
+            ? 'badge bg-success'
+            : 'badge bg-warning text-dark';
     };
 
     return (
@@ -147,7 +236,7 @@ const Membership = () => {
                 <div className="col-12 col-md-6 col-lg-5">
                     <div className="input-group">
                         <span className="input-group-text bg-light border">
-                            <i className="fas fa-search text-muted"></i>
+                            <FaSearch className="text-muted" />
                         </span>
                         <input
                             type="text"
@@ -179,7 +268,7 @@ const Membership = () => {
                         </thead>
                         <tbody>
                             {currentMembers.map(member => (
-                                <tr key={member.id}>
+                                <tr key={member.id} className={member.paymentStatus === 'Completed' ? 'table-success' : ''}>
                                     <td>{member.title}</td>
                                     <td>{member.name}</td>
                                     <td>₹{member.amount}</td>
@@ -187,12 +276,32 @@ const Membership = () => {
                                     <td>₹{member.dueAmount}</td>
                                     <td>{member.startDate}</td>
                                     <td>{member.endDate}</td>
-                                    <td>{member.paymentStatus}</td>
+                                    <td>
+                                        <span className={getStatusBadgeClass(member.paymentStatus)}>
+                                            {member.paymentStatus}
+                                        </span>
+                                    </td>
                                     <td className="text-center">
                                         <button
-                                            className="btn btn-sm btn-outline-secondary"
+                                            className="btn btn-sm rounded-circle d-flex align-items-center justify-content-center"
+                                            style={{
+                                                backgroundColor: '#e7f3ff',
+                                                color: '#4A90E2',
+                                                width: '32px',
+                                                height: '32px',
+                                                border: '1px solid #d1e9ff',
+                                                transition: 'all 0.2s ease'
+                                            }}
                                             title="View"
                                             onClick={() => openViewModal(member)}
+                                            onMouseOver={(e) => {
+                                                e.target.style.backgroundColor = '#4A90E2';
+                                                e.target.style.color = '#ffffff';
+                                            }}
+                                            onMouseOut={(e) => {
+                                                e.target.style.backgroundColor = '#e7f3ff';
+                                                e.target.style.color = '#4A90E2';
+                                            }}
                                         >
                                             <FaEye size={14} />
                                         </button>
@@ -214,15 +323,15 @@ const Membership = () => {
             {/* Pagination Controls */}
             <div className="d-flex justify-content-center align-items-center mt-4">
                 <button
-                    className="btn btn-outline-secondary me-2"
+                    className="btn btn-outline-primary me-2 rounded-pill px-3"
                     onClick={() => goToPage(currentPage - 1)}
                     disabled={currentPage === 1}
                 >
                     Previous
                 </button>
-                <span>Page {currentPage} of {totalPages}</span>
+                <span className="mx-3">Page {currentPage} of {totalPages}</span>
                 <button
-                    className="btn btn-outline-secondary ms-2"
+                    className="btn btn-outline-primary ms-2 rounded-pill px-3"
                     onClick={() => goToPage(currentPage + 1)}
                     disabled={currentPage === totalPages}
                 >
@@ -239,23 +348,93 @@ const Membership = () => {
                     onClick={closeViewModal}
                 >
                     <div
-                        className="modal-dialog modal-dialog-centered"
+                        className="modal-dialog modal-dialog-centered modal-lg"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <div className="modal-content">
-                            <div className="modal-header border-0 pb-0">
+                        <div className="modal-content shadow-lg">
+                            <div className="modal-header text-white border-0"style={{ backgroundColor: "#6EB2CC" }}>
                                 <h5 className="modal-title fw-bold">Payment Details</h5>
-                                <button type="button" className="btn-close" onClick={closeViewModal}></button>
+                                <button type="button" className="btn-close btn-close-white" onClick={closeViewModal}></button>
                             </div>
                             <div className="modal-body p-4">
-                                <p><strong>Title:</strong> {selectedMember.title}</p>
-                                <p><strong>Member Name:</strong> {selectedMember.name}</p>
-                                <p><strong> Amount:</strong> ₹{selectedMember.amount}</p>
-                                <p><strong> Paid Amount:</strong> ₹{selectedMember.paidAmount}</p>
-                                <p><strong> Due Amount:</strong> ₹{selectedMember.dueAmount}</p>
-                                <p><strong>Membership Start Date:</strong> {selectedMember.startDate}</p>
-                                <p><strong>Membership End Date:</strong> {selectedMember.endDate}</p>
-                                <p><strong>Payment Status:</strong> {selectedMember.paymentStatus}</p>
+                                <div className="row">
+                                    <div className="col-md-6">
+                                        <p><strong>Title:</strong> {selectedMember.title}</p>
+                                        <p><strong>Member Name:</strong> {selectedMember.name}</p>
+                                        <p><strong>Total Amount:</strong> ₹{selectedMember.amount}</p>
+                                        <p><strong>Paid Amount:</strong> ₹{updatedPayment.paidAmount}</p>
+                                        <p><strong>Due Amount:</strong> ₹{updatedPayment.dueAmount}</p>
+                                    </div>
+                                    <div className="col-md-6">
+                                        <p><strong>Membership Start Date:</strong> {selectedMember.startDate}</p>
+                                        <p><strong>Membership End Date:</strong> {selectedMember.endDate}</p>
+                                        <p>
+                                            <strong>Payment Status:</strong>
+                                            <span className={`ms-2 ${getStatusBadgeClass(updatedPayment.paymentStatus)}`}>
+                                                {updatedPayment.paymentStatus}
+                                            </span>
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Payment Method Section */}
+                                <div className="mt-4 p-3 bg-light rounded">
+                                    <h6 className="fw-bold mb-3">Payment Method</h6>
+                                    <div className="d-flex mb-3">
+                                        <div className="form-check me-4">
+                                            <input
+                                                className="form-check-input"
+                                                type="radio"
+                                                name="paymentMethod"
+                                                id="cashMethod"
+                                                value="cash"
+                                                checked={paymentMethod === 'cash'}
+                                                onChange={() => handlePaymentMethodChange('cash')}
+                                            />
+                                            <label className="form-check-label" htmlFor="cashMethod">
+                                                Cash (Manual Entry)
+                                            </label>
+                                        </div>
+                                        <div className="form-check">
+                                            <input
+                                                className="form-check-input"
+                                                type="radio"
+                                                name="paymentMethod"
+                                                id="onlineMethod"
+                                                value="online"
+                                                checked={paymentMethod === 'online'}
+                                                onChange={() => handlePaymentMethodChange('online')}
+                                            />
+                                            <label className="form-check-label" htmlFor="onlineMethod">
+                                                Online (Automatically mark as Completed)
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    {paymentMethod === 'cash' && (
+                                        <div className="mb-3">
+                                            <label htmlFor="cashAmount" className="form-label">Enter Cash Amount</label>
+                                            <input
+                                                type="number"
+                                                className="form-control"
+                                                id="cashAmount"
+                                                value={cashAmount}
+                                                onChange={handleCashAmountChange}
+                                                placeholder="Enter amount"
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="modal-footer border-0">
+                                <button type="button" className="btn btn-secondary rounded-pill" onClick={closeViewModal}>
+                                    <FaTimes className="me-2" />Cancel
+                                </button>
+                                {paymentMethod && (
+                                    <button type="button" className="btn btn-success rounded-pill" onClick={savePaymentChanges}>
+                                        <FaCheck className="me-2" />Save Changes
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>
