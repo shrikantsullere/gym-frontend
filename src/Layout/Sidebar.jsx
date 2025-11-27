@@ -67,7 +67,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
         path: "/superadmin/dashboard",
       },
       {
-        name: "Admin",
+        name: "Owner",
         icon: faUsers,
         path: "/superadmin/Owner",
       },

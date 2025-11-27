@@ -4,10 +4,9 @@ import { FaEye, FaEdit, FaTrashAlt } from 'react-icons/fa';
 const SuperAdminOwner = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [modalType, setModalType] = useState('add'); 
+  const [modalType, setModalType] = useState('add');
   const [selectedOwner, setSelectedOwner] = useState(null);
 
-  // Handlers
   const handleAddNew = () => {
     setModalType('add');
     setSelectedOwner(null);
@@ -54,29 +53,32 @@ const SuperAdminOwner = () => {
     return () => { document.body.style.overflow = 'unset'; };
   }, [isModalOpen, isDeleteModalOpen]);
 
-  // --- SAMPLE OWNER DATA
   const owners = [
     {
       id: 1,
       name: "John Anderson",
       ownerId: "OWN01",
-      address: "123 Main Street, New York",
+      address: "123 Main Street",
       role: "Primary Owner",
       phone: "+1 555-123-4567",
       email: "john@owner.com",
       status: "Active",
       username: "john_admin",
+      plans: [
+        { planName: "Gold", price: "1200", duration: "12 Months", description: "Full access plan" }
+      ]
     },
     {
       id: 2,
       name: "Emma Watson",
       ownerId: "OWN02",
-      address: "456 Park Avenue, New York",
+      address: "456 Park Avenue",
       role: "Co-Owner",
       phone: "+1 555-987-6543",
       email: "emma@owner.com",
       status: "Inactive",
       username: "emma_owner",
+      plans: []
     }
   ];
 
@@ -103,8 +105,7 @@ const SuperAdminOwner = () => {
 
   return (
     <div className="p-3 p-md-2">
-      
-      {/* Header */}
+
       <div className="row mb-4 align-items-center">
         <div className="col-12 col-lg-8 mb-3 mb-lg-0">
           <h2 className="fw-bold h3 h2-md">Owner Management</h2>
@@ -121,7 +122,6 @@ const SuperAdminOwner = () => {
         </div>
       </div>
 
-      {/* Table */}
       <div className="card shadow-sm border-0">
         <div className="table-responsive">
           <table className="table table-hover align-middle mb-0">
@@ -138,10 +138,11 @@ const SuperAdminOwner = () => {
             <tbody>
               {owners.map((owner) => (
                 <tr key={owner.id} className="hover-row" style={{ cursor: 'pointer' }}>
+
                   <td onClick={() => handleView(owner)}><strong>{owner.name}</strong></td>
                   <td onClick={() => handleView(owner)}>{owner.ownerId}</td>
                   <td onClick={() => handleView(owner)}><small className="text-muted">{owner.address}</small></td>
-                  
+
                   <td onClick={() => handleView(owner)}>
                     <div><strong>{owner.phone}</strong></div>
                     <small className="text-muted">{owner.role}</small>
@@ -151,17 +152,20 @@ const SuperAdminOwner = () => {
 
                   <td className="text-center">
                     <div className="d-flex justify-content-center gap-1">
-                      <button className="btn btn-sm btn-outline-secondary" title="View" onClick={(e) => { e.stopPropagation(); handleView(owner); }}>
+                      <button className="btn btn-sm btn-outline-secondary" onClick={(e) => { e.stopPropagation(); handleView(owner); }}>
                         <FaEye size={14} />
                       </button>
-                      <button className="btn btn-sm btn-outline-primary" title="Edit" onClick={(e) => { e.stopPropagation(); handleEdit(owner); }}>
+
+                      <button className="btn btn-sm btn-outline-primary" onClick={(e) => { e.stopPropagation(); handleEdit(owner); }}>
                         <FaEdit size={14} />
                       </button>
-                      <button className="btn btn-sm btn-outline-danger" title="Delete" onClick={(e) => { e.stopPropagation(); handleDeleteClick(owner); }}>
+
+                      <button className="btn btn-sm btn-outline-danger" onClick={(e) => { e.stopPropagation(); handleDeleteClick(owner); }}>
                         <FaTrashAlt size={14} />
                       </button>
                     </div>
                   </td>
+
                 </tr>
               ))}
             </tbody>
@@ -169,15 +173,16 @@ const SuperAdminOwner = () => {
         </div>
       </div>
 
-      {/* MAIN MODAL */}
       {isModalOpen && (
         <div className="modal fade show" tabIndex="-1" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }} onClick={closeModal}>
           <div className="modal-dialog modal-lg modal-dialog-centered" onClick={(e) => e.stopPropagation()}>
             <div className="modal-content">
+
               <div className="modal-header border-0 pb-0">
                 <h5 className="modal-title fw-bold">{getModalTitle()}</h5>
                 <button type="button" className="btn-close" onClick={closeModal}></button>
               </div>
+
               <div className="modal-body p-4">
                 <OwnerForm
                   mode={modalType}
@@ -189,42 +194,92 @@ const SuperAdminOwner = () => {
                   }}
                 />
               </div>
+
             </div>
           </div>
         </div>
       )}
 
-      {/* DELETE MODAL */}
       {isDeleteModalOpen && (
         <div className="modal fade show" tabIndex="-1" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }} onClick={closeDeleteModal}>
           <div className="modal-dialog modal-dialog-centered" onClick={(e) => e.stopPropagation()}>
             <div className="modal-content">
+
               <div className="modal-header border-0 pb-0">
                 <h5 className="modal-title fw-bold">Confirm Deletion</h5>
                 <button className="btn-close" onClick={closeDeleteModal}></button>
               </div>
+
               <div className="modal-body text-center py-4">
                 <h5>Are you sure?</h5>
                 <p className="text-muted">
                   This will permanently delete <strong>{selectedOwner?.name}</strong>.
                 </p>
               </div>
+
               <div className="modal-footer border-0 justify-content-center pb-4">
                 <button className="btn btn-outline-secondary px-4" onClick={closeDeleteModal}>Cancel</button>
                 <button className="btn btn-danger px-4" onClick={confirmDelete}>Delete</button>
               </div>
+
             </div>
           </div>
         </div>
       )}
+
     </div>
   );
 };
 
-// OWNER FORM
+
+// -------------------------------- //--
+// UPDATED OWNER FORM WITH AUTO DESCRIPTION
+// -------------------------------- //--
+
+
 const OwnerForm = ({ mode, owner, onCancel, onSubmit }) => {
   const isView = mode === 'view';
+  const isAdd = mode === 'add';
+
   const initialActive = (owner?.status || 'Inactive') === 'Active';
+
+  const planOptions = {
+    Gold: {
+      price: "1200",
+      duration: "12 Months",
+      description: "Best premium plan with full access"
+    },
+    Silver: {
+      price: "800",
+      duration: "6 Months",
+      description: "Affordable mid-range plan for regular users"
+    },
+    Basic: {
+      price: "500",
+      duration: "3 Months",
+      description: "Starter plan for new gym members"
+    }
+  };
+
+  const [selectedPlan, setSelectedPlan] = useState(owner?.plans?.[0]?.planName || "");
+  const [planPrice, setPlanPrice] = useState(owner?.plans?.[0]?.price || "");
+  const [planDuration, setPlanDuration] = useState(owner?.plans?.[0]?.duration || "");
+  const [planDescription, setPlanDescription] = useState(owner?.plans?.[0]?.description || "");
+
+  const handlePlanChange = (e) => {
+    const plan = e.target.value;
+    setSelectedPlan(plan);
+
+    if (planOptions[plan]) {
+      setPlanPrice(planOptions[plan].price);
+      setPlanDuration(planOptions[plan].duration);
+      setPlanDescription(planOptions[plan].description);
+    } else {
+      setPlanPrice("");
+      setPlanDuration("");
+      setPlanDescription("");
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -235,6 +290,7 @@ const OwnerForm = ({ mode, owner, onCancel, onSubmit }) => {
 
     const payload = {
       name: data.name,
+      gymName: data.gymName,
       ownerId: data.ownerId,
       address: data.address,
       phone: data.phone,
@@ -242,6 +298,15 @@ const OwnerForm = ({ mode, owner, onCancel, onSubmit }) => {
       username: data.username,
       password: data.password,
       status: data.statusToggle ? "Active" : "Inactive",
+
+      plans: [
+        {
+          planName: selectedPlan,
+          price: planPrice,
+          duration: planDuration,
+          description: planDescription
+        }
+      ]
     };
 
     onSubmit(payload);
@@ -251,15 +316,24 @@ const OwnerForm = ({ mode, owner, onCancel, onSubmit }) => {
     <form onSubmit={handleSubmit}>
 
       <div className="row mb-3 g-3">
+
         <div className="col-md-6">
           <label className="form-label">Owner Name *</label>
           <input name="name" className="form-control" defaultValue={owner?.name || ""} readOnly={isView} />
         </div>
 
-        <div className="col-md-6">
-          <label className="form-label">Owner ID *</label>
-          <input name="ownerId" className="form-control" defaultValue={owner?.ownerId || ""} readOnly={isView} />
-        </div>
+        {isAdd ? (
+          <div className="col-md-6">
+            <label className="form-label">Gym Name *</label>
+            <input name="gymName" className="form-control" placeholder="Enter Gym Name" readOnly={isView} />
+          </div>
+        ) : (
+          <div className="col-md-6">
+            <label className="form-label">Owner ID *</label>
+            <input name="ownerId" className="form-control" defaultValue={owner?.ownerId || ""} readOnly={isView} />
+          </div>
+        )}
+
       </div>
 
       <div className="row mb-3 g-3">
@@ -269,38 +343,79 @@ const OwnerForm = ({ mode, owner, onCancel, onSubmit }) => {
         </div>
 
         <div className="col-md-6">
-          <label className="form-label">Phone</label>
+          <label className="form-label">Phone *</label>
           <input name="phone" className="form-control" defaultValue={owner?.phone || ""} readOnly={isView} />
         </div>
 
         <div className="col-md-6">
-          <label className="form-label">Email</label>
+          <label className="form-label">Email *</label>
           <input name="email" className="form-control" defaultValue={owner?.email || ""} readOnly={isView} />
         </div>
       </div>
 
-      {/* LOGIN INFO */}
       <h6 className="fw-semibold mb-3">Login Information</h6>
 
       <div className="row mb-3 g-3">
+
         <div className="col-md-6">
           <label className="form-label">Username *</label>
           <input name="username" className="form-control" defaultValue={owner?.username || ""} readOnly={isView} />
         </div>
 
-        <div className="col-md-6">
-          <label className="form-label">Password *</label>
-          <input name="password" type="password" className="form-control" readOnly={isView} />
-        </div>
+        {!isView && (
+          <div className="col-md-6">
+            <label className="form-label">Password *</label>
+            <input name="password" type="password" className="form-control" />
+          </div>
+        )}
 
-        <div className="col-md-6">
-          <label className="form-label">Profile Image</label>
-          <input type="file" className="form-control" disabled={isView} />
-        </div>
       </div>
 
-      {/* STATUS */}
-      <div className="mb-4">
+      <h6 className="fw-semibold mt-4 mb-3">Plans Information</h6>
+
+      <div className="row mb-3 g-3">
+
+        <div className="col-md-6">
+          <label className="form-label">Plan Name *</label>
+          <select
+            name="planName"
+            className="form-control"
+            value={selectedPlan}
+            onChange={handlePlanChange}
+            disabled={isView}
+          >
+            <option value="">Select Plan</option>
+            <option value="Gold">Gold</option>
+            <option value="Silver">Silver</option>
+            <option value="Basic">Basic</option>
+          </select>
+        </div>
+
+        <div className="col-md-6">
+          <label className="form-label">Price *</label>
+          <input name="price" className="form-control" value={planPrice} readOnly />
+        </div>
+
+        <div className="col-md-6">
+          <label className="form-label">Duration *</label>
+          <input name="duration" className="form-control" value={planDuration} readOnly />
+        </div>
+
+        <div className="col-md-12">
+          <label className="form-label">Description *</label>
+          <textarea
+            name="description"
+            className="form-control"
+            rows="2"
+            value={planDescription}
+            onChange={(e) => setPlanDescription(e.target.value)}
+            readOnly={isView}
+          ></textarea>
+        </div>
+
+      </div>
+
+      <div className="mb-4 mt-3">
         <label className="form-label me-3">Status</label>
         <div className="form-check form-switch">
           <input
@@ -322,6 +437,7 @@ const OwnerForm = ({ mode, owner, onCancel, onSubmit }) => {
           </button>
         )}
       </div>
+
     </form>
   );
 };
