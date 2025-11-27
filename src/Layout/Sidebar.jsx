@@ -26,7 +26,8 @@ import {
   faCaretRight,
   faEye,
   faBookAtlas,
-  faUserGroup
+  faUserGroup,
+  faCogs
 } from "@fortawesome/free-solid-svg-icons";
 
 import "./Sidebar.css";
@@ -55,12 +56,23 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
 
   // ------------------ MENUS ------------------
   const allMenus = {
-    superadmin: [
-      { name: "Dashboard", icon: faChartBar, path: "/superadmin/dashboard" },
-      { name: "Owner", icon: faUsers, path: "/superadmin/Owner" },
-      { name: "Plans & Pricing", icon: faStarOfDavid, path: "/superadmin/Plans&Pricing" },
-      { name: "Payments", icon: faMoneyBillAlt, path: "/superadmin/payments" }
-    ],
+    // superadmin: [
+    //   { name: "Dashboard", icon: faChartBar, path: "/superadmin/dashboard" },
+    //   { name: "Owner", icon: faUsers, path: "/superadmin/Owner" },
+    //   { name: "Plans & Pricing", icon: faStarOfDavid, path: "/superadmin/Plans&Pricing" },
+    //   { name: "Payments", icon: faMoneyBillAlt, path: "/superadmin/payments" }
+    //   //  { name: "Setting", icon: faMoneyBillAlt, path: "/superadmin/setting" },
+      
+    // ],
+   superadmin: [
+  { name: "Dashboard", icon: faChartBar, path: "/superadmin/dashboard" },
+  { name: "Owner", icon: faUsers, path: "/superadmin/Owner" },
+  { name: "Plans & Pricing", icon: faStarOfDavid, path: "/superadmin/Plans&Pricing" },
+  { name: "Payments", icon: faMoneyBillAlt, path: "/superadmin/payments" },
+  { name: "Setting", icon:  faCogs, path: "/superadmin/setting" },
+],
+
+
 
     admin: [
       { name: "Dashboard", icon: faChartBar, path: "/admin/admin-dashboard" },
