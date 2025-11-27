@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { FaEye, FaEdit, FaTrashAlt, FaPlus, FaSearch, FaFilter, FaUser, FaCaretDown } from 'react-icons/fa';
+import { FaEye, FaEdit, FaTrashAlt, FaPlus, FaSearch, FaFilter, FaCaretDown } from 'react-icons/fa';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const ManageStaff = () => {
@@ -8,7 +8,8 @@ const ManageStaff = () => {
   const [modalType, setModalType] = useState('add'); // 'add', 'edit', 'view'
   const [selectedStaff, setSelectedStaff] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
+  const [roleFilterOpen, setRoleFilterOpen] = useState(false);
+  const [statusFilterOpen, setStatusFilterOpen] = useState(false);
   const [roleFilter, setRoleFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
   const fileInputRef = useRef(null);
@@ -158,6 +159,24 @@ const ManageStaff = () => {
     };
   }, [isModalOpen, isDeleteModalOpen]);
 
+  // Close dropdowns when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (roleFilterOpen && !event.target.closest('.role-filter-dropdown')) {
+        setRoleFilterOpen(false);
+      }
+      if (statusFilterOpen && !event.target.closest('.status-filter-dropdown')) {
+        setStatusFilterOpen(false);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [roleFilterOpen, statusFilterOpen]);
+
   const getStatusBadge = (status) => {
     const badgeClasses = {
       Active: "bg-success-subtle text-success-emphasis",
@@ -290,7 +309,7 @@ const ManageStaff = () => {
 
       {/* Search & Actions */}
       <div className="row mb-4 g-3">
-        <div className="col-12 col-md-6 col-lg-5">
+        <div className="col-12 col-md-6">
           <div className="input-group">
             <span className="input-group-text bg-light border">
               <FaSearch style={{ color: customColor }} />
@@ -304,118 +323,100 @@ const ManageStaff = () => {
             />
           </div>
         </div>
-        <div className="col-6 col-md-3 col-lg-2">
-          <div className="dropdown">
+        <div className="col-6 col-md-2">
+          <div className="role-filter-dropdown">
             <button 
               className="btn btn-outline-secondary w-100 dropdown-toggle" 
               type="button" 
-              id="filterDropdown" 
-              data-bs-toggle="dropdown" 
-              aria-expanded="false"
-              onClick={() => setFilterDropdownOpen(!filterDropdownOpen)}
+              onClick={() => setRoleFilterOpen(!roleFilterOpen)}
             >
-              <FaFilter className="me-1" /> <span className="">Filter</span>
+              <span className="">Role</span>
               <FaCaretDown className="ms-1" />
             </button>
-            <ul className={`dropdown-menu ${filterDropdownOpen ? 'show' : ''}`} aria-labelledby="filterDropdown">
-              <li><h6 className="dropdown-header">Filter by Role</h6></li>
-              <li>
-                <button 
-                  className={`dropdown-item ${roleFilter === 'All' ? 'active' : ''}`}
-                  onClick={() => {
-                    setRoleFilter('All');
-                    setFilterDropdownOpen(false);
-                  }}
-                >
-                  All Roles
-                </button>
-              </li>
-              <li>
-                <button 
-                  className={`dropdown-item ${roleFilter === 'Manager' ? 'active' : ''}`}
-                  onClick={() => {
-                    setRoleFilter('Manager');
-                    setFilterDropdownOpen(false);
-                  }}
-                >
-                  Manager
-                </button>
-              </li>
-              <li>
-                <button 
-                  className={`dropdown-item ${roleFilter === 'Trainer' ? 'active' : ''}`}
-                  onClick={() => {
-                    setRoleFilter('Trainer');
-                    setFilterDropdownOpen(false);
-                  }}
-                >
-                  Trainer
-                </button>
-              </li>
-              <li>
-                <button 
-                  className={`dropdown-item ${roleFilter === 'Receptionist' ? 'active' : ''}`}
-                  onClick={() => {
-                    setRoleFilter('Receptionist');
-                    setFilterDropdownOpen(false);
-                  }}
-                >
-                  Receptionist
-                </button>
-              </li>
-              <li><hr className="dropdown-divider" /></li>
-              <li><h6 className="dropdown-header">Filter by Status</h6></li>
-              <li>
-                <button 
-                  className={`dropdown-item ${statusFilter === 'All' ? 'active' : ''}`}
-                  onClick={() => {
-                    setStatusFilter('All');
-                    setFilterDropdownOpen(false);
-                  }}
-                >
-                  All Status
-                </button>
-              </li>
-              <li>
-                <button 
-                  className={`dropdown-item ${statusFilter === 'Active' ? 'active' : ''}`}
-                  onClick={() => {
-                    setStatusFilter('Active');
-                    setFilterDropdownOpen(false);
-                  }}
-                >
-                  Active
-                </button>
-              </li>
-              <li>
-                <button 
-                  className={`dropdown-item ${statusFilter === 'Inactive' ? 'active' : ''}`}
-                  onClick={() => {
-                    setStatusFilter('Inactive');
-                    setFilterDropdownOpen(false);
-                  }}
-                >
-                  Inactive
-                </button>
-              </li>
-              <li><hr className="dropdown-divider" /></li>
-              <li>
-                <button 
-                  className="dropdown-item text-primary"
-                  onClick={() => {
-                    clearFilters();
-                    setFilterDropdownOpen(false);
-                  }}
-                >
-                  Clear All Filters
-                </button>
-              </li>
-            </ul>
+            <div className={`dropdown-menu ${roleFilterOpen ? 'show' : ''}`}>
+              <button 
+                className={`dropdown-item ${roleFilter === 'All' ? 'active' : ''}`}
+                onClick={() => {
+                  setRoleFilter('All');
+                  setRoleFilterOpen(false);
+                }}
+              >
+                All Roles
+              </button>
+              <button 
+                className={`dropdown-item ${roleFilter === 'Manager' ? 'active' : ''}`}
+                onClick={() => {
+                  setRoleFilter('Manager');
+                  setRoleFilterOpen(false);
+                }}
+              >
+                Manager
+              </button>
+              <button 
+                className={`dropdown-item ${roleFilter === 'Trainer' ? 'active' : ''}`}
+                onClick={() => {
+                  setRoleFilter('Trainer');
+                  setRoleFilterOpen(false);
+                }}
+              >
+                Trainer
+              </button>
+              <button 
+                className={`dropdown-item ${roleFilter === 'Receptionist' ? 'active' : ''}`}
+                onClick={() => {
+                  setRoleFilter('Receptionist');
+                  setRoleFilterOpen(false);
+                }}
+              >
+                Receptionist
+              </button>
+            </div>
           </div>
         </div>
-        <div className="col-6 col-md-3 col-lg-2">
-          <button className="btn btn-outline-secondary w-100" onClick={exportData}>
-            <FaUser className="me-1" /> <span className="">Export</span>
+        <div className="col-6 col-md-2">
+          <div className="status-filter-dropdown">
+            <button 
+              className="btn btn-outline-secondary w-100 dropdown-toggle" 
+              type="button" 
+              onClick={() => setStatusFilterOpen(!statusFilterOpen)}
+            >
+              <span className="">Status</span>
+              <FaCaretDown className="ms-1" />
+            </button>
+            <div className={`dropdown-menu ${statusFilterOpen ? 'show' : ''}`}>
+              <button 
+                className={`dropdown-item ${statusFilter === 'All' ? 'active' : ''}`}
+                onClick={() => {
+                  setStatusFilter('All');
+                  setStatusFilterOpen(false);
+                }}
+              >
+                All Status
+              </button>
+              <button 
+                className={`dropdown-item ${statusFilter === 'Active' ? 'active' : ''}`}
+                onClick={() => {
+                  setStatusFilter('Active');
+                  setStatusFilterOpen(false);
+                }}
+              >
+                Active
+              </button>
+              <button 
+                className={`dropdown-item ${statusFilter === 'Inactive' ? 'active' : ''}`}
+                onClick={() => {
+                  setStatusFilter('Inactive');
+                  setStatusFilterOpen(false);
+                }}
+              >
+                Inactive
+              </button>
+            </div>
+          </div>
+        </div>
+        <div className="col-6 col-md-2">
+          <button className="btn btn-outline-secondary w-100" onClick={clearFilters}>
+            <span className="">Clear Filters</span>
           </button>
         </div>
       </div>
@@ -917,6 +918,10 @@ const ManageStaff = () => {
           .modal-content {
             border-radius: 0.5rem;
           }
+        }
+        
+        .role-filter-dropdown, .status-filter-dropdown {
+          position: relative;
         }
         
         .dropdown-menu {

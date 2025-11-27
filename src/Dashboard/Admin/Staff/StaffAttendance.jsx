@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaPlus, FaTrashAlt, FaEdit, FaEye, FaSearch, FaFilter, FaFileExport, FaExclamationTriangle, FaCaretDown } from 'react-icons/fa';
+import { FaPlus, FaTrashAlt, FaEdit, FaEye, FaSearch, FaFileExport, FaExclamationTriangle } from 'react-icons/fa';
 
 const StaffAttendance = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -9,7 +9,6 @@ const StaffAttendance = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
-  const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
 
   // Custom color for all blue elements
   const customColor = "#6EB2CC";
@@ -290,40 +289,6 @@ const StaffAttendance = () => {
     URL.revokeObjectURL(url);
   };
 
-  // Apply filters function
-  const applyFilters = () => {
-    // This function is called when the Apply Filters button is clicked
-    // The actual filtering is already handled by the filteredRecords variable
-    console.log('Filters applied:', { searchTerm, roleFilter, statusFilter });
-  };
-
-  // Clear all filters
-  const clearAllFilters = () => {
-    setSearchTerm('');
-    setRoleFilter('All');
-    setStatusFilter('All');
-  };
-
-  // Toggle filter dropdown
-  const toggleFilterDropdown = () => {
-    setFilterDropdownOpen(!filterDropdownOpen);
-  };
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (filterDropdownOpen && !event.target.closest('.filter-dropdown')) {
-        setFilterDropdownOpen(false);
-      }
-    };
-
-    document.addEventListener('click', handleClickOutside);
-    
-    return () => {
-      document.removeEventListener('click', handleClickOutside);
-    };
-  }, [filterDropdownOpen]);
-
   return (
     <div className="container-fluid p-3 p-md-4">
       {/* Header Section */}
@@ -374,7 +339,7 @@ const StaffAttendance = () => {
               </div>
             </div>
 
-            <div className="col-12 col-md-3">
+            <div className="col-12 col-md-4">
               <label className="form-label fw-semibold">Filter by Role</label>
               <select
                 className="form-select rounded-3"
@@ -387,7 +352,7 @@ const StaffAttendance = () => {
               </select>
             </div>
 
-            <div className="col-12 col-md-3">
+            <div className="col-12 col-md-4">
               <label className="form-label fw-semibold">Filter by Status</label>
               <select
                 className="form-select rounded-3"
@@ -398,44 +363,6 @@ const StaffAttendance = () => {
                   <option key={status} value={status}>{status}</option>
                 ))}
               </select>
-            </div>
-
-            <div className="col-12 col-md-2 position-relative">
-              <label className="form-label fw-semibold d-none d-md-block">&nbsp;</label>
-              <div className="filter-dropdown">
-                <button 
-                  className="btn w-100 dropdown-toggle" 
-                  type="button" 
-                  onClick={toggleFilterDropdown}
-                  style={{ backgroundColor: 'transparent', border: '1px solid #dee2e6', color: '#6c757d' }}
-                >
-                  <FaFilter className="me-2" /> 
-                  <span>Filters</span>
-                  <FaCaretDown className="ms-1" />
-                </button>
-                <div className={`dropdown-menu ${filterDropdownOpen ? 'show' : ''}`}>
-                  <div className="dropdown-header">Apply Filters</div>
-                  <button 
-                    className="dropdown-item"
-                    onClick={() => {
-                      applyFilters();
-                      setFilterDropdownOpen(false);
-                    }}
-                  >
-                    Apply Current Filters
-                  </button>
-                  <div className="dropdown-divider"></div>
-                  <button 
-                    className="dropdown-item text-primary"
-                    onClick={() => {
-                      clearAllFilters();
-                      setFilterDropdownOpen(false);
-                    }}
-                  >
-                    Clear All Filters
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -845,21 +772,6 @@ const StaffAttendance = () => {
         
         .modal-footer {
           border-radius: 0 0 0.5rem 0.5rem;
-        }
-        
-        .filter-dropdown {
-          position: relative;
-        }
-        
-        .dropdown-menu {
-          min-width: 200px;
-          right: 0;
-          left: auto;
-        }
-        
-        .dropdown-item.active {
-          background-color: ${customColor} !important;
-          color: white !important;
         }
       `}</style>
     </div>
