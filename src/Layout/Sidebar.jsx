@@ -26,15 +26,10 @@ import {
   faCaretRight,
   faEye,
   faBookAtlas,
-  faUserGroup,
-  faQrcode,
-  faUserPlus,
-  faDumbbell,
-  faBell,
-  faUser  // Added this import
+  faUserGroup
 } from "@fortawesome/free-solid-svg-icons";
+
 import "./Sidebar.css";
-import { icon } from "@fortawesome/fontawesome-svg-core";
 
 const Sidebar = ({ collapsed, setCollapsed }) => {
   const navigate = useNavigate();
@@ -42,7 +37,6 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
   const [activeMenu, setActiveMenu] = useState(null);
   const [userRole, setUserRole] = useState("admin");
 
-  // Load user role from localStorage
   useEffect(() => {
     const role = localStorage.getItem("userRole") || "admin";
     setUserRole(role);
@@ -59,268 +53,110 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
     if (window.innerWidth <= 768) setCollapsed(true);
   };
 
-  // Define menus for each role
+  // ------------------ MENUS ------------------
   const allMenus = {
     superadmin: [
-      {
-        name: "Dashboard",
-        icon: faChartBar,
-        path: "/superadmin/dashboard",
-      },
-      {
-        name: "Admin",
-        icon: faUsers,
-        path: "/superadmin/Owner",
-      },
-      {
-        name: "Plans & Pricing",
-        icon: faUsers,
-        path: "/superadmin/Plans&Pricing",
-      },
-      {
-        name: "Payments",
-        icon: faUsers,
-        key: "Payments",
-        subItems: [
-          { label: "Invoices", path: "superadmin/payments/invoices" },
-          { label: "Razorpay Reports", path: "superadmin/payments/razorpayReports" },
-
-        ],
-      },
+      { name: "Dashboard", icon: faChartBar, path: "/superadmin/dashboard" },
+      { name: "Owner", icon: faUsers, path: "/superadmin/Owner" },
+      { name: "Plans & Pricing", icon: faStarOfDavid, path: "/superadmin/Plans&Pricing" },
+      { name: "Payments", icon: faMoneyBillAlt, path: "/superadmin/payments" }
     ],
-    
+
     admin: [
-      {
-        name: "Dashboard",
-        icon: faChartBar,
-        path: "admin/admin-dashboard",
-      },
-      //      {
-      //   name: "QR Check-in",
-      //   icon: faGear,
-      //   path: "/admin/qrcheckin",
-      // },
-      {
-        name: "Branches",
-        icon: faGear,
-        path: "/admin/SuperAdminBranches",
-      },
-      {
-        name: "Members",
-        icon: faUsers,
-        path: "/admin/AdminMember",
-      },
+      { name: "Dashboard", icon: faChartBar, path: "/admin/admin-dashboard" },
+      { name: "Branches", icon: faGear, path: "/admin/AdminBranches" },
+      { name: "Members", icon: faUsers, path: "/admin/AdminMember" },
+      { name: "Create Plan", icon: faUsers, path: "/admin/createplan" },
 
+      { name: "Classes Schedule", icon: faUsers, path: "/admin/classesSchedule" },
+      { name: "Session Bookings", icon: faCalendarAlt, path: "/admin/bookings" },
 
-      {
-        name: "Create Plan",
-        icon: faFileAlt,
-        path: "admin/createplan"
-      },
-      {
-        name: "Classes Schedule",
-        icon: faCalendarAlt,
-        path: "/admin/classesSchedule",
-      },
-      {
-        name: "Session Bookings",
-        icon: faCalendarAlt,
-        path: "/admin/bookings",
-      },
       {
         name: "Staff",
-        icon: faUserGear,
+        icon: faUsers,
         key: "Staff",
         subItems: [
           { label: "Manage Staff", path: "/admin/staff/manage-staff" },
-          // { label: "Roles & Permissions", path: "/admin/staff/roles-permissions" },
           { label: "Attendance", path: "/admin/staff/attendance" },
-          { label: "Duty Roster", path: "/admin/staff/duty-roster" },
-
-          { label: "Salary Calculator", path: "/admin/staff/salary-calculator" },
-        ],
+          { label: "Salary Calculator", path: "/admin/staff/salary-calculator" }
+        ]
       },
+
       {
         name: "Personal Training Details",
-        icon: faDumbbell,
-        path: "/admin/booking/personal-training",
+        icon: faFileAlt,
+        path: "/admin/booking/personal-training"
       },
+
       {
         name: "Payments",
         icon: faCalculator,
         key: "payment",
-        subItems: [
-          { label: "Membership Payment", path: "/admin/payments/membership" },
-        ],
+        subItems: [{ label: "Membership Payment", path: "/admin/payments/membership" }]
       },
+
       {
         name: "Reports",
         icon: faChartLine,
         key: "reports",
         subItems: [
           { label: "Sales Report", path: "/admin/reports/sales" },
-          { label: "Attendance Report", path: "/admin/reports/AttendanceReport" },
-        ],
+          { label: "Attendance Report", path: "/admin/reports/AttendanceReport" }
+        ]
       },
+
       {
         name: "Settings",
         icon: faGear,
         key: "settings",
         subItems: [
-          { label: "Role Management", path: "admin/settings/RoleManagement" },
-          { label: "Branch Management", path: "admin/settings/BranchManagement" },
-        ],
-      },
+          { label: "Role Management", path: "/admin/settings/RoleManagement" },
+          { label: "Branch Management", path: "/admin/settings/BranchManagement" }
+        ]
+      }
     ],
-    
+
     housekeeping: [
-      {
-        name: "Dashboard",
-        icon: faChartBar,
-        path: "/housekeeping/dashboard",
-      },
-      {
-        name: "QR Check-in",
-        icon: faQrcode,
-        path: "/housekeeping/qrcheckin",
-      },
-      {
-        name: "Duty Roster",
-        icon: faCalendarAlt,
-        path: "/housekeeping/members",
-      },
-      {
-        name: "Attendance Marking",
-        icon: faClipboardCheck,
-        path: "/housekeeping/membership-plan",
-      },
-      {
-        name: "Task Checklist",
-        icon: faClipboardCheck,
-        path: "/housekeeping/duty-roster",
-      },
-      {
-        name: "Notifications",
-        icon: faBell,
-        path: "/housekeeping/class-schedule",
-      },
+      { name: "Dashboard", icon: faChartBar, path: "/housekeeping/dashboard" },
+      { name: "QR Check-in", icon: faGear, path: "/housekeeping/qrcheckin" },
+      { name: "Duty Roster", icon: faUsers, path: "/housekeeping/members" },
+      { name: "Attendance Marking", icon: faUserTag, path: "/housekeeping/membership-plan" },
+      { name: "Task Checklist", icon: faCalendarAlt, path: "/housekeeping/duty-roster" },
+      { name: "Notifications", icon: faCalendarDays, path: "/housekeeping/class-schedule" }
     ],
-    
+
     generaltrainer: [
-      {
-        name: "Dashboard",
-        icon: faChartBar,
-        path: "/generaltrainer/dashboard",
-      },
-      {
-        name: "Qr Check-in",
-        icon: faQrcode,
-        path: "/generaltrainer/qrcheckin",
-      },
-      {
-        name: "GroupPlans & Bookings",
-        icon: faUserGroup,
-        path: "/generaltrainer/groupplansbookings"
-      },
-      {
-        name: "Daily Schedule",
-        icon: faCalendarAlt,
-        path: "/generaltrainer/DailyScedule",
-      },
-      {
-        name: "Attendance",
-        icon: faClipboardCheck,
-        path: "/generaltrainer/attendance",
-      },
-      {
-        name: "Reports Classes",
-        icon: faFileAlt,
-        path: "/generaltrainer/Reports",
-      },
+      { name: "Dashboard", icon: faChartBar, path: "/generaltrainer/dashboard" },
+      { name: "Qr Check-in", icon: faGear, path: "/generaltrainer/qrcheckin" },
+      { name: "GroupPlans & Bookings", icon: faUserGroup, path: "/generaltrainer/groupplansbookings" },
+      { name: "Daily Schedule", icon: faChartArea, path: "/generaltrainer/DailyScedule" },
+      { name: "Attendance", icon: faClipboardCheck, path: "/generaltrainer/attendance" },
+      { name: "Reports Classes", icon: faFileAlt, path: "/generaltrainer/Reports" }
     ],
-    
+
     personaltrainer: [
-      {
-        name: "Dashboard",
-        icon: faChartBar,
-        path: "/personaltrainer/dashboard",
-      },
-      {
-        name: "QR Check-in",
-        icon: faQrcode,
-        path: "/personaltrainer/qrcheckin",
-      },
-      {
-        name: "Plans & Bookings",
-        icon: faBookAtlas,
-        path: "/personaltrainer/PersonalPlansBookings",
-      },
+      { name: "Dashboard", icon: faChartBar, path: "/personaltrainer/dashboard" },
+      { name: "QR Check-in", icon: faGear, path: "/personaltrainer/qrcheckin" },
+      { name: "Plans & Bookings", icon: faBookAtlas, path: "/personaltrainer/PersonalPlansBookings" }
     ],
-    
+
     receptionist: [
-      {
-        name: "Dashboard",
-        icon: faChartBar,
-        path: "/receptionist/dashboard",
-      },
-      {
-        name: "QR Check-in",
-        icon: faQrcode,
-        path: "/receptionist/qrcheckin",
-      },
-      {
-        name: "Walk-in Registration",
-        icon: faUserPlus,
-        path: "/receptionist/walk-in-registration"
-      },
-      {
-        name: "New Sign-ups",
-        icon: faUserPlus,
-        path: "/receptionist/new-sign-ups"
-      },
-      {
-        name: "QR Attendance",
-        icon: faQrcode,
-        path: "/receptionist/qr-attendance"
-      },
-      {
-        name: "Book Classes & Sessions",
-        icon: faCalendarAlt,
-        path: "/receptionist/book-classes-sessions"
-      },
-      {
-        name: "Payment",
-        icon: faMoneyBillAlt,
-        path: "/receptionist/payemnet"
-      },
+      { name: "Dashboard", icon: faChartBar, path: "/receptionist/dashboard" },
+      { name: "QR Check-in", icon: faGear, path: "/receptionist/qrcheckin" },
+      { name: "Walk-in Registration", icon: faFileAlt, path: "/receptionist/walk-in-registration" },
+      { name: "New Sign-ups", icon: faFileAlt, path: "/receptionist/new-sign-ups" },
+      { name: "QR Attendance", icon: faFileAlt, path: "/receptionist/qr-attendance" },
+      { name: "Book Classes & Sessions", icon: faFileAlt, path: "/receptionist/book-classes-sessions" },
+      { name: "Payment", icon: faFileAlt, path: "/receptionist/payemnet" }
     ],
+
     member: [
-      {
-        name: "Dashboard",
-        icon: faChartBar,
-        path: "/member/dashboard",
-      },
-      {
-        name: "QR Check-in",
-        icon: faQrcode,
-        path: "/member/qrcheckin",
-      },
-      {
-        name: "View Plan",
-        icon: faEye,
-        path: "/member/viewplan"
-      },
-      {
-        name: "Class Schedule",
-        icon: faCalendarAlt,
-        path: "/member/classSchedule",
-      },
-      {
-        name: "My Account",
-        icon: faUser,
-        path: "/member/account",
-      },
-    ],
+      { name: "Dashboard", icon: faChartBar, path: "/member/dashboard" },
+      { name: "QR Check-in", icon: faGear, path: "/member/qrcheckin" },
+      { name: "View Plan", icon: faEye, path: "/member/viewplan" },
+      { name: "Class Schedule", icon: faClapperboard, path: "/member/classSchedule" },
+      { name: "My Account", icon: faMoneyBillAlt, path: "/member/account" }
+    ]
   };
 
   const userMenus = allMenus[userRole] || allMenus.admin;
@@ -330,14 +166,12 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
       <div className="sidebar">
         <ul className="menu">
           {userMenus.map((menu, index) => {
-            // If no subItems → direct link
             if (!menu.subItems) {
               return (
                 <li key={index} className="menu-item">
                   <div
                     className={`menu-link ${isActive(menu.path) ? "active" : ""}`}
                     onClick={() => handleNavigate(menu.path)}
-                    style={{ cursor: "pointer" }}
                   >
                     <FontAwesomeIcon icon={menu.icon} className="menu-icon" />
                     {!collapsed && <span className="menu-text">{menu.name}</span>}
@@ -346,13 +180,11 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
               );
             }
 
-            // If has subItems → show dropdown
             return (
               <li key={index} className="menu-item">
                 <div
                   className="menu-link mb-2"
                   onClick={() => toggleMenu(menu.key)}
-                  style={{ cursor: "pointer" }}
                 >
                   <FontAwesomeIcon icon={menu.icon} className="menu-icon" />
                   {!collapsed && <span className="menu-text">{menu.name}</span>}
@@ -364,15 +196,13 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                   )}
                 </div>
 
-                {/* Show submenu only if menu is active and not collapsed */}
                 {!collapsed && activeMenu === menu.key && (
                   <ul className="submenu">
-                    {menu.subItems.map((sub, subIndex) => (
+                    {menu.subItems.map((sub, i) => (
                       <li
-                        key={subIndex}
+                        key={i}
                         className={`submenu-item mb-2 ${isActive(sub.path) ? "active-sub" : ""}`}
                         onClick={() => handleNavigate(sub.path)}
-                        style={{ cursor: "pointer" }}
                       >
                         {sub.label}
                       </li>
