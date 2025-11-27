@@ -74,14 +74,17 @@ const AdminMember = () => {
   
   // Form states
   const [newMember, setNewMember] = useState({
-    name: "",
+    fullName: "",
     phone: "",
     email: "",
-    branch: "",
-    plan: "",
+    branchId: "",
+    planId: "",
     address: "",
     gender: "",
-    dob: ""
+    dateOfBirth: "",
+    startDate: new Date().toISOString().split('T')[0],
+    paymentMode: "cash",
+    amountPaid: ""
   });
   
   const [editMember, setEditMember] = useState({
@@ -114,23 +117,37 @@ const AdminMember = () => {
   // Handle add member
   const handleAddMember = (e) => {
     e.preventDefault();
+    
+    // Check if phone number is unique
+    const isPhoneUnique = !members.some(member => member.phone === newMember.phone);
+    if (!isPhoneUnique) {
+      alert("Phone number already exists. Please use a different phone number.");
+      return;
+    }
+    
     const id = members.length ? Math.max(...members.map(m => m.id)) + 1 : 1;
-    const today = new Date();
-    const planStart = today.toISOString().split('T')[0];
+    const planStart = newMember.startDate;
     
     // Calculate expiry based on plan
-    let expiry = new Date(today);
-    if (newMember.plan.includes("Monthly")) {
+    let expiry = new Date(planStart);
+    if (newMember.planId.includes("Monthly")) {
       expiry.setMonth(expiry.getMonth() + 1);
-    } else if (newMember.plan.includes("Quarterly")) {
+    } else if (newMember.planId.includes("Quarterly")) {
       expiry.setMonth(expiry.getMonth() + 3);
-    } else if (newMember.plan.includes("Annual")) {
+    } else if (newMember.planId.includes("Annual")) {
       expiry.setFullYear(expiry.getFullYear() + 1);
     }
     
     const member = {
       id,
-      ...newMember,
+      name: newMember.fullName,
+      phone: newMember.phone,
+      email: newMember.email,
+      branch: newMember.branchId,
+      plan: newMember.planId,
+      address: newMember.address,
+      gender: newMember.gender,
+      dob: newMember.dateOfBirth,
       planStart,
       expiry: expiry.toISOString().split('T')[0],
       status: "Active"
@@ -138,14 +155,17 @@ const AdminMember = () => {
     
     setMembers([...members, member]);
     setNewMember({
-      name: "",
+      fullName: "",
       phone: "",
       email: "",
-      branch: "",
-      plan: "",
+      branchId: "",
+      planId: "",
       address: "",
       gender: "",
-      dob: ""
+      dateOfBirth: "",
+      startDate: new Date().toISOString().split('T')[0],
+      paymentMode: "cash",
+      amountPaid: ""
     });
     setShowAddForm(false);
   };
@@ -450,7 +470,7 @@ const AdminMember = () => {
         </div>
       </div>
 
-      {/* Add Member Modal - Fixed */}
+      {/* Add Member Modal - Fixed with editable start date */}
       {showAddForm && (
         <div className="modal fade show d-block" tabIndex="-1" style={{backgroundColor: "rgba(0,0,0,0.5)"}}>
           <div className="modal-dialog modal-lg modal-dialog-centered">
@@ -467,19 +487,19 @@ const AdminMember = () => {
                 <form onSubmit={handleAddMember}>
                   <div className="row g-3">
                     <div className="col-12 col-md-6">
-                      <label className="form-label">Full Name</label>
+                      <label className="form-label">Full Name <span className="text-danger">*</span></label>
                       <input 
                         type="text" 
                         className="form-control" 
-                        value={newMember.name}
-                        onChange={(e) => setNewMember({...newMember, name: e.target.value})}
+                        value={newMember.fullName}
+                        onChange={(e) => setNewMember({...newMember, fullName: e.target.value})}
                         required
                       />
                     </div>
                     <div className="col-12 col-md-6">
-                      <label className="form-label">Phone</label>
+                      <label className="form-label">Phone <span className="text-danger">*</span></label>
                       <input 
-                        type="text" 
+                        type="tel" 
                         className="form-control" 
                         value={newMember.phone}
                         onChange={(e) => setNewMember({...newMember, phone: e.target.value})}
@@ -493,15 +513,76 @@ const AdminMember = () => {
                         className="form-control" 
                         value={newMember.email}
                         onChange={(e) => setNewMember({...newMember, email: e.target.value})}
-                        required
                       />
                     </div>
                     <div className="col-12 col-md-6">
-                      <label className="form-label">Branch</label>
+                      <label className="form-label">Date of Birth</label>
+                      <input 
+                        type="date" 
+                        className="form-control" 
+                        value={newMember.dateOfBirth}
+                        onChange={(e) => setNewMember({...newMember, dateOfBirth: e.target.value})}
+                      />
+                    </div>
+                    <div className="col-12">
+                      <label className="form-label">Gender <span className="text-danger">*</span></label>
+                      <div className="d-flex gap-3">
+                        <div className="form-check">
+                          <input 
+                            className="form-check-input" 
+                            type="radio" 
+                            name="gender" 
+                            id="male" 
+                            value="Male"
+                            checked={newMember.gender === "Male"}
+                            onChange={(e) => setNewMember({...newMember, gender: e.target.value})}
+                            required
+                          />
+                          <label className="form-check-label" htmlFor="male">Male</label>
+                        </div>
+                        <div className="form-check">
+                          <input 
+                            className="form-check-input" 
+                            type="radio" 
+                            name="gender" 
+                            id="female" 
+                            value="Female"
+                            checked={newMember.gender === "Female"}
+                            onChange={(e) => setNewMember({...newMember, gender: e.target.value})}
+                            required
+                          />
+                          <label className="form-check-label" htmlFor="female">Female</label>
+                        </div>
+                        <div className="form-check">
+                          <input 
+                            className="form-check-input" 
+                            type="radio" 
+                            name="gender" 
+                            id="other" 
+                            value="Other"
+                            checked={newMember.gender === "Other"}
+                            onChange={(e) => setNewMember({...newMember, gender: e.target.value})}
+                            required
+                          />
+                          <label className="form-check-label" htmlFor="other">Other</label>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="col-12">
+                      <label className="form-label">Address</label>
+                      <textarea 
+                        className="form-control" 
+                        rows="3"
+                        value={newMember.address}
+                        onChange={(e) => setNewMember({...newMember, address: e.target.value})}
+                      ></textarea>
+                    </div>
+                    <div className="col-12 col-md-6">
+                      <label className="form-label">Branch <span className="text-danger">*</span></label>
                       <select 
                         className="form-select" 
-                        value={newMember.branch}
-                        onChange={(e) => setNewMember({...newMember, branch: e.target.value})}
+                        value={newMember.branchId}
+                        onChange={(e) => setNewMember({...newMember, branchId: e.target.value})}
                         required
                       >
                         <option value="">Select Branch</option>
@@ -512,11 +593,11 @@ const AdminMember = () => {
                       </select>
                     </div>
                     <div className="col-12 col-md-6">
-                      <label className="form-label">Membership Plan</label>
+                      <label className="form-label">Plan <span className="text-danger">*</span></label>
                       <select 
                         className="form-select" 
-                        value={newMember.plan}
-                        onChange={(e) => setNewMember({...newMember, plan: e.target.value})}
+                        value={newMember.planId}
+                        onChange={(e) => setNewMember({...newMember, planId: e.target.value})}
                         required
                       >
                         <option value="">Select Plan</option>
@@ -532,34 +613,37 @@ const AdminMember = () => {
                       </select>
                     </div>
                     <div className="col-12 col-md-6">
-                      <label className="form-label">Gender</label>
-                      <select 
-                        className="form-select" 
-                        value={newMember.gender}
-                        onChange={(e) => setNewMember({...newMember, gender: e.target.value})}
-                      >
-                        <option value="">Select Gender</option>
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                        <option value="Other">Other</option>
-                      </select>
-                    </div>
-                    <div className="col-12 col-md-6">
-                      <label className="form-label">Date of Birth</label>
+                      <label className="form-label">Start Date <span className="text-danger">*</span></label>
                       <input 
                         type="date" 
                         className="form-control" 
-                        value={newMember.dob}
-                        onChange={(e) => setNewMember({...newMember, dob: e.target.value})}
+                        value={newMember.startDate}
+                        onChange={(e) => setNewMember({...newMember, startDate: e.target.value})}
+                        required
                       />
                     </div>
-                    <div className="col-12">
-                      <label className="form-label">Address</label>
+                    <div className="col-12 col-md-6">
+                      <label className="form-label">Payment Mode <span className="text-danger">*</span></label>
+                      <select 
+                        className="form-select" 
+                        value={newMember.paymentMode}
+                        onChange={(e) => setNewMember({...newMember, paymentMode: e.target.value})}
+                        required
+                      >
+                        <option value="cash">Cash</option>
+                        <option value="upi">UPI</option>
+                        <option value="card">Card</option>
+                        <option value="bank">Bank Transfer</option>
+                      </select>
+                    </div>
+                    <div className="col-12 col-md-6">
+                      <label className="form-label">Amount Paid <span className="text-danger">*</span></label>
                       <input 
-                        type="text" 
+                        type="number" 
                         className="form-control" 
-                        value={newMember.address}
-                        onChange={(e) => setNewMember({...newMember, address: e.target.value})}
+                        value={newMember.amountPaid}
+                        onChange={(e) => setNewMember({...newMember, amountPaid: e.target.value})}
+                        required
                       />
                     </div>
                   </div>

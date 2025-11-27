@@ -41,8 +41,8 @@ const PersonalTrainerSessionBookings = () => {
     },
     {
       id: 3,
-      trainerId: 1,
-      trainerName: "John Smith",
+      trainerId: 2,
+      trainerName: "Lisa Ray",
       memberId: 3,
       memberName: "Emily Parker",
       date: "2023-11-16",
@@ -55,8 +55,8 @@ const PersonalTrainerSessionBookings = () => {
     },
     {
       id: 4,
-      trainerId: 1,
-      trainerName: "John Smith",
+      trainerId: 3,
+      trainerName: "Mark Lee",
       memberId: 1,
       memberName: "Sarah Johnson",
       date: "2023-11-17",
@@ -69,8 +69,8 @@ const PersonalTrainerSessionBookings = () => {
     },
     {
       id: 5,
-      trainerId: 1,
-      trainerName: "John Smith",
+      trainerId: 4,
+      trainerName: "Anna Kim",
       memberId: 4,
       memberName: "David Wilson",
       date: "2023-11-18",
@@ -83,8 +83,8 @@ const PersonalTrainerSessionBookings = () => {
     },
     {
       id: 6,
-      trainerId: 1,
-      trainerName: "John Smith",
+      trainerId: 2,
+      trainerName: "Lisa Ray",
       memberId: 2,
       memberName: "Mike Thompson",
       date: "2023-11-20",
@@ -95,6 +95,14 @@ const PersonalTrainerSessionBookings = () => {
       notes: "Strength training",
       location: "Gym Floor"
     }
+  ];
+
+  // Mock trainers data
+  const trainers = [
+    { id: 1, name: "John Smith", specialty: "Strength Training" },
+    { id: 2, name: "Lisa Ray", specialty: "HIIT & Cardio" },
+    { id: 3, name: "Mark Lee", specialty: "Flexibility & Yoga" },
+    { id: 4, name: "Anna Kim", specialty: "Personal Training" }
   ];
 
   // State management
@@ -116,7 +124,11 @@ const PersonalTrainerSessionBookings = () => {
     duration: 60,
     type: 'Personal Training',
     notes: '',
-    location: 'Gym Floor'
+    location: 'Gym Floor',
+    trainerId: 1,
+    trainerName: "John Smith",
+    memberId: 1,
+    memberName: "New Member"
   });
 
   // Custom color for all blue elements
@@ -193,18 +205,9 @@ const PersonalTrainerSessionBookings = () => {
     if (newSession.date && newSession.time) {
       const newId = Math.max(...sessions.map(s => s.id), 0) + 1;
       const sessionToAdd = {
+        ...newSession,
         id: newId,
-        trainerId: 1,
-        trainerName: "John Smith",
-        memberId: 1,
-        memberName: "New Member",
-        date: newSession.date,
-        time: newSession.time,
-        duration: newSession.duration,
-        status: "Upcoming",
-        type: newSession.type,
-        notes: newSession.notes,
-        location: newSession.location
+        status: "Upcoming"
       };
 
       setSessions([...sessions, sessionToAdd]);
@@ -215,7 +218,11 @@ const PersonalTrainerSessionBookings = () => {
         duration: 60,
         type: 'Personal Training',
         notes: '',
-        location: 'Gym Floor'
+        location: 'Gym Floor',
+        trainerId: 1,
+        trainerName: "John Smith",
+        memberId: 1,
+        memberName: "New Member"
       });
     }
   };
@@ -280,7 +287,6 @@ const PersonalTrainerSessionBookings = () => {
                   '12:00 AM', '1:00 AM', '2:00 AM', '3:00 AM', '4:00 AM', '5:00 AM', '6:00 AM', '7:00 AM',
                   '8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '1:00 PM', '2:00 PM', '3:00 PM',
                   '4:00 PM', '5:00 PM', '6:00 PM', '7:00 PM', '8:00 PM', '9:00 PM', '10:00 PM', '11:00 PM'
-
                 ].map((time, timeIndex) => (
                   <tr key={timeIndex}>
                     <td className="text-center align-middle">{time}</td>
@@ -300,6 +306,7 @@ const PersonalTrainerSessionBookings = () => {
                             >
                               <div className="fw-bold">{session.memberName}</div>
                               <div>{session.type}</div>
+                              <div className="small">{session.trainerName}</div>
                             </div>
                           ))}
                         </td>
@@ -345,7 +352,7 @@ const PersonalTrainerSessionBookings = () => {
           </div>
         </div>
         {userRole === 'trainer' && (
-          <button className=" col-12" style={{ backgroundColor: customColor, borderColor: customColor, color: 'white' }} onClick={() => setShowAddSessionModal(true)}>
+          <button className="btn" style={{ backgroundColor: customColor, borderColor: customColor, color: 'white' }} onClick={() => setShowAddSessionModal(true)}>
             <FaPlus className="me-1" /> Add Session
           </button>
         )}
@@ -357,6 +364,7 @@ const PersonalTrainerSessionBookings = () => {
               <tr>
                 <th>Date & Time</th>
                 <th>Member</th>
+                <th>Trainer</th>
                 <th>Type</th>
                 <th>Duration</th>
                 <th>Location</th>
@@ -378,6 +386,14 @@ const PersonalTrainerSessionBookings = () => {
                           <FaUser style={{ color: customColor }} />
                         </div>
                         <span>{session.memberName}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="d-flex align-items-center">
+                        <div className="avatar-circle me-2">
+                          <FaUser style={{ color: customColor }} />
+                        </div>
+                        <span>{session.trainerName}</span>
                       </div>
                     </td>
                     <td>{session.type}</td>
@@ -432,7 +448,7 @@ const PersonalTrainerSessionBookings = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="7" className="text-center py-4">
+                  <td colSpan="8" className="text-center py-4">
                     No sessions found matching your criteria
                   </td>
                 </tr>
@@ -449,7 +465,7 @@ const PersonalTrainerSessionBookings = () => {
     if (!selectedSession) return null;
 
     return (
-      <div className="card shadow-sm">
+      <div className="card shadow-sm mt-4">
         <div className="card-header bg-light d-flex justify-content-between align-items-center">
           <h5 className="mb-0">Session Details</h5>
           <button className="btn btn-sm btn-outline-secondary" onClick={() => setSelectedSession(null)}>
@@ -655,7 +671,7 @@ const PersonalTrainerSessionBookings = () => {
                   />
                 </div>
                 <div className="mb-3">
-                  <label className="form-label">Classes</label>
+                  <label className="form-label">Class Type</label>
                   <select
                     className="form-select"
                     value={newSession.type}
@@ -669,32 +685,38 @@ const PersonalTrainerSessionBookings = () => {
                   </select>
                 </div>
 
-                {/* 👇 NEW: Trainer Dropdown Added Here */}
                 <div className="mb-3">
                   <label className="form-label">Trainer</label>
                   <select
                     className="form-select"
-                    value={newSession.trainerId || 1}
+                    value={newSession.trainerId}
                     onChange={(e) => {
                       const trainerId = parseInt(e.target.value);
-                      const trainerMap = {
-                        1: "John Smith",
-                        2: "Lisa Ray",
-                        3: "Mark Lee",
-                        4: "Anna Kim"
-                      };
+                      const selectedTrainer = trainers.find(t => t.id === trainerId);
                       setNewSession({
                         ...newSession,
                         trainerId: trainerId,
-                        trainerName: trainerMap[trainerId]
+                        trainerName: selectedTrainer.name
                       });
                     }}
                   >
-                    <option value="1">John Smith</option>
-                    <option value="2">Lisa Ray</option>
-                    <option value="3">Mark Lee</option>
-                    <option value="4">Anna Kim</option>
+                    {trainers.map(trainer => (
+                      <option key={trainer.id} value={trainer.id}>
+                        {trainer.name} - {trainer.specialty}
+                      </option>
+                    ))}
                   </select>
+                </div>
+
+                <div className="mb-3">
+                  <label className="form-label">Member Name</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newSession.memberName}
+                    onChange={(e) => setNewSession({ ...newSession, memberName: e.target.value })}
+                    placeholder="Enter member name"
+                  />
                 </div>
 
                 <div className="mb-3">
@@ -724,7 +746,7 @@ const PersonalTrainerSessionBookings = () => {
                 <button type="button" className="btn btn-secondary" onClick={() => setShowAddSessionModal(false)}>
                   Cancel
                 </button>
-                <button type="button" className="btn mx-3 " style={{ backgroundColor: customColor, borderColor: customColor, color: 'white' }} onClick={handleAddSession}>
+                <button type="button" className="btn" style={{ backgroundColor: customColor, borderColor: customColor, color: 'white' }} onClick={handleAddSession}>
                   Add Session
                 </button>
               </div>
@@ -737,7 +759,7 @@ const PersonalTrainerSessionBookings = () => {
   };
 
   return (
-    <div className="SessionBookings container-fluid ">
+    <div className="SessionBookings container-fluid">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2 className="fw-bold">Session Bookings</h2>
         <div className="btn-group" role="group">

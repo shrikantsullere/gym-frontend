@@ -102,6 +102,8 @@ import GroupPlansBookings from "./Dashboard/GeneralTrainer/GroupPlansBookings";
 
 // new import 
 import AdminMember from "./Dashboard/Admin/AdminMember";
+import PersonalTraining from "./Dashboard/Admin/Bookings/PersonalTraining";
+import QrCheckin from "./Dashboard/Admin/qrcheckin";
 
 
 
@@ -221,9 +223,11 @@ function App() {
 
                 {/* admin dahsboard */}
                 <Route path="admin/admin-dashboard" element={<AdminDashbaord />} />
+                <Route path="admin/qrcheckin" element={<QrCheckin />} />
                 <Route path="admin/AdminMember" element={<AdminMember />} />
                 {/* booking */}
                 <Route path="/admin/booking/attendance" element={<AttendanceReport />} />
+                <Route path="/admin/booking/personal-training" element={<PersonalTraining />} />
                 <Route path="/admin/AdminBranches" element={<SuperAdminBranches />} />
                 <Route path="/admin/ClassesSchedule" element={<ClassesSchedule />} />
                 <Route path="/admin/bookings" element={<PersonalTrainerSessionBookings />} />
