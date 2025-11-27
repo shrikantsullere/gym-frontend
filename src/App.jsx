@@ -21,7 +21,7 @@ import Dashboard from "./Dashboard/Manager/Dashboard";
 
 
 import Campaigns from "./Dashboard/Admin/Marketing/Campaigns";
-import AdminQrCheckin from "./Dashboard/Admin/AdminQrCheckin";
+import SuperAdminBranches from "./Dashboard/Admin/SuperAdminBranches";
 import EmailsSms from "./Dashboard/Admin/Marketing/EmailsSms";
 import ManageMembers from "./Dashboard/Admin/Members/ManageMembers";
 import QrCodeAttendance from "./Dashboard/Admin/Members/QrCodeAttendance";
@@ -80,7 +80,7 @@ import RoleManagement from "./Dashboard/Admin/Settings/RoleManagement";
 
 
 import SuperAdminDashbaord from "./Dashboard/SuperAdmin/SuperAdminDashbaord";
-import SuperAdminBranches from "./Dashboard/SuperAdmin/SuperAdminBranches";
+import SuperAdminOwner from "./Dashboard/SuperAdmin/SuperAdminOwner";
 import Plans from "./Dashboard/SuperAdmin/Plans";
 import Marketing from "./Dashboard/SuperAdmin/Marketing";
 import Staff from "./Dashboard/SuperAdmin/People/Staff";
@@ -99,6 +99,9 @@ import CreatePlan from "./Dashboard/Admin/CreatePlan";
 import ViewPlan from "./Dashboard/Member/ViewPlan";
 import PersonalPlansBookings from "./Dashboard/PersonalTrainer/PersonalPlansBookings";
 import GroupPlansBookings from "./Dashboard/GeneralTrainer/GroupPlansBookings";
+
+// new import 
+import AdminMember from "./Dashboard/Admin/AdminMember";
 
 
 
@@ -164,9 +167,9 @@ function App() {
 
 
                 <Route path="/superadmin/dashboard" element={<SuperAdminDashbaord />} />
-                <Route path="/superadmin/branches" element={<SuperAdminBranches />} />
+                <Route path="/superadmin/Owner" element={<SuperAdminOwner />} />
 
-                <Route path="/superadmin/plans" element={<Plans />} />
+                <Route path="/superadmin/Plans&Pricing" element={<Plans />} />
                 <Route path="/superadmin/marketing" element={<Marketing />} />
 
 
@@ -218,9 +221,10 @@ function App() {
 
                 {/* admin dahsboard */}
                 <Route path="admin/admin-dashboard" element={<AdminDashbaord />} />
+                <Route path="admin/AdminMember" element={<AdminMember />} />
                 {/* booking */}
                 <Route path="/admin/booking/attendance" element={<AttendanceReport />} />
-                <Route path="/admin/qrcheckin" element={<AdminQrCheckin />} />
+                <Route path="/admin/SuperAdminBranches" element={<SuperAdminBranches />} />
                 <Route path="/admin/ClassesSchedule" element={<ClassesSchedule />} />
                 <Route path="/admin/bookings" element={<PersonalTrainerSessionBookings />} />
 

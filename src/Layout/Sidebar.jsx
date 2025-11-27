@@ -67,36 +67,36 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
         path: "/superadmin/dashboard",
       },
       {
-        name: "Branches",
+        name: "Admin",
         icon: faUsers,
-        path: "/superadmin/branches",
+        path: "/superadmin/Owner",
       },
-      {
-        name: "Reports",
-        icon: faChartLine,
-        key: "reports",
-        subItems: [
-          { label: "Sales", path: "/superadmin/reports/sales" },
-          { label: "Attendance", path: "/superadmin/reports/attendance" },
-          { label: "Memberships", path: "/superadmin/reports/membership" }, // from Payments
+      // {
+      //   name: "Reports",
+      //   icon: faChartLine,
+      //   key: "reports",
+      //   subItems: [
+      //     { label: "Sales", path: "/superadmin/reports/sales" },
+      //     { label: "Attendance", path: "/superadmin/reports/attendance" },
+      //     { label: "Memberships", path: "/superadmin/reports/membership" }, // from Payments
 
-        ],
-      },
+      //   ],
+      // },
 
+      // {
+      //   name: "People",
+      //   icon: faUsers,
+      //   key: "people",
+      //   subItems: [
+      //     { label: "Staff", path: "superadmin/people/staff" },
+      //     { label: "Members", path: "superadmin/people/members" },
+
+      //   ],
+      // },
       {
-        name: "People",
+        name: "Plans & Pricing",
         icon: faUsers,
-        key: "people",
-        subItems: [
-          { label: "Staff", path: "superadmin/people/staff" },
-          { label: "Members", path: "superadmin/people/members" },
-
-        ],
-      },
-      {
-        name: "Plans",
-        icon: faUsers,
-        path: "/superadmin/plans",
+        path: "/superadmin/Plans&Pricing",
       },
       {
         name: "Payments",
@@ -123,10 +123,16 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
         path: "admin/admin-dashboard",
       },
       {
-        name: "Qr Check-in",
+        name: "Branches",
         icon: faGear,
-        path: "/admin/qrcheckin",
+        path: "/admin/SuperAdminBranches",
       },
+            {
+        name: "Members",
+        icon: faUsers,
+        path: "/admin/AdminMember",
+      },
+
 
       {
         name: "Group  Classes",
@@ -153,16 +159,16 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
       },
 
 
-      {
-        name: "Members",
-        icon: faUsers,
-        key: "members",
-        subItems: [
-          { label: "Manage Members", path: "/admin/members/manage-members" },
-          { label: "QR Code Attendance", path: "/admin/members/qr-code-attendance" },
-          { label: "Walk-in Registration", path: "/admin/members/walk-in-registration" },
-        ],
-      },
+      // {
+      //   name: "Members",
+      //   icon: faUsers,
+      //   key: "members",
+      //   subItems: [
+      //     { label: "Manage Members", path: "/admin/members/manage-members" },
+      //     { label: "QR Code Attendance", path: "/admin/members/qr-code-attendance" },
+      //     { label: "Walk-in Registration", path: "/admin/members/walk-in-registration" },
+      //   ],
+      // },
 
 
       {
