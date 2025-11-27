@@ -10,6 +10,8 @@ const CreatePlan = () => {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [planToDelete, setPlanToDelete] = useState({ id: null, type: null });
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [requestToProcess, setRequestToProcess] = useState(null);
   const [newPlan, setNewPlan] = useState({
     name: '',
     sessions: '',
@@ -182,24 +184,55 @@ const CreatePlan = () => {
     alert(`✅ Plan ${planType === 'group' ? 'Group' : 'Personal'} updated!`);
   };
 
-  // Handle Request Approval
-  const handleApproveRequest = (requestId) => {
-    setBookingRequests(
-      bookingRequests.map(req =>
-        req.id === requestId ? { ...req, status: 'approved' } : req
-      )
-    );
-    alert("✅ Booking Approved! Member will be notified.");
+  // Open status change modal
+  const handleOpenStatusModal = (request) => {
+    setRequestToProcess(request);
+    setShowStatusModal(true);
   };
 
-  // Handle Request Rejection
-  const handleRejectRequest = (requestId) => {
+  // Process status change
+  const handleProcessStatus = (status) => {
+    if (!requestToProcess) return;
+    
     setBookingRequests(
       bookingRequests.map(req =>
-        req.id === requestId ? { ...req, status: 'rejected' } : req
+        req.id === requestToProcess.id ? { ...req, status } : req
       )
     );
-    alert("❌ Booking Rejected. Member will be notified.");
+    
+    const statusMessage = status === 'approved' ? 
+      "✅ Booking Approved! Member will be notified." : 
+      "❌ Booking Rejected. Member will be notified.";
+    
+    alert(statusMessage);
+    setShowStatusModal(false);
+    setRequestToProcess(null);
+  };
+
+  // Toggle status for approved/rejected requests
+  const handleToggleRequestStatus = (requestId) => {
+    const request = bookingRequests.find(req => req.id === requestId);
+    if (!request) return;
+    
+    // Only toggle between approved and rejected
+    if (request.status === 'pending') {
+      handleOpenStatusModal(request);
+      return;
+    }
+    
+    const newStatus = request.status === 'approved' ? 'rejected' : 'approved';
+    
+    setBookingRequests(
+      bookingRequests.map(req =>
+        req.id === requestId ? { ...req, status: newStatus } : req
+      )
+    );
+    
+    const statusMessage = newStatus === 'approved' ? 
+      "✅ Booking Approved! Member will be notified." : 
+      "❌ Booking Rejected. Member will be notified.";
+    
+    alert(statusMessage);
   };
 
   // Filter requests by status
@@ -208,9 +241,9 @@ const CreatePlan = () => {
   const rejectedRequests = bookingRequests.filter(r => r.status === 'rejected');
 
   return (
-    <div className=" bg-light  md-5">
-      <Container  className=" px-md-5">
-        <h1 className=" mb-md-5 fw-bold text-dark" style={{ fontSize: '2.2rem' }}>
+    <div className="bg-light min-vh-100">
+      <Container fluid className="px-3 px-md-5 py-4">
+        <h1 className="mb-4 mb-md-5 fw-bold text-dark" style={{ fontSize: 'clamp(1.5rem, 4vw, 2.2rem)' }}>
           Plan & Booking Management
         </h1>
 
@@ -220,7 +253,7 @@ const CreatePlan = () => {
             <Button
               variant={activeTab === 'group' ? 'primary' : 'outline-primary'}
               onClick={() => setActiveTab('group')}
-              className="px-4 py-2 fw-medium d-flex align-items-center gap-2"
+              className="px-3 px-md-4 py-2 fw-medium d-flex align-items-center gap-2"
               style={{
                 backgroundColor: activeTab === 'group' ? '#2f6a87' : 'transparent',
                 borderColor: '#2f6a87',
@@ -233,7 +266,7 @@ const CreatePlan = () => {
             <Button
               variant={activeTab === 'personal' ? 'primary' : 'outline-primary'}
               onClick={() => setActiveTab('personal')}
-              className="px-4 py-2 fw-medium d-flex align-items-center gap-2"
+              className="px-3 px-md-4 py-2 fw-medium d-flex align-items-center gap-2"
               style={{
                 backgroundColor: activeTab === 'personal' ? '#2f6a87' : 'transparent',
                 borderColor: '#2f6a87',
@@ -253,7 +286,7 @@ const CreatePlan = () => {
               }));
               setShowCreateModal(true);
             }}
-            className="px-4 py-2 d-flex align-items-center gap-2 fw-medium"
+            className="px-3 px-md-4 py-2 d-flex align-items-center gap-2 fw-medium"
             style={{
               borderColor: "#2f6a87",
               color: "#2f6a87",
@@ -275,24 +308,22 @@ const CreatePlan = () => {
               const icon = e.currentTarget.querySelector("i");
               if (icon) {
                 icon.style.transform = "rotate(0deg) scale(1)";
-                icon.style.color = "inherit"; // back to same as text
+                icon.style.color = "inherit";
               }
             }}
           >
             <i className="bi bi-plus me-2"></i>
             Create New Plan
           </Button>
-
         </div>
 
         <Tab.Container activeKey={activeTab} onSelect={(k) => setActiveTab(k)}>
           <Row>
             <Col md={12}>
               <Tab.Content>
-
                 {/* Group Plans Tab */}
                 <Tab.Pane eventKey="group">
-                  <Row className="g-4">
+                  <Row className="g-3 g-md-4">
                     {groupPlans.map((plan) => (
                       <Col xs={12} sm={6} lg={4} key={plan.id} className="d-flex">
                         <Card className="h-100 shadow-sm border-0 w-100" style={{ borderRadius: '12px', overflow: 'hidden', transition: 'transform 0.3s ease, box-shadow 0.3s ease' }}>
@@ -301,11 +332,11 @@ const CreatePlan = () => {
                             backgroundColor: plan.active ? '#2f6a87' : '#ccc',
                             width: '100%'
                           }}></div>
-                          <Card.Body className="d-flex flex-column p-4">
+                          <Card.Body className="d-flex flex-column p-3 p-md-4">
                             <div className="d-flex justify-content-between align-items-start mb-3">
                               <div>
                                 <div className="badge bg-primary mb-2 px-3 py-2" style={{ backgroundColor: '#2f6a87', color: 'white' }}>GROUP</div>
-                                <h5 className="fw-bold mb-0" style={{ color: '#2f6a87', fontSize: '1.2rem' }}>{plan.name}</h5>
+                                <h5 className="fw-bold mb-0" style={{ color: '#2f6a87', fontSize: 'clamp(1rem, 2.5vw, 1.2rem)' }}>{plan.name}</h5>
                               </div>
                               <div className="d-flex gap-2">
                                 <Button
@@ -419,7 +450,7 @@ const CreatePlan = () => {
 
                 {/* Personal Plans Tab */}
                 <Tab.Pane eventKey="personal">
-                  <Row className="g-4">
+                  <Row className="g-3 g-md-4">
                     {personalPlans.map((plan) => (
                       <Col xs={12} sm={6} lg={4} key={plan.id} className="d-flex">
                         <Card className="h-100 shadow-sm border-0 w-100" style={{ borderRadius: '12px', overflow: 'hidden', transition: 'transform 0.3s ease, box-shadow 0.3s ease' }}>
@@ -428,11 +459,11 @@ const CreatePlan = () => {
                             backgroundColor: plan.active ? '#2f6a87' : '#ccc',
                             width: '100%'
                           }}></div>
-                          <Card.Body className="d-flex flex-column p-4">
+                          <Card.Body className="d-flex flex-column p-3 p-md-4">
                             <div className="d-flex justify-content-between align-items-start mb-3">
                               <div>
                                 <div className="badge bg-primary mb-2 px-3 py-2" style={{ backgroundColor: '#2f6a87', color: 'white' }}>PERSONAL</div>
-                                <h5 className="fw-bold mb-0" style={{ color: '#2f6a87', fontSize: '1.2rem' }}>{plan.name}</h5>
+                                <h5 className="fw-bold mb-0" style={{ color: '#2f6a87', fontSize: 'clamp(1rem, 2.5vw, 1.2rem)' }}>{plan.name}</h5>
                               </div>
                               <div className="d-flex gap-2">
                                 <Button
@@ -550,13 +581,13 @@ const CreatePlan = () => {
 
         {/* Booking Requests Section */}
         <div className="mt-5 pt-4 border-top" style={{ borderColor: '#2f6a87' }}>
-          <h3 className="fw-bold mb-4 text-dark" style={{ fontSize: '1.4rem' }}>Member Booking Requests</h3>
+          <h3 className="fw-bold mb-4 text-dark" style={{ fontSize: 'clamp(1.2rem, 3vw, 1.4rem)' }}>Member Booking Requests</h3>
 
           {/* Summary Cards */}
           <Row className="mb-4 g-3">
-            <Col xs={12} sm={4}>
-              <Card className="text-center border-0 shadow-sm" style={{ backgroundColor: '#f8f9fa', borderRadius: '12px', transition: 'transform 0.3s ease' }}>
-                <Card.Body className="py-4">
+            <Col xs={12} sm={6} md={4}>
+              <Card className="text-center border-0 shadow-sm h-100" style={{ backgroundColor: '#f8f9fa', borderRadius: '12px', transition: 'transform 0.3s ease' }}>
+                <Card.Body className="py-3 py-md-4">
                   <div className="d-flex justify-content-center align-items-center mb-2" style={{ width: '60px', height: '60px', borderRadius: '50%', backgroundColor: '#fff3cd', margin: '0 auto' }}>
                     <span className="fw-bold" style={{ color: '#856404', fontSize: '1.5rem' }}>{pendingRequests.length}</span>
                   </div>
@@ -565,9 +596,9 @@ const CreatePlan = () => {
                 </Card.Body>
               </Card>
             </Col>
-            <Col xs={12} sm={4}>
-              <Card className="text-center border-0 shadow-sm" style={{ backgroundColor: '#f8f9fa', borderRadius: '12px', transition: 'transform 0.3s ease' }}>
-                <Card.Body className="py-4">
+            <Col xs={12} sm={6} md={4}>
+              <Card className="text-center border-0 shadow-sm h-100" style={{ backgroundColor: '#f8f9fa', borderRadius: '12px', transition: 'transform 0.3s ease' }}>
+                <Card.Body className="py-3 py-md-4">
                   <div className="d-flex justify-content-center align-items-center mb-2" style={{ width: '60px', height: '60px', borderRadius: '50%', backgroundColor: '#d1ecf1', margin: '0 auto' }}>
                     <span className="fw-bold" style={{ color: '#0c5460', fontSize: '1.5rem' }}>{approvedRequests.length}</span>
                   </div>
@@ -576,9 +607,9 @@ const CreatePlan = () => {
                 </Card.Body>
               </Card>
             </Col>
-            <Col xs={12} sm={4}>
-              <Card className="text-center border-0 shadow-sm" style={{ backgroundColor: '#f8f9fa', borderRadius: '12px', transition: 'transform 0.3s ease' }}>
-                <Card.Body className="py-4">
+            <Col xs={12} sm={6} md={4}>
+              <Card className="text-center border-0 shadow-sm h-100" style={{ backgroundColor: '#f8f9fa', borderRadius: '12px', transition: 'transform 0.3s ease' }}>
+                <Card.Body className="py-3 py-md-4">
                   <div className="d-flex justify-content-center align-items-center mb-2" style={{ width: '60px', height: '60px', borderRadius: '50%', backgroundColor: '#f8d7da', margin: '0 auto' }}>
                     <span className="fw-bold" style={{ color: '#721c24', fontSize: '1.5rem' }}>{rejectedRequests.length}</span>
                   </div>
@@ -612,11 +643,11 @@ const CreatePlan = () => {
                       <tr>
                         <th className="py-3">#</th>
                         <th className="py-3">Member</th>
-                        <th className="py-3">Plan</th>
-                        <th className="py-3">Type</th>
-                        <th className="py-3">Sessions</th>
-                        <th className="py-3">Validity</th>
-                        <th className="py-3">Requested At</th>
+                        <th className="py-3 d-none d-md-table-cell">Plan</th>
+                        <th className="py-3 d-none d-md-table-cell">Type</th>
+                        <th className="py-3 d-none d-lg-table-cell">Sessions</th>
+                        <th className="py-3 d-none d-lg-table-cell">Validity</th>
+                        <th className="py-3 d-none d-md-table-cell">Requested At</th>
                         <th className="py-3">Status</th>
                         <th className="py-3">Action</th>
                       </tr>
@@ -625,30 +656,52 @@ const CreatePlan = () => {
                       {bookingRequests.map((req, index) => (
                         <tr key={req.id} style={{ transition: 'background-color 0.2s ease' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = ''}>
                           <td className="py-3">{index + 1}</td>
-                          <td className="py-3"><strong>{req.memberName}</strong></td>
-                          <td className="py-3">{req.planName}</td>
                           <td className="py-3">
+                            <div>
+                              <strong>{req.memberName}</strong>
+                              <div className="d-md-none text-muted small">{req.planName}</div>
+                            </div>
+                          </td>
+                          <td className="py-3 d-none d-md-table-cell">{req.planName}</td>
+                          <td className="py-3 d-none d-md-table-cell">
                             {req.planType === 'Group' ? (
                               <span className="badge bg-primary px-3 py-2" style={{ backgroundColor: '#2f6a87', color: 'white', borderRadius: '20px' }}>Group</span>
                             ) : (
                               <span className="badge bg-primary px-3 py-2" style={{ backgroundColor: '#2f6a87', color: 'white', borderRadius: '20px' }}>Personal</span>
                             )}
                           </td>
-                          <td className="py-3">{req.sessions} total</td>
-                          <td className="py-3">{req.validity} days</td>
-                          <td className="py-3">{req.requestedAt}</td>
+                          <td className="py-3 d-none d-lg-table-cell">{req.sessions} total</td>
+                          <td className="py-3 d-none d-lg-table-cell">{req.validity} days</td>
+                          <td className="py-3 d-none d-md-table-cell">{req.requestedAt}</td>
                           <td className="py-3">
                             {req.status === 'pending' && <span className="badge bg-warning text-dark px-3 py-2" style={{ borderRadius: '20px' }}>Pending</span>}
                             {req.status === 'approved' && <span className="badge px-3 py-2" style={{ backgroundColor: '#2f6a87', color: 'white', borderRadius: '20px' }}>Approved</span>}
                             {req.status === 'rejected' && <span className="badge bg-danger px-3 py-2" style={{ borderRadius: '20px' }}>Rejected</span>}
                           </td>
                           <td className="py-3">
-                            {req.status === 'pending' && (
-                              <div className="d-flex gap-2 align-items-center flex-nowrap" style={{ minWidth: 'fit-content' }}>
+                            <div className="d-flex gap-2 align-items-center flex-nowrap" style={{ minWidth: 'fit-content' }}>
+                              {req.status === 'pending' ? (
                                 <Button
                                   size="sm"
                                   className="d-flex align-items-center gap-1 fw-medium"
-                                  onClick={() => handleApproveRequest(req.id)}
+                                  onClick={() => handleOpenStatusModal(req)}
+                                  style={{
+                                    backgroundColor: '#ffc107',
+                                    borderColor: '#ffc107',
+                                    color: '#212529',
+                                    transition: 'background-color 0.3s ease',
+                                    whiteSpace: 'nowrap'
+                                  }}
+                                  onMouseOver={(e) => e.target.style.backgroundColor = '#e0a800'}
+                                  onMouseOut={(e) => e.target.style.backgroundColor = '#ffc107'}
+                                >
+                                  <FaToggleOn size={14} /> Process
+                                </Button>
+                              ) : req.status === 'approved' ? (
+                                <Button
+                                  size="sm"
+                                  className="d-flex align-items-center gap-1 fw-medium"
+                                  onClick={() => handleToggleRequestStatus(req.id)}
                                   style={{
                                     backgroundColor: '#2f6a87',
                                     borderColor: '#2f6a87',
@@ -659,33 +712,27 @@ const CreatePlan = () => {
                                   onMouseOver={(e) => e.target.style.backgroundColor = '#25556e'}
                                   onMouseOut={(e) => e.target.style.backgroundColor = '#2f6a87'}
                                 >
-                                  ✅ Approve
+                                  <FaToggleOn size={14} /> Active
                                 </Button>
+                              ) : (
                                 <Button
                                   size="sm"
-                                  variant="outline-danger"
                                   className="d-flex align-items-center gap-1 fw-medium"
-                                  onClick={() => handleRejectRequest(req.id)}
+                                  onClick={() => handleToggleRequestStatus(req.id)}
                                   style={{
+                                    backgroundColor: '#6c757d',
+                                    borderColor: '#6c757d',
+                                    color: 'white',
                                     transition: 'background-color 0.3s ease',
-                                    borderColor: '#dc3545',
-                                    color: '#dc3545',
                                     whiteSpace: 'nowrap'
                                   }}
-                                  onMouseOver={(e) => {
-                                    e.target.style.backgroundColor = '#f8d7da';
-                                    e.target.style.color = '#721c24';
-                                  }}
-                                  onMouseOut={(e) => {
-                                    e.target.style.backgroundColor = 'transparent';
-                                    e.target.style.color = '#dc3545';
-                                  }}
+                                  onMouseOver={(e) => e.target.style.backgroundColor = '#5a6268'}
+                                  onMouseOut={(e) => e.target.style.backgroundColor = '#6c757d'}
                                 >
-                                  ❌ Reject
+                                  <FaToggleOff size={14} /> Inactive
                                 </Button>
-                              </div>
-                            )}
-                            {req.status !== 'pending' && <span className="text-muted">—</span>}
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -696,6 +743,66 @@ const CreatePlan = () => {
             </Card.Body>
           </Card>
         </div>
+
+        {/* Status Change Modal - Smaller and Responsive */}
+        <Modal 
+          show={showStatusModal} 
+          onHide={() => setShowStatusModal(false)} 
+          centered
+          size="sm"
+          contentClassName="p-0"
+          style={{ maxWidth: '90vw' }}
+        >
+          <Modal.Header className="py-2 px-3" style={{ backgroundColor: '#f8f9fa', borderBottom: '2px solid #2f6a87' }}>
+            <Modal.Title style={{ color: '#333', fontWeight: '600', fontSize: '1.1rem' }}>Process Request</Modal.Title>
+            <Button variant="link" className="p-0 m-0" onClick={() => setShowStatusModal(false)} style={{ color: '#6c757d' }}>
+              <span aria-hidden="true">&times;</span>
+            </Button>
+          </Modal.Header>
+          <Modal.Body className="py-3 px-3">
+            {requestToProcess && (
+              <div>
+                <p className="mb-2 fw-medium text-center">Process request from:</p>
+                <div className="text-center mb-3">
+                  <strong>{requestToProcess.memberName}</strong>
+                  <div className="text-muted small">{requestToProcess.planName}</div>
+                </div>
+                <div className="d-flex gap-2 justify-content-center">
+                  <Button
+                    variant="success"
+                    size="sm"
+                    className="px-3"
+                    onClick={() => handleProcessStatus('approved')}
+                    style={{
+                      backgroundColor: '#28a745',
+                      borderColor: '#28a745',
+                      transition: 'all 0.3s ease',
+                    }}
+                    onMouseOver={(e) => e.target.style.backgroundColor = '#218838'}
+                    onMouseOut={(e) => e.target.style.backgroundColor = '#28a745'}
+                  >
+                    Approve
+                  </Button>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    className="px-3"
+                    onClick={() => handleProcessStatus('rejected')}
+                    style={{
+                      backgroundColor: '#dc3545',
+                      borderColor: '#dc3545',
+                      transition: 'all 0.3s ease',
+                    }}
+                    onMouseOver={(e) => e.target.style.backgroundColor = '#c82333'}
+                    onMouseOut={(e) => e.target.style.backgroundColor = '#dc3545'}
+                  >
+                    Reject
+                  </Button>
+                </div>
+              </div>
+            )}
+          </Modal.Body>
+        </Modal>
 
         {/* Create Plan Modal */}
         <Modal show={showCreateModal} onHide={() => setShowCreateModal(false)} centered size="lg">
@@ -947,7 +1054,6 @@ const CreatePlan = () => {
             </Button>
           </Modal.Footer>
         </Modal>
-
 
         {/* Delete Confirmation Modal */}
         <Modal show={showDeleteModal} onHide={handleCancelDelete} centered>
