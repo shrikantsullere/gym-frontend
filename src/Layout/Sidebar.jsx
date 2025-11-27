@@ -4,12 +4,11 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faChartBar,
   faUsers,
-
   faCalendarAlt,
   faClipboardCheck,
   faDollarSign,
   faComments,
-  faChalkboardTeacher,  // ✅ नया आइकन: Group Classes के लिए
+  faChalkboardTeacher,
   faGear,
   faChevronDown,
   faUserTag,
@@ -27,16 +26,20 @@ import {
   faCaretRight,
   faEye,
   faBookAtlas,
-  faUserGroup
+  faUserGroup,
+  faQrcode,
+  faUserPlus,
+  faDumbbell,
+  faBell,
+  faUser  // Added this import
 } from "@fortawesome/free-solid-svg-icons";
 import "./Sidebar.css";
 import { icon } from "@fortawesome/fontawesome-svg-core";
 
-
 const Sidebar = ({ collapsed, setCollapsed }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [activeMenu, setActiveMenu] = useState(null); // ✅ Added: for dropdown toggle
+  const [activeMenu, setActiveMenu] = useState(null);
   const [userRole, setUserRole] = useState("admin");
 
   // Load user role from localStorage
@@ -58,8 +61,6 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
 
   // Define menus for each role
   const allMenus = {
-
-
     superadmin: [
       {
         name: "Dashboard",
@@ -68,33 +69,25 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
       },
       {
         name: "Admin",
-        icon: faUsers,
+        icon: faUserGear,
         path: "/superadmin/Owner",
       },
-      
       {
         name: "Plans & Pricing",
-        icon: faUsers,
+        icon: faMoneyBillAlt,
         path: "/superadmin/Plans&Pricing",
       },
       {
         name: "Payments",
-        icon: faUsers,
+        icon: faCalculator,
         key: "Payments",
         subItems: [
           { label: "Invoices", path: "superadmin/payments/invoices" },
           { label: "Razorpay Reports", path: "superadmin/payments/razorpayReports" },
-
         ],
       },
-
-
-
     ],
-
-
-
-
+    
     admin: [
       {
         name: "Dashboard",
@@ -103,86 +96,54 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
       },
       {
         name: "Branches",
-        icon: faGear,
+        icon: faAddressBook,
         path: "/admin/SuperAdminBranches",
       },
-            {
+      {
         name: "Members",
         icon: faUsers,
         path: "/admin/AdminMember",
       },
-
-
       {
         name: "Create Plan",
-        icon: faUsers,
+        icon: faFileAlt,
         path: "admin/createplan"
       },
-
-
       {
         name: "Classes Schedule",
-        icon: faUsers,
+        icon: faCalendarAlt,
         path: "/admin/classesSchedule",
       },
-       {
+      {
         name: "Session Bookings",
         icon: faCalendarAlt,
         path: "/admin/bookings",
       },
-
-
-      // {
-      //   name: "Members",
-      //   icon: faUsers,
-      //   key: "members",
-      //   subItems: [
-      //     { label: "Manage Members", path: "/admin/members/manage-members" },
-      //     { label: "QR Code Attendance", path: "/admin/members/qr-code-attendance" },
-      //     { label: "Walk-in Registration", path: "/admin/members/walk-in-registration" },
-      //   ],
-      // },
-
-
       {
         name: "Staff",
-        icon: faUsers,
+        icon: faUserGear,
         key: "Staff",
         subItems: [
           { label: "Manage Staff", path: "/admin/staff/manage-staff" },
           { label: "Roles & Permissions", path: "/admin/staff/roles-permissions" },
           { label: "Attendance", path: "/admin/staff/attendance" },
           { label: "Duty Roster", path: "/admin/staff/duty-roster" },
-
           { label: "Salary Calculator", path: "/admin/staff/salary-calculator" },
-
         ],
       },
-
-
-
       {
         name: "Personal Training Details",
-        icon: faFileAlt,
+        icon: faDumbbell,
         path: "/admin/booking/personal-training",
       },
-
-
-
-
       {
         name: "Payments",
         icon: faCalculator,
         key: "payment",
-
         subItems: [
           { label: "Membership Payment", path: "/admin/payments/membership" },
-
         ],
       },
-
-
-
       {
         name: "Reports",
         icon: faChartLine,
@@ -192,7 +153,6 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
           { label: "Attendance Report", path: "/admin/reports/AttendanceReport" },
         ],
       },
-
       {
         name: "Settings",
         icon: faGear,
@@ -202,49 +162,8 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
           { label: "Branch Management", path: "admin/settings/BranchManagement" },
         ],
       },
-
     ],
-
-
-    // manager: [
-    //   {
-    //     name: "Dashboard",
-    //     icon: faChartBar,
-    //     path: "/manager/dashboard",
-    //   },
-    //   {
-    //    name: "Member Management",
-    //    icon: faUsers,
-    //    path: "/manager/members",
-    //   },
-    //   {
-    //     name: "Membership Plan Assignment",
-    //     icon: faUserTag,
-    //     path: "/manager/membership-plan",
-    //   },
-    //   {
-    //     name: "Staff Management",
-    //     icon: faCalendarAlt,
-    //     path: "/manager/duty-roster",
-    //   },
-    //   {
-    //     name: "Class Scheduling",
-    //     icon: faCalendarDays,
-    //     path: "/manager/class-schedule",
-    //   },
-    //   {
-    //     name: "Sales & Revenue Reports",
-    //     icon: faDollarSign,
-    //     path: "/manager/reports",
-    //   },
-    //   {
-    //     name: "Communication",
-    //     icon: faComments,
-    //     path: "/manager/communication",
-    //   },
-    // ],
-
-
+    
     housekeeping: [
       {
         name: "Dashboard",
@@ -253,34 +172,31 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
       },
       {
         name: "QR Check-in",
-        icon: faGear,
+        icon: faQrcode,
         path: "/housekeeping/qrcheckin",
       },
       {
         name: "Duty Roster",
-        icon: faUsers,
+        icon: faCalendarAlt,
         path: "/housekeeping/members",
       },
       {
         name: "Attendance Marking",
-        icon: faUserTag,
+        icon: faClipboardCheck,
         path: "/housekeeping/membership-plan",
       },
       {
         name: "Task Checklist",
-        icon: faCalendarAlt,
+        icon: faClipboardCheck,
         path: "/housekeeping/duty-roster",
       },
       {
         name: "Notifications",
-        icon: faCalendarDays,
+        icon: faBell,
         path: "/housekeeping/class-schedule",
       },
-
     ],
-
-
-
+    
     generaltrainer: [
       {
         name: "Dashboard",
@@ -289,7 +205,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
       },
       {
         name: "Qr Check-in",
-        icon: faGear,
+        icon: faQrcode,
         path: "/generaltrainer/qrcheckin",
       },
       {
@@ -299,7 +215,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
       },
       {
         name: "Daily Schedule",
-        icon: faChartArea,
+        icon: faCalendarAlt,
         path: "/generaltrainer/DailyScedule",
       },
       {
@@ -307,31 +223,22 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
         icon: faClipboardCheck,
         path: "/generaltrainer/attendance",
       },
-      // {
-      //   name: "Member Interaction",
-      //   icon: faComments,
-      //   path: "/generaltrainer/MemberInteraction",
-      // },
       {
         name: "Reports Classes",
         icon: faFileAlt,
         path: "/generaltrainer/Reports",
       },
-
     ],
-
-
-
+    
     personaltrainer: [
       {
         name: "Dashboard",
         icon: faChartBar,
         path: "/personaltrainer/dashboard",
-
       },
       {
         name: "QR Check-in",
-        icon: faGear,
+        icon: faQrcode,
         path: "/personaltrainer/qrcheckin",
       },
       {
@@ -339,43 +246,8 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
         icon: faBookAtlas,
         path: "/personaltrainer/PersonalPlansBookings",
       },
-      // {
-      //   name: "Assigned Members",
-      //   icon: faUsers,
-      //   path: "/personaltrainer/members",
-      // },
-      // {
-      //   name: "Session Bookings",
-      //   icon: faCalendarAlt,
-      //   path: "/personaltrainer/bookings",
-      // },
-      // {
-      //   name: "Group Classes",
-      //   icon: faChalkboardTeacher,
-      //   path: "/personaltrainer/group-classes",
-      // },
-      // {
-      //   name: "Attendance",
-      //   icon: faClipboardCheck,
-      //   path: "/personaltrainer/attendance",
-      // },
-      // {
-      //   name: "Salary Overview",
-      //   icon: faDollarSign,
-      //   path: "/personaltrainer/salary",
-      // },
-      // {
-      //   name: "Messages",
-      //   icon: faComments,
-      //   path: "/personaltrainer/messages",
-      // },
     ],
-
-
-
-
-
-
+    
     receptionist: [
       {
         name: "Dashboard",
@@ -384,45 +256,34 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
       },
       {
         name: "QR Check-in",
-        icon: faGear,
+        icon: faQrcode,
         path: "/receptionist/qrcheckin",
       },
-
       {
-        name: " Walk-in Registration ",
-        icon: faFileAlt,
-        path: "/receptionist/walk-in-registration "
-
+        name: "Walk-in Registration",
+        icon: faUserPlus,
+        path: "/receptionist/walk-in-registration"
       },
-
       {
-        name: " New Sign-ups",
-        icon: faFileAlt,
+        name: "New Sign-ups",
+        icon: faUserPlus,
         path: "/receptionist/new-sign-ups"
-
       },
-
-
       {
-        name: " QR Attendance",
-        icon: faFileAlt,
+        name: "QR Attendance",
+        icon: faQrcode,
         path: "/receptionist/qr-attendance"
-
       },
-
       {
-        name: " Book Classes & Sessions ",
-        icon: faFileAlt,
+        name: "Book Classes & Sessions",
+        icon: faCalendarAlt,
         path: "/receptionist/book-classes-sessions"
-
       },
       {
-        name: " Payment ",
-        icon: faFileAlt,
+        name: "Payment",
+        icon: faMoneyBillAlt,
         path: "/receptionist/payemnet"
-
       },
-
     ],
     member: [
       {
@@ -430,48 +291,27 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
         icon: faChartBar,
         path: "/member/dashboard",
       },
-
-
-
-      // {
-      //   name: "Profile Management",
-      //   icon: faChartBar,
-      //   path: "/member/profile-managmnet",
-      // },
       {
         name: "QR Check-in",
-        icon: faGear,
+        icon: faQrcode,
         path: "/member/qrcheckin",
       },
       {
         name: "View Plan",
-        icon:  faEye,
+        icon: faEye,
         path: "/member/viewplan"
       },
       {
         name: "Class Schedule",
-        icon: faClapperboard,
+        icon: faCalendarAlt,
         path: "/member/classSchedule",
       },
-
-
-      // {
-      //   name: "Book Classes",
-      //   icon: faNetworkWired,
-      //   path: "/member/memberbooking",
-      // },
-
       {
         name: "My Account",
-        icon: faMoneyBillAlt,
+        icon: faUser,
         path: "/member/account",
       },
     ],
-
-
-
-
-
   };
 
   const userMenus = allMenus[userRole] || allMenus.admin;

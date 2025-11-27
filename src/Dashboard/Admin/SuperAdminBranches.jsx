@@ -5,9 +5,9 @@ const BUTTON_COLOR = "#6EB2CC";
 const DELETE_COLOR = "#dc3545";
 
 const sampleBranches = [
-  { id: 1, name: "Central Gym", address: "MG Road, Pune", phone: "+91 98765 43210", manager: "Amit", status: "Active" },
-  { id: 2, name: "Eastside Fitness", address: "Kharadi, Pune", phone: "+91 91234 56789", manager: "Neha", status: "Active" },
-  { id: 3, name: "North Gym", address: "Aundh, Pune", phone: "+91 99876 54321", manager: "Rohit", status: "Inactive" }
+  { id: 1, name: "Central Gym", address: "MG Road, Pune", phone: "+91 98765 43210", status: "Active" },
+  { id: 2, name: "Eastside Fitness", address: "Kharadi, Pune", phone: "+91 91234 56789", status: "Active" },
+  { id: 3, name: "North Gym", address: "Aundh, Pune", phone: "+91 99876 54321", status: "Inactive" }
 ];
 
 const BranchForm = ({ initial = {}, onSave, onCancel }) => {
@@ -15,7 +15,6 @@ const BranchForm = ({ initial = {}, onSave, onCancel }) => {
     name: initial.name || "",
     address: initial.address || "",
     phone: initial.phone || "",
-    manager: initial.manager || "",
     status: initial.status || "Active",
   });
 
@@ -24,7 +23,6 @@ const BranchForm = ({ initial = {}, onSave, onCancel }) => {
       name: initial.name || "",
       address: initial.address || "",
       phone: initial.phone || "",
-      manager: initial.manager || "",
       status: initial.status || "Active",
     });
   }, [initial]);
@@ -40,15 +38,9 @@ const BranchForm = ({ initial = {}, onSave, onCancel }) => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <div className="row">
-        <div className="col-md-6 mb-3">
-          <label className="form-label">Branch name</label>
-          <input name="name" value={form.name} onChange={handleChange} className="form-control" />
-        </div>
-        <div className="col-md-6 mb-3">
-          <label className="form-label">Manager</label>
-          <input name="manager" value={form.manager} onChange={handleChange} className="form-control" />
-        </div>
+      <div className="mb-3">
+        <label className="form-label">Branch name</label>
+        <input name="name" value={form.name} onChange={handleChange} className="form-control" />
       </div>
 
       <div className="mb-3">
@@ -56,22 +48,21 @@ const BranchForm = ({ initial = {}, onSave, onCancel }) => {
         <input name="address" value={form.address} onChange={handleChange} className="form-control" />
       </div>
 
-      <div className="row">
-        <div className="col-md-6 mb-3">
-          <label className="form-label">Phone</label>
-          <input name="phone" value={form.phone} onChange={handleChange} className="form-control" />
-        </div>
-        <div className="col-md-6 mb-3">
-          <label className="form-label">Status</label>
-          <select name="status" value={form.status} onChange={handleChange} className="form-select">
-            <option>Active</option>
-            <option>Inactive</option>
-          </select>
-        </div>
+      <div className="mb-3">
+        <label className="form-label">Phone</label>
+        <input name="phone" value={form.phone} onChange={handleChange} className="form-control" />
+      </div>
+
+      <div className="mb-3">
+        <label className="form-label">Status</label>
+        <select name="status" value={form.status} onChange={handleChange} className="form-select">
+          <option>Active</option>
+          <option>Inactive</option>
+        </select>
       </div>
 
       <div className="d-flex justify-content-end gap-2">
-        <button type="button" className="btn" onClick={onCancel} style={{ background: "#f0f0f0", color: "#333" }}>
+        <button type="button" className="btn btn-secondary" onClick={onCancel}>
           Cancel
         </button>
         <button type="submit" className="btn text-white" style={{ background: BUTTON_COLOR }}>
@@ -115,48 +106,50 @@ const SuperAdminBranches = () => {
     return (
       b.name.toLowerCase().includes(q) ||
       b.address.toLowerCase().includes(q) ||
-      (b.manager || "").toLowerCase().includes(q) ||
       (b.phone || "").toLowerCase().includes(q)
     );
   });
 
   return (
     <div className="container mt-4">
-
-      {/* TOP SECTION + BUTTON NEXT TO SEARCH */}
       {/* TOP SECTION */}
-<div className="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+      <div className="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div className="mb-2 mb-md-0">
+          <h4 className="mb-1">Branches</h4>
+          <small className="text-muted">Manage your gym branches</small>
+        </div>
 
-  <div>
-    <h4 className="mb-0">Branches</h4>
-    <small className="text-muted">Manage your gym branches</small>
-  </div>
+        {/* SEARCH + ADD BUTTON */}
+        <div className="d-flex align-items-center gap-3" style={{ minWidth: "450px" }}>
+          <div className="input-group flex-grow-1">
+            <input
+              className="form-control"
+              placeholder="Search branches..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </div>
+          <button
+            className="btn text-white d-inline-flex align-items-center gap-2 px-4 py-2 shadow-sm"
+            style={{ 
+              background: BUTTON_COLOR,
+              borderRadius: "6px",
+              border: "none",
+              transition: "all 0.2s ease-in-out",
+              fontWeight: "500",
+              minWidth: "140px",
+              whiteSpace: "nowrap"
+            }}
+            onClick={openAdd}
+          >
+            <FaPlus size={14} />
+            <span>Add Branch</span>
+          </button>
+        </div>
+      </div>
 
-  {/* SEARCH + ADD BUTTON SAME LINE */}
-  <div className="d-flex align-items-center gap-2" style={{ flexGrow: 1, maxWidth: 500 }}>
-
-    <input
-      className="form-control"
-      placeholder="Search branches..."
-      value={query}
-      onChange={(e) => setQuery(e.target.value)}
-      style={{ minWidth: 200 }}
-    />
-
-    <button
-      className="btn text-white d-flex align-items-center gap-2"
-      style={{ background: BUTTON_COLOR, whiteSpace: "nowrap" }}
-      onClick={openAdd}
-    >
-      <FaPlus />
-      <span className="d-none d-sm-inline">Add Branch</span>
-    </button>
-
-  </div>
-</div>
-
-      {/* RESPONSIVE TABLE → CARD */}
-      <div className="d-none d-md-block card shadow-sm">
+      {/* DESKTOP TABLE */}
+      <div className="card shadow-sm d-none d-md-block">
         <div className="card-body p-0">
           <table className="table table-hover mb-0">
             <thead className="table-light">
@@ -164,7 +157,6 @@ const SuperAdminBranches = () => {
                 <th>Name</th>
                 <th>Address</th>
                 <th>Phone</th>
-                <th>Manager</th>
                 <th>Status</th>
                 <th className="text-end">Actions</th>
               </tr>
@@ -175,23 +167,28 @@ const SuperAdminBranches = () => {
                   <td>{b.name}</td>
                   <td>{b.address}</td>
                   <td>{b.phone}</td>
-                  <td>{b.manager}</td>
                   <td>
                     <span className={`badge ${b.status === "Active" ? "bg-success" : "bg-secondary"}`}>
                       {b.status}
                     </span>
                   </td>
                   <td className="text-end">
-                    <div className="d-inline-flex gap-3">
-                      <FaEye style={{ cursor: "pointer", color: BUTTON_COLOR }} onClick={() => openView(b)} />
-                      <FaEdit style={{ cursor: "pointer", color: BUTTON_COLOR }} onClick={() => openEdit(b)} />
-                      <FaTrash style={{ cursor: "pointer", color: DELETE_COLOR }} onClick={() => handleDelete(b.id)} />
+                    <div className="btn-group" role="group">
+                      <button className="btn btn-sm btn-outline-secondary" onClick={() => openView(b)}>
+                        <FaEye />
+                      </button>
+                      <button className="btn btn-sm btn-outline-primary" onClick={() => openEdit(b)}>
+                        <FaEdit />
+                      </button>
+                      <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(b.id)}>
+                        <FaTrash />
+                      </button>
                     </div>
                   </td>
                 </tr>
               ))}
               {filtered.length === 0 && (
-                <tr><td colSpan={6} className="text-center py-4">No branches found</td></tr>
+                <tr><td colSpan={5} className="text-center py-4">No branches found</td></tr>
               )}
             </tbody>
           </table>
@@ -200,68 +197,62 @@ const SuperAdminBranches = () => {
 
       {/* MOBILE CARD VIEW */}
       <div className="d-md-none">
-        <div className="row g-3">
-          {filtered.map((b) => (
-            <div className="col-12" key={b.id}>
-              <div className="card shadow-sm p-3">
-                <h5>{b.name}</h5>
-                <p className="mb-1"><strong>Address:</strong> {b.address}</p>
-                <p className="mb-1"><strong>Phone:</strong> {b.phone}</p>
-                <p className="mb-1"><strong>Manager:</strong> {b.manager}</p>
-                <p><strong>Status:</strong> {b.status}</p>
-
-                <div className="d-flex gap-4 mt-2">
-                  <FaEye style={{ cursor: "pointer", color: BUTTON_COLOR }} onClick={() => openView(b)} />
-                  <FaEdit style={{ cursor: "pointer", color: BUTTON_COLOR }} onClick={() => openEdit(b)} />
-                  <FaTrash style={{ cursor: "pointer", color: DELETE_COLOR }} onClick={() => handleDelete(b.id)} />
-                </div>
+        {filtered.map((b) => (
+          <div className="card shadow-sm mb-3" key={b.id}>
+            <div className="card-body">
+              <div className="d-flex justify-content-between align-items-start mb-2">
+                <h5 className="card-title mb-0">{b.name}</h5>
+                <span className={`badge ${b.status === "Active" ? "bg-success" : "bg-secondary"}`}>
+                  {b.status}
+                </span>
+              </div>
+              <p className="card-text"><strong>Address:</strong> {b.address}</p>
+              <p className="card-text"><strong>Phone:</strong> {b.phone}</p>
+              <div className="d-flex justify-content-end gap-2 mt-3">
+                <button className="btn btn-sm btn-outline-secondary" onClick={() => openView(b)}>
+                  <FaEye />
+                </button>
+                <button className="btn btn-sm btn-outline-primary" onClick={() => openEdit(b)}>
+                  <FaEdit />
+                </button>
+                <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(b.id)}>
+                  <FaTrash />
+                </button>
               </div>
             </div>
-          ))}
+          </div>
+        ))}
 
-          {filtered.length === 0 && <p className="text-center mt-3">No branches found</p>}
-        </div>
+        {filtered.length === 0 && <p className="text-center mt-3">No branches found</p>}
       </div>
 
       {/* MODAL */}
       {isModalOpen && (
-        <div
-          className="d-flex justify-content-center align-items-start"
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 1050,
-            background: "rgba(0,0,0,0.2)",
-          }}
-        >
-          <div
-            className="bg-white rounded shadow mt-5"
-            style={{ width: "min(900px, 95%)", maxHeight: "90%", overflow: "auto" }}
-          >
-            <div className="p-3 border-bottom d-flex justify-content-between align-items-center">
-              <h5 className="mb-0">
-                {mode === "add" ? "Add Branch" : mode === "edit" ? "Edit Branch" : "Branch Details"}
-              </h5>
-              <button className="btn btn-sm" onClick={() => setIsModalOpen(false)}>Close</button>
-            </div>
-
-            <div className="p-3">
-              {mode === "view" ? (
-                <div>
-                  <h5>{selected?.name}</h5>
-                  <p><strong>Address:</strong> {selected?.address}</p>
-                  <p><strong>Phone:</strong> {selected?.phone}</p>
-                  <p><strong>Manager:</strong> {selected?.manager}</p>
-                  <p><strong>Status:</strong> {selected?.status}</p>
-                </div>
-              ) : (
-                <BranchForm initial={selected || {}} onSave={handleSave} onCancel={() => setIsModalOpen(false)} />
-              )}
+        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">
+                  {mode === "add" ? "Add Branch" : mode === "edit" ? "Edit Branch" : "Branch Details"}
+                </h5>
+                <button type="button" className="btn-close" onClick={() => setIsModalOpen(false)}></button>
+              </div>
+              <div className="modal-body">
+                {mode === "view" ? (
+                  <div>
+                    <h5>{selected?.name}</h5>
+                    <p><strong>Address:</strong> {selected?.address}</p>
+                    <p><strong>Phone:</strong> {selected?.phone}</p>
+                    <p><strong>Status:</strong> {selected?.status}</p>
+                  </div>
+                ) : (
+                  <BranchForm initial={selected || {}} onSave={handleSave} onCancel={() => setIsModalOpen(false)} />
+                )}
+              </div>
             </div>
           </div>
         </div>
       )}
-
     </div>
   );
 };

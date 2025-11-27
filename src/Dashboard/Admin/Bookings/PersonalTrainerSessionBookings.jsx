@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaCalendarAlt, FaList, FaCheck, FaTimes, FaEdit, FaTrash, FaSearch, FaFilter, FaClock, FaUser, FaChevronLeft, FaChevronRight, FaPlus } from 'react-icons/fa';
-import { format, addDays, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, parseISO } from 'date-fns';
+import { format, addDays, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, parseISO, isToday } from 'date-fns';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement, Filler } from 'chart.js';
 import { Line, Pie } from 'react-chartjs-2';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -106,6 +106,7 @@ const PersonalTrainerSessionBookings = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSession, setSelectedSession] = useState(null);
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [newDate, setNewDate] = useState('');
   const [newTime, setNewTime] = useState('');
   const [userRole, setUserRole] = useState('trainer'); // 'trainer' or 'member'
@@ -116,7 +117,11 @@ const PersonalTrainerSessionBookings = () => {
     duration: 60,
     type: 'Personal Training',
     notes: '',
-    location: 'Gym Floor'
+    location: 'Gym Floor',
+    trainerId: 1,
+    trainerName: "John Smith",
+    memberId: 1,
+    memberName: "New Member"
   });
 
   // Custom color for all blue elements
@@ -149,6 +154,11 @@ const PersonalTrainerSessionBookings = () => {
     }));
   };
 
+  // Check if a date is today
+  const isDateToday = (date) => {
+    return isToday(date);
+  };
+
   // Handle session actions
   const handleAcceptSession = (id) => {
     setSessions(sessions.map(session =>
@@ -166,6 +176,19 @@ const PersonalTrainerSessionBookings = () => {
     setSessions(sessions.map(session =>
       session.id === id ? { ...session, status: 'Cancelled' } : session
     ));
+  };
+
+  // Delete session function
+  const handleDeleteSession = (id) => {
+    setSessions(sessions.filter(session => session.id !== id));
+    setShowDeleteModal(false);
+    setSelectedSession(null);
+  };
+
+  // Open delete modal
+  const openDeleteModal = (session) => {
+    setSelectedSession(session);
+    setShowDeleteModal(true);
   };
 
   const handleRescheduleSession = () => {
@@ -193,18 +216,9 @@ const PersonalTrainerSessionBookings = () => {
     if (newSession.date && newSession.time) {
       const newId = Math.max(...sessions.map(s => s.id), 0) + 1;
       const sessionToAdd = {
+        ...newSession,
         id: newId,
-        trainerId: 1,
-        trainerName: "John Smith",
-        memberId: 1,
-        memberName: "New Member",
-        date: newSession.date,
-        time: newSession.time,
-        duration: newSession.duration,
-        status: "Upcoming",
-        type: newSession.type,
-        notes: newSession.notes,
-        location: newSession.location
+        status: "Upcoming"
       };
 
       setSessions([...sessions, sessionToAdd]);
@@ -215,7 +229,11 @@ const PersonalTrainerSessionBookings = () => {
         duration: 60,
         type: 'Personal Training',
         notes: '',
-        location: 'Gym Floor'
+        location: 'Gym Floor',
+        trainerId: 1,
+        trainerName: "John Smith",
+        memberId: 1,
+        memberName: "New Member"
       });
     }
   };
@@ -230,8 +248,16 @@ const PersonalTrainerSessionBookings = () => {
   };
 
   const goToToday = () => {
-    setCurrentDate(new Date());
-    setSelectedDate(new Date());
+    const today = new Date();
+    setCurrentDate(today);
+    setSelectedDate(today);
+    // Scroll to today's column in calendar view
+    setTimeout(() => {
+      const todayColumn = document.querySelector('.today-column');
+      if (todayColumn) {
+        todayColumn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }, 100);
   };
 
   // Render calendar view
@@ -256,7 +282,7 @@ const PersonalTrainerSessionBookings = () => {
             </button>
           </div>
           {userRole === 'trainer' && (
-            <button className="btn btn-sm" style={{ backgroundColor: customColor, borderColor: customColor, color: 'white' }} onClick={() => setShowAddSessionModal(true)}>
+            <button className="btn btn-sm text-white" style={{ backgroundColor: customColor, borderColor: customColor }} onClick={() => setShowAddSessionModal(true)}>
               <FaPlus className="me-1" /> Add Session
             </button>
           )}
@@ -268,7 +294,11 @@ const PersonalTrainerSessionBookings = () => {
                 <tr>
                   <th style={{ width: '100px' }}>Time</th>
                   {weekSessions.map((day, index) => (
-                    <th key={index} className={`text-center ${isSameDay(day.date, new Date()) ? '' : ''}`} style={isSameDay(day.date, new Date()) ? { backgroundColor: customColor, color: 'white' } : {}}>
+                    <th 
+                      key={index} 
+                      className={`text-center ${isDateToday(day.date) ? 'today-column' : ''}`} 
+                      style={isDateToday(day.date) ? { backgroundColor: customColor, color: 'white' } : {}}
+                    >
                       <div>{format(day.date, 'EEE')}</div>
                       <div>{format(day.date, 'MMM d')}</div>
                     </th>
@@ -280,7 +310,6 @@ const PersonalTrainerSessionBookings = () => {
                   '12:00 AM', '1:00 AM', '2:00 AM', '3:00 AM', '4:00 AM', '5:00 AM', '6:00 AM', '7:00 AM',
                   '8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '1:00 PM', '2:00 PM', '3:00 PM',
                   '4:00 PM', '5:00 PM', '6:00 PM', '7:00 PM', '8:00 PM', '9:00 PM', '10:00 PM', '11:00 PM'
-
                 ].map((time, timeIndex) => (
                   <tr key={timeIndex}>
                     <td className="text-center align-middle">{time}</td>
@@ -296,7 +325,10 @@ const PersonalTrainerSessionBookings = () => {
                                   ''
                                 }`}
                               style={session.status === 'Upcoming' ? { backgroundColor: customColor, color: 'white', cursor: 'pointer' } : { cursor: 'pointer' }}
-                              onClick={() => setSelectedSession(session)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedSession(session);
+                              }}
                             >
                               <div className="fw-bold">{session.memberName}</div>
                               <div>{session.type}</div>
@@ -345,7 +377,7 @@ const PersonalTrainerSessionBookings = () => {
           </div>
         </div>
         {userRole === 'trainer' && (
-          <button className=" col-12" style={{ backgroundColor: customColor, borderColor: customColor, color: 'white' }} onClick={() => setShowAddSessionModal(true)}>
+          <button className="btn text-white" style={{ backgroundColor: customColor, borderColor: customColor }} onClick={() => setShowAddSessionModal(true)}>
             <FaPlus className="me-1" /> Add Session
           </button>
         )}
@@ -367,7 +399,7 @@ const PersonalTrainerSessionBookings = () => {
             <tbody>
               {filteredSessions.length > 0 ? (
                 filteredSessions.map(session => (
-                  <tr key={session.id} className="clickable-row" onClick={() => setSelectedSession(session)}>
+                  <tr key={session.id} onClick={() => setSelectedSession(session)}>
                     <td>
                       <div>{format(parseISO(session.date), 'MMM d, yyyy')}</div>
                       <div className="text-muted small">{session.time}</div>
@@ -398,14 +430,20 @@ const PersonalTrainerSessionBookings = () => {
                             <button
                               className="btn btn-sm btn-outline-success"
                               title="Accept"
-                              onClick={() => handleAcceptSession(session.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleAcceptSession(session.id);
+                              }}
                             >
                               <FaCheck />
                             </button>
                             <button
                               className="btn btn-sm btn-outline-danger"
                               title="Reject"
-                              onClick={() => handleRejectSession(session.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRejectSession(session.id);
+                              }}
                             >
                               <FaTimes />
                             </button>
@@ -415,14 +453,20 @@ const PersonalTrainerSessionBookings = () => {
                           className="btn btn-sm"
                           style={{ borderColor: customColor, color: customColor }}
                           title="Reschedule"
-                          onClick={() => openRescheduleModal(session)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openRescheduleModal(session);
+                          }}
                         >
                           <FaEdit />
                         </button>
                         <button
                           className="btn btn-sm btn-outline-danger"
-                          title="Cancel"
-                          onClick={() => handleCancelSession(session.id)}
+                          title="Delete"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openDeleteModal(session);
+                          }}
                         >
                           <FaTrash />
                         </button>
@@ -449,7 +493,7 @@ const PersonalTrainerSessionBookings = () => {
     if (!selectedSession) return null;
 
     return (
-      <div className="card shadow-sm">
+      <div className="card shadow-sm mt-4">
         <div className="card-header bg-light d-flex justify-content-between align-items-center">
           <h5 className="mb-0">Session Details</h5>
           <button className="btn btn-sm btn-outline-secondary" onClick={() => setSelectedSession(null)}>
@@ -525,11 +569,11 @@ const PersonalTrainerSessionBookings = () => {
                 </button>
               </>
             )}
-            <button className="btn me-2" style={{ backgroundColor: customColor, borderColor: customColor, color: 'white' }} onClick={() => openRescheduleModal(selectedSession)}>
+            <button className="btn me-2 text-white" style={{ backgroundColor: customColor, borderColor: customColor }} onClick={() => openRescheduleModal(selectedSession)}>
               <FaEdit className="me-1" /> Reschedule
             </button>
-            <button className="btn btn-outline-danger" onClick={() => handleCancelSession(selectedSession.id)}>
-              <FaTrash className="me-1" /> Cancel
+            <button className="btn btn-outline-danger" onClick={() => openDeleteModal(selectedSession)}>
+              <FaTrash className="me-1" /> Delete
             </button>
           </div>
         </div>
@@ -590,8 +634,49 @@ const PersonalTrainerSessionBookings = () => {
                 <button type="button" className="btn btn-secondary" onClick={() => setShowRescheduleModal(false)}>
                   Cancel
                 </button>
-                <button type="button" className="btn" style={{ backgroundColor: customColor, borderColor: customColor, color: 'white' }} onClick={handleRescheduleSession}>
+                <button type="button" className="btn text-white" style={{ backgroundColor: customColor, borderColor: customColor }} onClick={handleRescheduleSession}>
                   Reschedule
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="modal-backdrop fade show"></div>
+      </>
+    );
+  };
+
+  // Render delete modal
+  const renderDeleteModal = () => {
+    if (!showDeleteModal) return null;
+
+    return (
+      <>
+        <div className="modal fade show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header" style={{ backgroundColor: customColor, color: 'white' }}>
+                <h5 className="modal-title">Delete Session</h5>
+                <button type="button" className="btn-close btn-close-white" onClick={() => setShowDeleteModal(false)}></button>
+              </div>
+              <div className="modal-body">
+                <p>Are you sure you want to delete this session?</p>
+                {selectedSession && (
+                  <div className="alert alert-light">
+                    <strong>Session Details:</strong><br />
+                    <strong>Date:</strong> {format(parseISO(selectedSession.date), 'MMMM d, yyyy')}<br />
+                    <strong>Time:</strong> {selectedSession.time}<br />
+                    <strong>Member:</strong> {selectedSession.memberName}<br />
+                    <strong>Type:</strong> {selectedSession.type}
+                  </div>
+                )}
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" onClick={() => setShowDeleteModal(false)}>
+                  Cancel
+                </button>
+                <button type="button" className="btn btn-danger" onClick={() => handleDeleteSession(selectedSession.id)}>
+                  Delete
                 </button>
               </div>
             </div>
@@ -655,7 +740,7 @@ const PersonalTrainerSessionBookings = () => {
                   />
                 </div>
                 <div className="mb-3">
-                  <label className="form-label">Classes</label>
+                  <label className="form-label">Class Type</label>
                   <select
                     className="form-select"
                     value={newSession.type}
@@ -669,12 +754,11 @@ const PersonalTrainerSessionBookings = () => {
                   </select>
                 </div>
 
-                {/* 👇 NEW: Trainer Dropdown Added Here */}
                 <div className="mb-3">
                   <label className="form-label">Trainer</label>
                   <select
                     className="form-select"
-                    value={newSession.trainerId || 1}
+                    value={newSession.trainerId}
                     onChange={(e) => {
                       const trainerId = parseInt(e.target.value);
                       const trainerMap = {
@@ -694,6 +778,33 @@ const PersonalTrainerSessionBookings = () => {
                     <option value="2">Lisa Ray</option>
                     <option value="3">Mark Lee</option>
                     <option value="4">Anna Kim</option>
+                  </select>
+                </div>
+
+                <div className="mb-3">
+                  <label className="form-label">Member</label>
+                  <select
+                    className="form-select"
+                    value={newSession.memberId}
+                    onChange={(e) => {
+                      const memberId = parseInt(e.target.value);
+                      const memberMap = {
+                        1: "Sarah Johnson",
+                        2: "Mike Thompson",
+                        3: "Emily Parker",
+                        4: "David Wilson"
+                      };
+                      setNewSession({
+                        ...newSession,
+                        memberId: memberId,
+                        memberName: memberMap[memberId]
+                      });
+                    }}
+                  >
+                    <option value="1">Sarah Johnson</option>
+                    <option value="2">Mike Thompson</option>
+                    <option value="3">Emily Parker</option>
+                    <option value="4">David Wilson</option>
                   </select>
                 </div>
 
@@ -724,7 +835,7 @@ const PersonalTrainerSessionBookings = () => {
                 <button type="button" className="btn btn-secondary" onClick={() => setShowAddSessionModal(false)}>
                   Cancel
                 </button>
-                <button type="button" className="btn mx-3 " style={{ backgroundColor: customColor, borderColor: customColor, color: 'white' }} onClick={handleAddSession}>
+                <button type="button" className="btn text-white" style={{ backgroundColor: customColor, borderColor: customColor }} onClick={handleAddSession}>
                   Add Session
                 </button>
               </div>
@@ -737,20 +848,20 @@ const PersonalTrainerSessionBookings = () => {
   };
 
   return (
-    <div className="SessionBookings container-fluid ">
+    <div className="SessionBookings container-fluid">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2 className="fw-bold">Session Bookings</h2>
         <div className="btn-group" role="group">
           <button
-            className={`btn ${view === 'calendar' ? '' : 'btn-outline'}`}
-            style={view === 'calendar' ? { backgroundColor: customColor, borderColor: customColor, color: 'white' } : { color: customColor, borderColor: customColor }}
+            className={`btn ${view === 'calendar' ? 'text-white' : 'btn-outline'}`}
+            style={view === 'calendar' ? { backgroundColor: customColor, borderColor: customColor } : { color: customColor, borderColor: customColor }}
             onClick={() => setView('calendar')}
           >
             <FaCalendarAlt className="me-1" /> Calendar
           </button>
           <button
-            className={`btn ${view === 'list' ? '' : 'btn-outline'}`}
-            style={view === 'list' ? { backgroundColor: customColor, borderColor: customColor, color: 'white' } : { color: customColor, borderColor: customColor }}
+            className={`btn ${view === 'list' ? 'text-white' : 'btn-outline'}`}
+            style={view === 'list' ? { backgroundColor: customColor, borderColor: customColor } : { color: customColor, borderColor: customColor }}
             onClick={() => setView('list')}
           >
             <FaList className="me-1" /> List
@@ -761,6 +872,7 @@ const PersonalTrainerSessionBookings = () => {
 
       {selectedSession && renderSessionDetails()}
       {renderRescheduleModal()}
+      {renderDeleteModal()}
       {renderAddSessionModal()}
     </div>
   );
