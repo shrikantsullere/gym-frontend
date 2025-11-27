@@ -34,8 +34,6 @@ const ClassesSchedule = () => {
 
   const [classes, setClasses] = useState([
     { id: 101, class_name: "Strength Training", trainer_name: "John Smith", date: "2023-06-20", time: "10:00 - 11:00", schedule_day: "Tuesday", total_sheets: 15, status: "Active" },
-     { id: 101, class_name: "Strength Training", trainer_name: "John Smith", date: "2023-06-20", time: "10:00 - 11:00", schedule_day: "Tuesday", total_sheets: 15, status: "Active" },
-      { id: 101, class_name: "Strength Training", trainer_name: "John Smith", date: "2023-06-20", time: "10:00 - 11:00", schedule_day: "Tuesday", total_sheets: 15, status: "Active" },
     { id: 102, class_name: "Cardio & HIIT", trainer_name: "Mike Williams", date: "2023-06-22", time: "14:00 - 15:00", schedule_day: "Thursday", total_sheets: 20, status: "Active" },
     { id: 103, class_name: "Yoga Basics", trainer_name: "Sarah Johnson", date: "2023-06-24", time: "09:00 - 10:00", schedule_day: "Saturday", total_sheets: 12, status: "Active" },
     { id: 104, class_name: "Advanced Pilates", trainer_name: "Robert Davis", date: "2023-06-26", time: "18:00 - 19:00", schedule_day: "Monday", total_sheets: 10, status: "Inactive" }
@@ -247,9 +245,11 @@ const ClassesSchedule = () => {
                   <td>{cls.total_sheets}</td>
                   <td>{getStatusBadge(cls.status)}</td>
                   <td className="text-center">
-                    <button className="btn btn-sm btn-outline-secondary me-1" onClick={()=>handleView(cls)}><FaEye size={14}/></button>
-                    <button className="btn btn-sm btn-outline-primary me-1" onClick={()=>handleEdit(cls)}><FaEdit size={14}/></button>
-                    <button className="btn btn-sm btn-outline-danger" onClick={()=>handleDeleteClick(cls)}><FaTrashAlt size={14}/></button>
+                    <div className="btn-group" role="group">
+                      <button className="btn btn-sm btn-outline-secondary" onClick={()=>handleView(cls)} title="View"><FaEye size={14}/></button>
+                      <button className="btn btn-sm btn-outline-primary" onClick={()=>handleEdit(cls)} title="Edit"><FaEdit size={14}/></button>
+                      <button className="btn btn-sm btn-outline-danger" onClick={()=>handleDeleteClick(cls)} title="Delete"><FaTrashAlt size={14}/></button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -315,27 +315,37 @@ const ClassesSchedule = () => {
                     </div>
                     <div className="col-md-6">
                       <label className="form-label">Schedule Days *</label>
-                      <div className="d-flex flex-wrap gap-2">
-                        <div className="form-check">
-                          <input 
-                            className="form-check-input" 
-                            type="checkbox" 
-                            checked={selectedDays.length===days.length} 
-                            onChange={handleSelectAll} 
-                            disabled={modalType==="view"}
-                          />
-                          <label className="form-check-label">All</label>
+                      <div className="schedule-days-container">
+                        <div className="d-flex flex-wrap gap-2 mb-2">
+                          <div className="form-check">
+                            <input 
+                              className="form-check-input" 
+                              type="checkbox" 
+                              checked={selectedDays.length===days.length} 
+                              onChange={handleSelectAll} 
+                              disabled={modalType==="view"}
+                              id="selectAllDays"
+                            />
+                            <label className="form-check-label" htmlFor="selectAllDays">All</label>
+                          </div>
                         </div>
-                        {days.map(day=><div className="form-check" key={day}>
-                          <input 
-                            className="form-check-input" 
-                            type="checkbox" 
-                            checked={selectedDays.includes(day)} 
-                            onChange={()=>handleDayChange(day)} 
-                            disabled={modalType==="view"}
-                          />
-                          <label className="form-check-label">{day}</label>
-                        </div>)}
+                        <div className="row g-2">
+                          {days.map(day=>(
+                            <div className="col-6 col-sm-4" key={day}>
+                              <div className="form-check">
+                                <input 
+                                  className="form-check-input" 
+                                  type="checkbox" 
+                                  checked={selectedDays.includes(day)} 
+                                  onChange={()=>handleDayChange(day)} 
+                                  disabled={modalType==="view"}
+                                  id={`day-${day}`}
+                                />
+                                <label className="form-check-label" htmlFor={`day-${day}`}>{day}</label>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
                     <div className="col-md-6">
@@ -384,13 +394,13 @@ const ClassesSchedule = () => {
                       </select>
                     </div>
                   </div>
-                  <div className="d-flex justify-content-end gap-2 mt-3">
+                  <div className="d-flex justify-content-end gap-2 mt-4">
                     <button type="button" className="btn btn-outline-secondary" onClick={closeModal}>Cancel</button>
                     {modalType!=="view" && 
                       <button 
                         type="button" 
                         style={{background:"#2F6A87",color:"#fff",borderRadius:"8px"}} 
-                        className="btn btn-primary" 
+                        className="btn" 
                         onClick={saveClass}
                       >
                         {modalType==="add"?"Add Class":"Update Class"}
@@ -422,6 +432,36 @@ const ClassesSchedule = () => {
           </div>
         </div>
       )}
+
+      <style jsx>{`
+        .schedule-days-container {
+          border: 1px solid #ced4da;
+          border-radius: 0.375rem;
+          padding: 0.75rem;
+          background-color: #fff;
+        }
+        
+        .form-check-input:checked {
+          background-color: #2F6A87;
+          border-color: #2F6A87;
+        }
+        
+        .btn-group .btn {
+          padding: 0.25rem 0.5rem;
+        }
+        
+        @media (max-width: 768px) {
+          .btn-group .btn {
+            padding: 0.2rem 0.4rem;
+            font-size: 0.8rem;
+          }
+          
+          .btn-group .btn svg {
+            width: 12px;
+            height: 12px;
+          }
+        }
+      `}</style>
     </div>
   );
 };
