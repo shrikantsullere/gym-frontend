@@ -11,6 +11,17 @@ const ClassesSchedule = () => {
   const [search, setSearch] = useState("");
   const [perPage, setPerPage] = useState(10);
   const [page, setPage] = useState(1);
+  
+  // Form state for controlled inputs
+  const [formData, setFormData] = useState({
+    id: "",
+    class_name: "",
+    trainer_name: "",
+    date: new Date().toISOString().split("T")[0],
+    time: "",
+    total_sheets: "",
+    status: "Active"
+  });
 
   const trainers = [
     { id: 1, name: "John Smith" },
@@ -23,8 +34,6 @@ const ClassesSchedule = () => {
 
   const [classes, setClasses] = useState([
     { id: 101, class_name: "Strength Training", trainer_name: "John Smith", date: "2023-06-20", time: "10:00 - 11:00", schedule_day: "Tuesday", total_sheets: 15, status: "Active" },
-     { id: 101, class_name: "Strength Training", trainer_name: "John Smith", date: "2023-06-20", time: "10:00 - 11:00", schedule_day: "Tuesday", total_sheets: 15, status: "Active" },
-      { id: 101, class_name: "Strength Training", trainer_name: "John Smith", date: "2023-06-20", time: "10:00 - 11:00", schedule_day: "Tuesday", total_sheets: 15, status: "Active" },
     { id: 102, class_name: "Cardio & HIIT", trainer_name: "Mike Williams", date: "2023-06-22", time: "14:00 - 15:00", schedule_day: "Thursday", total_sheets: 20, status: "Active" },
     { id: 103, class_name: "Yoga Basics", trainer_name: "Sarah Johnson", date: "2023-06-24", time: "09:00 - 10:00", schedule_day: "Saturday", total_sheets: 12, status: "Active" },
     { id: 104, class_name: "Advanced Pilates", trainer_name: "Robert Davis", date: "2023-06-26", time: "18:00 - 19:00", schedule_day: "Monday", total_sheets: 10, status: "Inactive" }
@@ -48,40 +57,140 @@ const ClassesSchedule = () => {
 
   useEffect(() => { setPage(1); }, [search, perPage]);
 
-  // Sync days when opening modal
+  // Sync days and form data when opening modal
   useEffect(() => {
     if (selectedClass?.schedule_day) {
-      setSelectedDays(
-        Array.isArray(selectedClass.schedule_day)
-          ? selectedClass.schedule_day
-          : selectedClass.schedule_day.split(",")
-      );
+      // Handle both string and array cases for schedule_day
+      const daysArray = Array.isArray(selectedClass.schedule_day)
+        ? selectedClass.schedule_day
+        : selectedClass.schedule_day.split(",");
+      
+      setSelectedDays(daysArray);
     } else {
+      setSelectedDays([]);
+    }
+    
+    // Update form data when selectedClass changes
+    if (selectedClass) {
+      setFormData({
+        id: selectedClass.id,
+        class_name: selectedClass.class_name,
+        trainer_name: selectedClass.trainer_name,
+        date: selectedClass.date,
+        time: selectedClass.time,
+        total_sheets: selectedClass.total_sheets,
+        status: selectedClass.status
+      });
+    } else if (modalType === "add") {
+      // Reset form for adding new class
+      setFormData({
+        id: getNextClassId(),
+        class_name: "",
+        trainer_name: trainers[0].name,
+        date: new Date().toISOString().split("T")[0],
+        time: "",
+        total_sheets: "",
+        status: "Active"
+      });
       setSelectedDays([]);
     }
   }, [selectedClass, modalType]);
 
-  // Checkbox handlers
-  const handleDayChange = (day) => {
-    setSelectedDays(prev =>
-      prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
-    );
+  // Form input handler
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
+
+  // Fixed checkbox handlers with proper state management
+  const handleDayChange = (day) => {
+    setSelectedDays(prev => {
+      // Create a new array to avoid mutation
+      const newSelectedDays = [...prev];
+      
+      if (newSelectedDays.includes(day)) {
+        // Remove the day if it's already selected
+        const index = newSelectedDays.indexOf(day);
+        newSelectedDays.splice(index, 1);
+      } else {
+        // Add the day if it's not selected
+        newSelectedDays.push(day);
+      }
+      
+      return newSelectedDays;
+    });
+  };
+
+  // Fixed handleSelectAll function with proper state management
   const handleSelectAll = () => {
-    setSelectedDays(selectedDays.length === days.length ? [] : days);
+    // Use a functional update to ensure we have the latest state
+    setSelectedDays(prev => {
+      // If all days are selected, deselect all
+      if (prev.length === days.length) {
+        return [];
+      } else {
+        // If not all days are selected, select all
+        return [...days];
+      }
+    });
   };
 
   // Actions
-  const handleAddNew = () => { setModalType("add"); setSelectedClass(null); setIsModalOpen(true); };
-  const handleView = (cls) => { setModalType("view"); setSelectedClass(cls); setIsModalOpen(true); };
-  const handleEdit = (cls) => { setModalType("edit"); setSelectedClass(cls); setIsModalOpen(true); };
-  const handleDeleteClick = (cls) => { setSelectedClass(cls); setIsDeleteModalOpen(true); };
+  const handleAddNew = () => { 
+    setModalType("add"); 
+    setSelectedClass(null); 
+    setIsModalOpen(true); 
+  };
+  const handleView = (cls) => { 
+    setModalType("view"); 
+    setSelectedClass(cls); 
+    setIsModalOpen(true); 
+  };
+  const handleEdit = (cls) => { 
+    setModalType("edit"); 
+    setSelectedClass(cls); 
+    setIsModalOpen(true); 
+  };
+  const handleDeleteClick = (cls) => { 
+    setSelectedClass(cls); 
+    setIsDeleteModalOpen(true); 
+  };
   const confirmDelete = () => {
     if (selectedClass) setClasses(prev => prev.filter(c => c.id !== selectedClass.id));
-    setIsDeleteModalOpen(false); setSelectedClass(null);
+    setIsDeleteModalOpen(false); 
+    setSelectedClass(null);
   };
-  const closeModal = () => { setIsModalOpen(false); setSelectedClass(null); };
-  const closeDeleteModal = () => { setIsDeleteModalOpen(false); setSelectedClass(null); };
+  const closeModal = () => { 
+    setIsModalOpen(false); 
+    setSelectedClass(null); 
+  };
+  const closeDeleteModal = () => { 
+    setIsDeleteModalOpen(false); 
+    setSelectedClass(null); 
+  };
+
+  // Save class (add or update)
+  const saveClass = () => {
+    if (modalType === "add") {
+      const newClass = {
+        ...formData,
+        schedule_day: selectedDays.join(",")
+      };
+      setClasses(prev => [...prev, newClass]);
+      alert("New class added successfully!");
+    } else if (modalType === "edit") {
+      setClasses(prev => prev.map(c => 
+        c.id === selectedClass.id 
+          ? { ...c, ...formData, schedule_day: selectedDays.join(",") }
+          : c
+      ));
+      alert("Class updated successfully!");
+    }
+    closeModal();
+  };
 
   // Helpers
   const getStatusBadge = (status) => (
@@ -136,9 +245,11 @@ const ClassesSchedule = () => {
                   <td>{cls.total_sheets}</td>
                   <td>{getStatusBadge(cls.status)}</td>
                   <td className="text-center">
-                    <button className="btn btn-sm btn-outline-secondary me-1" onClick={()=>handleView(cls)}><FaEye size={14}/></button>
-                    <button className="btn btn-sm btn-outline-primary me-1" onClick={()=>handleEdit(cls)}><FaEdit size={14}/></button>
-                    <button className="btn btn-sm btn-outline-danger" onClick={()=>handleDeleteClick(cls)}><FaTrashAlt size={14}/></button>
+                    <div className="btn-group" role="group">
+                      <button className="btn btn-sm btn-outline-secondary" onClick={()=>handleView(cls)} title="View"><FaEye size={14}/></button>
+                      <button className="btn btn-sm btn-outline-primary" onClick={()=>handleEdit(cls)} title="Edit"><FaEdit size={14}/></button>
+                      <button className="btn btn-sm btn-outline-danger" onClick={()=>handleDeleteClick(cls)} title="Delete"><FaTrashAlt size={14}/></button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -169,48 +280,139 @@ const ClassesSchedule = () => {
               <div className="modal-body">
                 <form>
                   <div className="row g-3">
-                    <div className="col-md-6"><label className="form-label">Class ID</label>
-                      <input className="form-control" defaultValue={selectedClass?.id||(modalType==="add"?getNextClassId():"")} readOnly/></div>
-                    <div className="col-md-6"><label className="form-label">Class Name *</label>
-                      <input className="form-control" defaultValue={selectedClass?.class_name||""} readOnly={modalType==="view"} required/></div>
-                    <div className="col-md-6"><label className="form-label">Trainer *</label>
-                      <select className="form-select" defaultValue={selectedClass?.trainer_name||trainers[0].name} disabled={modalType==="view"}>
-                        {trainers.map(t=><option key={t.id}>{t.name}</option>)}
-                      </select></div>
-                    <div className="col-md-6"><label className="form-label">Schedule Days *</label>
-                      <div className="d-flex flex-wrap gap-2">
-                        <div className="form-check">
-                          <input className="form-check-input" type="checkbox" checked={selectedDays.length===days.length} onChange={handleSelectAll} disabled={modalType==="view"}/>
-                          <label className="form-check-label">All</label>
+                    <div className="col-md-6">
+                      <label className="form-label">Class ID</label>
+                      <input 
+                        className="form-control" 
+                        name="id"
+                        value={formData.id} 
+                        onChange={handleInputChange}
+                        readOnly={modalType==="view" || modalType==="edit"}
+                      />
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label">Class Name *</label>
+                      <input 
+                        className="form-control" 
+                        name="class_name"
+                        value={formData.class_name} 
+                        onChange={handleInputChange}
+                        readOnly={modalType==="view"} 
+                        required
+                      />
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label">Trainer *</label>
+                      <select 
+                        className="form-select" 
+                        name="trainer_name"
+                        value={formData.trainer_name} 
+                        onChange={handleInputChange}
+                        disabled={modalType==="view"}
+                      >
+                        {trainers.map(t=><option key={t.id} value={t.name}>{t.name}</option>)}
+                      </select>
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label">Schedule Days *</label>
+                      <div className="schedule-days-container">
+                        <div className="d-flex flex-wrap gap-2 mb-2">
+                          <div className="form-check">
+                            <input 
+                              className="form-check-input" 
+                              type="checkbox" 
+                              checked={selectedDays.length===days.length} 
+                              onChange={handleSelectAll} 
+                              disabled={modalType==="view"}
+                              id="selectAllDays"
+                            />
+                            <label className="form-check-label" htmlFor="selectAllDays">All</label>
+                          </div>
                         </div>
-                        {days.map(day=><div className="form-check" key={day}>
-                          <input className="form-check-input" type="checkbox" checked={selectedDays.includes(day)} onChange={()=>handleDayChange(day)} disabled={modalType==="view"}/>
-                          <label className="form-check-label">{day}</label>
-                        </div>)}
-                      </div></div>
-                    <div className="col-md-6"><label className="form-label">Date *</label>
-                      <input type="date" className="form-control" defaultValue={selectedClass?.date||new Date().toISOString().split("T")[0]} readOnly={modalType==="view"}/></div>
-                    <div className="col-md-6"><label className="form-label">Time *</label>
-                      <input className="form-control" defaultValue={selectedClass?.time||""} readOnly={modalType==="view"}/></div>
-                    <div className="col-md-6"><label className="form-label">Total Sheets *</label>
-                      <input type="number" className="form-control" defaultValue={selectedClass?.total_sheets||""} readOnly={modalType==="view"}/></div>
-                    <div className="col-md-6"><label className="form-label">Status</label>
-                      <select className="form-select" defaultValue={selectedClass?.status||"Active"} disabled={modalType==="view"}>
-                        <option>Active</option><option>Inactive</option>
-                      </select></div>
+                        <div className="row g-2">
+                          {days.map(day=>(
+                            <div className="col-6 col-sm-4" key={day}>
+                              <div className="form-check">
+                                <input 
+                                  className="form-check-input" 
+                                  type="checkbox" 
+                                  checked={selectedDays.includes(day)} 
+                                  onChange={()=>handleDayChange(day)} 
+                                  disabled={modalType==="view"}
+                                  id={`day-${day}`}
+                                />
+                                <label className="form-check-label" htmlFor={`day-${day}`}>{day}</label>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label">Date *</label>
+                      <input 
+                        type="date" 
+                        className="form-control" 
+                        name="date"
+                        value={formData.date} 
+                        onChange={handleInputChange}
+                        readOnly={modalType==="view"}
+                      />
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label">Time *</label>
+                      <input 
+                        className="form-control" 
+                        name="time"
+                        value={formData.time} 
+                        onChange={handleInputChange}
+                        readOnly={modalType==="view"}
+                      />
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label">Total Sheets *</label>
+                      <input 
+                        type="number" 
+                        className="form-control" 
+                        name="total_sheets"
+                        value={formData.total_sheets} 
+                        onChange={handleInputChange}
+                        readOnly={modalType==="view"}
+                      />
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label">Status</label>
+                      <select 
+                        className="form-select" 
+                        name="status"
+                        value={formData.status} 
+                        onChange={handleInputChange}
+                        disabled={modalType==="view"}
+                      >
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                      </select>
+                    </div>
                   </div>
-                  <div className="d-flex justify-content-end gap-2 mt-3">
+                  <div className="d-flex justify-content-end gap-2 mt-4">
                     <button type="button" className="btn btn-outline-secondary" onClick={closeModal}>Cancel</button>
-                    {modalType!=="view" && <button type="button" style={{background:"#2F6A87",color:"#fff",borderRadius:"8px"}} className="btn btn-primary" onClick={()=>{
-                      alert(`${modalType==="add"?"New":"Updated"} class with days: ${selectedDays.join(",")}`);
-                      closeModal();
-                    }}>{modalType==="add"?"Add Class":"Update Class"}</button>}
+                    {modalType!=="view" && 
+                      <button 
+                        type="button" 
+                        style={{background:"#2F6A87",color:"#fff",borderRadius:"8px"}} 
+                        className="btn" 
+                        onClick={saveClass}
+                      >
+                        {modalType==="add"?"Add Class":"Update Class"}
+                      </button>
+                    }
                   </div>
                 </form>
               </div>
             </div>
           </div>
-        </div>)}
+        </div>
+      )}
 
       {/* Delete Modal */}
       {isDeleteModalOpen && (
@@ -228,7 +430,38 @@ const ClassesSchedule = () => {
               </div>
             </div>
           </div>
-        </div>)}
+        </div>
+      )}
+
+      <style jsx>{`
+        .schedule-days-container {
+          border: 1px solid #ced4da;
+          border-radius: 0.375rem;
+          padding: 0.75rem;
+          background-color: #fff;
+        }
+        
+        .form-check-input:checked {
+          background-color: #2F6A87;
+          border-color: #2F6A87;
+        }
+        
+        .btn-group .btn {
+          padding: 0.25rem 0.5rem;
+        }
+        
+        @media (max-width: 768px) {
+          .btn-group .btn {
+            padding: 0.2rem 0.4rem;
+            font-size: 0.8rem;
+          }
+          
+          .btn-group .btn svg {
+            width: 12px;
+            height: 12px;
+          }
+        }
+      `}</style>
     </div>
   );
 };

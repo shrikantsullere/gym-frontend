@@ -71,28 +71,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
         icon: faUsers,
         path: "/superadmin/Owner",
       },
-      // {
-      //   name: "Reports",
-      //   icon: faChartLine,
-      //   key: "reports",
-      //   subItems: [
-      //     { label: "Sales", path: "/superadmin/reports/sales" },
-      //     { label: "Attendance", path: "/superadmin/reports/attendance" },
-      //     { label: "Memberships", path: "/superadmin/reports/membership" }, // from Payments
-
-      //   ],
-      // },
-
-      // {
-      //   name: "People",
-      //   icon: faUsers,
-      //   key: "people",
-      //   subItems: [
-      //     { label: "Staff", path: "superadmin/people/staff" },
-      //     { label: "Members", path: "superadmin/people/members" },
-
-      //   ],
-      // },
+      
       {
         name: "Plans & Pricing",
         icon: faStarOfDavid,
@@ -133,12 +112,6 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
         path: "/admin/AdminMember",
       },
 
-
-      {
-        name: "Group  Classes",
-        icon: faUsers,
-        path: "admin/group",
-      },
 
       {
         name: "Create Plan",
