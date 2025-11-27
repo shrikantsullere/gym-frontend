@@ -95,18 +95,18 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
       // },
       {
         name: "Plans & Pricing",
-        icon: faUsers,
+        icon: faStarOfDavid,
         path: "/superadmin/Plans&Pricing",
       },
       {
         name: "Payments",
-        icon: faUsers,
-        key: "Payments",
-        subItems: [
-          { label: "Invoices", path: "superadmin/payments/invoices" },
-          { label: "Razorpay Reports", path: "superadmin/payments/razorpayReports" },
+        icon: faMoneyBillAlt,
+         path:"/superadmin/payments",
+        // subItems: [
+        //   { label: "Invoices", path: "superadmin/payments/invoices" },
+        //   { label: "Razorpay Reports", path: "superadmin/payments/razorpayReports" },
 
-        ],
+        // ],
       },
 
 

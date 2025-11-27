@@ -82,10 +82,13 @@ import RoleManagement from "./Dashboard/Admin/Settings/RoleManagement";
 import SuperAdminDashbaord from "./Dashboard/SuperAdmin/SuperAdminDashbaord";
 import SuperAdminOwner from "./Dashboard/SuperAdmin/SuperAdminOwner";
 import Plans from "./Dashboard/SuperAdmin/Plans";
+// import Payments from "./Dashboard/SuperAdmin/SuperAdminDashbaord";
 import Marketing from "./Dashboard/SuperAdmin/Marketing";
 import Staff from "./Dashboard/SuperAdmin/People/Staff";
 import Members from "./Dashboard/SuperAdmin/People/Members";
 import Invoices from "./Dashboard/SuperAdmin/Payments/Invoices";
+import Payments from "./Dashboard/SuperAdmin/Payments/Payments";
+
 import RazorpayReports from "./Dashboard/SuperAdmin/Payments/RazorpayReports";
 import SalesReports from "./Dashboard/SuperAdmin/Reports/SalesReports";
 import MembershipReports from "./Dashboard/SuperAdmin/Reports/Membershipreports";
@@ -179,8 +182,9 @@ function App() {
 
 
 
-                <Route path="superadmin/payments/invoices" element={<Invoices />} />
-                <Route path="superadmin/payments/RazorpayReports" element={<RazorpayReports />} />
+                {/* <Route path="superadmin/payments/invoices" element={<Invoices />} />
+                <Route path="superadmin/payments/RazorpayReports" element={<RazorpayReports />} /> */}
+                <Route path="superadmin/payments" element={<Payments />} />
 
 
 
