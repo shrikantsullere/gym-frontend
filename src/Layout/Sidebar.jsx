@@ -67,25 +67,25 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
         path: "/superadmin/dashboard",
       },
       {
-        name: "Admin",
+        name: "Owner",
         icon: faUsers,
         path: "/superadmin/Owner",
       },
       
       {
         name: "Plans & Pricing",
-        icon: faUsers,
+        icon: faStarOfDavid,
         path: "/superadmin/Plans&Pricing",
       },
       {
         name: "Payments",
-        icon: faUsers,
-        key: "Payments",
-        subItems: [
-          { label: "Invoices", path: "superadmin/payments/invoices" },
-          { label: "Razorpay Reports", path: "superadmin/payments/razorpayReports" },
+        icon: faMoneyBillAlt,
+         path:"/superadmin/payments",
+        // subItems: [
+        //   { label: "Invoices", path: "superadmin/payments/invoices" },
+        //   { label: "Razorpay Reports", path: "superadmin/payments/razorpayReports" },
 
-        ],
+        // ],
       },
 
 
@@ -101,11 +101,11 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
         icon: faChartBar,
         path: "admin/admin-dashboard",
       },
-           {
-        name: "QR Check-in",
-        icon: faGear,
-        path: "/admin/qrcheckin",
-      },
+      //      {
+      //   name: "QR Check-in",
+      //   icon: faGear,
+      //   path: "/admin/qrcheckin",
+      // },
       {
         name: "Branches",
         icon: faGear,
