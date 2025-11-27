@@ -363,16 +363,7 @@ const DutyRoster = () => {
         <div className="col-12 col-lg-4 text-lg-end mt-3 mt-lg-0">
           <button
             className="btn w-100 w-md-auto"
-            style={{
-              backgroundColor: '#6EB2CC',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              padding: '10px 20px',
-              fontSize: '1rem',
-              fontWeight: '500',
-              transition: 'all 0.2s ease',
-            }}
+          
             onClick={handleAddNew}
           >
             <FaPlus className="" /> New Shift

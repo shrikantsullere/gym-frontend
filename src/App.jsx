@@ -21,7 +21,7 @@ import Dashboard from "./Dashboard/Manager/Dashboard";
 
 
 import Campaigns from "./Dashboard/Admin/Marketing/Campaigns";
-import AdminQrCheckin from "./Dashboard/Admin/AdminQrCheckin";
+import SuperAdminBranches from "./Dashboard/Admin/SuperAdminBranches";
 import EmailsSms from "./Dashboard/Admin/Marketing/EmailsSms";
 import ManageMembers from "./Dashboard/Admin/Members/ManageMembers";
 import QrCodeAttendance from "./Dashboard/Admin/Members/QrCodeAttendance";
@@ -102,6 +102,9 @@ import CreatePlan from "./Dashboard/Admin/CreatePlan";
 import ViewPlan from "./Dashboard/Member/ViewPlan";
 import PersonalPlansBookings from "./Dashboard/PersonalTrainer/PersonalPlansBookings";
 import GroupPlansBookings from "./Dashboard/GeneralTrainer/GroupPlansBookings";
+
+// new import 
+import AdminMember from "./Dashboard/Admin/AdminMember";
 
 
 
@@ -222,9 +225,10 @@ function App() {
 
                 {/* admin dahsboard */}
                 <Route path="admin/admin-dashboard" element={<AdminDashbaord />} />
+                <Route path="admin/AdminMember" element={<AdminMember />} />
                 {/* booking */}
                 <Route path="/admin/booking/attendance" element={<AttendanceReport />} />
-                <Route path="/admin/qrcheckin" element={<AdminQrCheckin />} />
+                <Route path="/admin/SuperAdminBranches" element={<SuperAdminBranches />} />
                 <Route path="/admin/ClassesSchedule" element={<ClassesSchedule />} />
                 <Route path="/admin/bookings" element={<PersonalTrainerSessionBookings />} />
 
