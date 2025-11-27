@@ -125,7 +125,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
       {
         name: "Branches",
         icon: faGear,
-        path: "/admin/SuperAdminBranches",
+        path: "/admin/AdminBranches",
       },
             {
         name: "Members",
@@ -134,11 +134,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
       },
 
 
-      {
-        name: "Group  Classes",
-        icon: faUsers,
-        path: "admin/group",
-      },
+ 
 
       {
         name: "Create Plan",

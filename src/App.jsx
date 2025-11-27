@@ -224,7 +224,7 @@ function App() {
                 <Route path="admin/AdminMember" element={<AdminMember />} />
                 {/* booking */}
                 <Route path="/admin/booking/attendance" element={<AttendanceReport />} />
-                <Route path="/admin/SuperAdminBranches" element={<SuperAdminBranches />} />
+                <Route path="/admin/AdminBranches" element={<SuperAdminBranches />} />
                 <Route path="/admin/ClassesSchedule" element={<ClassesSchedule />} />
                 <Route path="/admin/bookings" element={<PersonalTrainerSessionBookings />} />
 
