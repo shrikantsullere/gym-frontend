@@ -69,21 +69,22 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
       },
       {
         name: "Admin",
-        icon: faUserGear,
+        icon: faUsers,
         path: "/superadmin/Owner",
       },
       {
         name: "Plans & Pricing",
-        icon: faMoneyBillAlt,
+        icon: faUsers,
         path: "/superadmin/Plans&Pricing",
       },
       {
         name: "Payments",
-        icon: faCalculator,
+        icon: faUsers,
         key: "Payments",
         subItems: [
           { label: "Invoices", path: "superadmin/payments/invoices" },
           { label: "Razorpay Reports", path: "superadmin/payments/razorpayReports" },
+
         ],
       },
     ],
@@ -94,9 +95,14 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
         icon: faChartBar,
         path: "admin/admin-dashboard",
       },
+      //      {
+      //   name: "QR Check-in",
+      //   icon: faGear,
+      //   path: "/admin/qrcheckin",
+      // },
       {
         name: "Branches",
-        icon: faAddressBook,
+        icon: faGear,
         path: "/admin/SuperAdminBranches",
       },
       {
@@ -104,6 +110,8 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
         icon: faUsers,
         path: "/admin/AdminMember",
       },
+
+
       {
         name: "Create Plan",
         icon: faFileAlt,
@@ -125,9 +133,10 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
         key: "Staff",
         subItems: [
           { label: "Manage Staff", path: "/admin/staff/manage-staff" },
-          { label: "Roles & Permissions", path: "/admin/staff/roles-permissions" },
+          // { label: "Roles & Permissions", path: "/admin/staff/roles-permissions" },
           { label: "Attendance", path: "/admin/staff/attendance" },
           { label: "Duty Roster", path: "/admin/staff/duty-roster" },
+
           { label: "Salary Calculator", path: "/admin/staff/salary-calculator" },
         ],
       },

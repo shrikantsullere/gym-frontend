@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaEye, FaEdit, FaTrashAlt, FaPlus, FaSearch, FaFilter, FaFileExport, FaExclamationTriangle } from 'react-icons/fa';
+import { FaPlus, FaTrashAlt, FaEdit, FaEye, FaSearch, FaFilter, FaFileExport, FaExclamationTriangle, FaCaretDown } from 'react-icons/fa';
 
 const StaffAttendance = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -7,15 +7,20 @@ const StaffAttendance = () => {
   const [modalType, setModalType] = useState('view');
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [roleFilter, setRoleFilter] = useState('All'); // New: Role Filter
+  const [roleFilter, setRoleFilter] = useState('All');
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
 
-  // 👇 Updated Sample Data with ROLE FIELD
+  // Custom color for all blue elements
+  const customColor = "#6EB2CC";
+
+  // Updated Sample Data with ROLE FIELD
   const [records, setRecords] = useState([
     {
       attendance_id: 1,
       staff_id: 101,
       staff_name: "Alex Johnson",
-      role: "Personal Trainer", // 👈 NEW!
+      role: "Personal Trainer",
       date: "2025-04-05",
       checkin_time: "2025-04-05T06:15:00",
       checkout_time: "2025-04-05T07:45:00",
@@ -29,7 +34,7 @@ const StaffAttendance = () => {
       attendance_id: 2,
       staff_id: 102,
       staff_name: "Braidy Con",
-      role: "Receptionist", // 👈 NEW!
+      role: "Receptionist",
       date: "2025-04-05",
       checkin_time: "2025-04-05T09:30:00",
       checkout_time: "2025-04-05T10:45:00",
@@ -43,7 +48,7 @@ const StaffAttendance = () => {
       attendance_id: 3,
       staff_id: 103,
       staff_name: "Sarah Kim",
-      role: "Housekeeping", // 👈 NEW!
+      role: "Housekeeping",
       date: "2025-04-05",
       checkin_time: null,
       checkout_time: null,
@@ -57,7 +62,7 @@ const StaffAttendance = () => {
       attendance_id: 4,
       staff_id: 104,
       staff_name: "Michael Brown",
-      role: "General Trainer", // 👈 NEW!
+      role: "General Trainer",
       date: "2025-04-04",
       checkin_time: "2025-04-04T05:55:00",
       checkout_time: "2025-04-04T07:30:00",
@@ -69,7 +74,7 @@ const StaffAttendance = () => {
     }
   ]);
 
-  // 👇 Updated Staff Members with Role
+  // Updated Staff Members with Role
   const staffMembers = [
     { id: 101, name: "Alex Johnson", role: "Personal Trainer" },
     { id: 102, name: "Braidy Con", role: "Receptionist" },
@@ -86,13 +91,15 @@ const StaffAttendance = () => {
 
   // Get unique roles for dropdown
   const allRoles = ['All', ...new Set(staffMembers.map(s => s.role))];
+  const allStatuses = ['All', 'Present', 'Late', 'Absent', 'Overtime'];
 
-  // Filter records based on search term AND role
+  // Filter records based on search term AND filters
   const filteredRecords = records.filter(record =>
     (record.staff_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
      record.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
      record.status.toLowerCase().includes(searchTerm.toLowerCase())) &&
-    (roleFilter === 'All' || record.role === roleFilter)
+    (roleFilter === 'All' || record.role === roleFilter) &&
+    (statusFilter === 'All' || record.status === statusFilter)
   );
 
   const handleAddNew = () => {
@@ -217,7 +224,7 @@ const StaffAttendance = () => {
         attendance_id: getNextId(),
         staff_id: staffId,
         staff_name: staffData.name,
-        role: staffData.role, // 👈 Added Role from staffMembers
+        role: staffData.role,
         date: formData.get('date') || new Date().toISOString().split('T')[0],
         checkin_time: formData.get('checkin_time') || null,
         checkout_time: formData.get('checkout_time') || null,
@@ -241,7 +248,7 @@ const StaffAttendance = () => {
         ...selectedRecord,
         staff_id: staffId,
         staff_name: staffData.name,
-        role: staffData.role, // 👈 Update Role from staffMembers
+        role: staffData.role,
         date: formData.get('date') || selectedRecord.date,
         checkin_time: formData.get('checkin_time') || selectedRecord.checkin_time,
         checkout_time: formData.get('checkout_time') || selectedRecord.checkout_time,
@@ -283,127 +290,240 @@ const StaffAttendance = () => {
     URL.revokeObjectURL(url);
   };
 
+  // Apply filters function
+  const applyFilters = () => {
+    // This function is called when the Apply Filters button is clicked
+    // The actual filtering is already handled by the filteredRecords variable
+    console.log('Filters applied:', { searchTerm, roleFilter, statusFilter });
+  };
+
+  // Clear all filters
+  const clearAllFilters = () => {
+    setSearchTerm('');
+    setRoleFilter('All');
+    setStatusFilter('All');
+  };
+
+  // Toggle filter dropdown
+  const toggleFilterDropdown = () => {
+    setFilterDropdownOpen(!filterDropdownOpen);
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (filterDropdownOpen && !event.target.closest('.filter-dropdown')) {
+        setFilterDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [filterDropdownOpen]);
+
   return (
-    <div className="container-fluid p-4">
-      {/* Header */}
-      <div className="row mb-4 align-items-center">
-        <div className="col-12 col-lg-8">
-          <h2 className="fw-bold">Staff Attendance Records</h2>
+    <div className="container-fluid p-3 p-md-4">
+      {/* Header Section */}
+      <div className="row mb-4 mb-md-5 align-items-center">
+        <div className="col-12 col-md-8 mb-3 mb-md-0">
+          <h2 className="fw-bold mb-2">Staff Attendance Records</h2>
           <p className="text-muted mb-0">Track staff attendance via QR scan or manual entry.</p>
         </div>
-        <div className="col-12 col-lg-4 d-flex flex-column flex-lg-row gap-2 justify-content-lg-end mt-3 mt-lg-0">
-          <button className="btn btn-outline-primary w-100 w-lg-auto" onClick={exportCSV}>
-            <FaFileExport className="me-1" /> Export
-          </button>
-          <button className="btn btn-primary w-100 w-lg-auto" onClick={handleAddNew}>
-            <FaPlus className="me-1" /> Add Record
-          </button>
-        </div>
-      </div>
-
-      {/* Search, Role Filter & Actions */}
-      <div className="row mb-4 g-3">
-        <div className="col-12 col-md-6 col-lg-4">
-          <div className="input-group">
-            <span className="input-group-text bg-light border">
-              <FaSearch className="text-muted" />
-            </span>
-            <input
-              type="text"
-              className="form-control border"
-              placeholder="Search by name, role, or status..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+        <div className="col-12 col-md-4 d-flex justify-content-md-end">
+          <div className="d-flex flex-column flex-md-row gap-2 w-100 w-md-auto">
+            <button 
+              className="btn flex-fill flex-md-grow-0" 
+              style={{ backgroundColor: 'transparent', border: '1px solid #dee2e6', color: '#6c757d' }}
+              onClick={exportCSV}
+            >
+              <FaFileExport className="me-1 me-md-2" /> 
+              <span className="d-none d-md-inline">Export</span>
+            </button>
+            <button 
+              className="btn flex-fill flex-md-grow-0" 
+              style={{ backgroundColor: customColor, borderColor: customColor, color: 'white' }}
+              onClick={handleAddNew}
+            >
+              <FaPlus className="me-1 me-md-2" /> 
+              <span className="d-none d-md-inline">Add Record</span>
+            </button>
           </div>
         </div>
+      </div>
 
-        <div className="col-12 col-md-6 col-lg-3">
-          <label className="form-label">Filter by Role</label>
-          <select
-            className="form-select rounded-3"
-            value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value)}
-          >
-            {allRoles.map(role => (
-              <option key={role} value={role}>{role}</option>
-            ))}
-          </select>
-        </div>
+      {/* Filters Section */}
+      <div className="card shadow-sm border-0 mb-4">
+        <div className="card-body p-3 p-md-4">
+          <div className="row g-3">
+            <div className="col-12 col-md-4">
+              <label className="form-label fw-semibold">Search</label>
+              <div className="input-group">
+                <span className="input-group-text bg-light border">
+                  <FaSearch className="text-muted" />
+                </span>
+                <input
+                  type="text"
+                  className="form-control border"
+                  placeholder="Search by name, role, or status..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+            </div>
 
-        <div className="col-12 col-md-6 col-lg-2">
-          <button className="btn btn-outline-secondary w-100">
-            <FaFilter className="me-1" /> Filter
-          </button>
+            <div className="col-12 col-md-3">
+              <label className="form-label fw-semibold">Filter by Role</label>
+              <select
+                className="form-select rounded-3"
+                value={roleFilter}
+                onChange={(e) => setRoleFilter(e.target.value)}
+              >
+                {allRoles.map(role => (
+                  <option key={role} value={role}>{role}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="col-12 col-md-3">
+              <label className="form-label fw-semibold">Filter by Status</label>
+              <select
+                className="form-select rounded-3"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                {allStatuses.map(status => (
+                  <option key={status} value={status}>{status}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="col-12 col-md-2 position-relative">
+              <label className="form-label fw-semibold d-none d-md-block">&nbsp;</label>
+              <div className="filter-dropdown">
+                <button 
+                  className="btn w-100 dropdown-toggle" 
+                  type="button" 
+                  onClick={toggleFilterDropdown}
+                  style={{ backgroundColor: 'transparent', border: '1px solid #dee2e6', color: '#6c757d' }}
+                >
+                  <FaFilter className="me-2" /> 
+                  <span>Filters</span>
+                  <FaCaretDown className="ms-1" />
+                </button>
+                <div className={`dropdown-menu ${filterDropdownOpen ? 'show' : ''}`}>
+                  <div className="dropdown-header">Apply Filters</div>
+                  <button 
+                    className="dropdown-item"
+                    onClick={() => {
+                      applyFilters();
+                      setFilterDropdownOpen(false);
+                    }}
+                  >
+                    Apply Current Filters
+                  </button>
+                  <div className="dropdown-divider"></div>
+                  <button 
+                    className="dropdown-item text-primary"
+                    onClick={() => {
+                      clearAllFilters();
+                      setFilterDropdownOpen(false);
+                    }}
+                  >
+                    Clear All Filters
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Table */}
+      {/* Table Section */}
       <div className="card shadow-sm border-0">
-        <div className="table-responsive">
-          <table className="table table-hover align-middle mb-0">
-            <thead className="bg-light">
-              <tr>
-                <th className="fw-semibold">DATE</th>
-                <th className="fw-semibold">STAFF NAME</th>
-                <th className="fw-semibold">ROLE</th> {/* 👈 NEW COLUMN */}
-                <th className="fw-semibold">CHECK-IN</th>
-                <th className="fw-semibold">CHECK-OUT</th>
-                <th className="fw-semibold">MODE</th>
-                <th className="fw-semibold">SHIFT</th>
-                <th className="fw-semibold">STATUS</th>
-                <th className="fw-semibold text-center">ACTIONS</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredRecords.map((record) => (
-                <tr key={record.attendance_id}>
-                  <td>{formatDate(record.date)}</td>
-                  <td><strong>{record.staff_name}</strong></td>
-                  <td>{getRoleBadge(record.role)}</td> {/* 👈 Role Badge */}
-                  <td>{formatTime(record.checkin_time)}</td>
-                  <td>{formatTime(record.checkout_time)}</td>
-                  <td>
-                    <span className={`badge rounded-pill ${
-                      record.mode === 'QR' ? 'bg-info text-white' : 'bg-secondary text-white'
-                    } px-2 py-1`}>
-                      {record.mode}
-                    </span>
-                  </td>
-                  <td>{record.shift_name}</td>
-                  <td>{getStatusBadge(record.status)}</td>
-                  <td className="text-center">
-                    <div className="d-flex justify-content-center flex-nowrap" style={{ gap: '4px' }}>
-                      <button
-                        className="btn btn-sm btn-outline-secondary action-btn"
-                        title="View"
-                        onClick={() => handleView(record)}
-                        style={{ width: '32px', height: '32px', padding: '0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                      >
-                        <FaEye size={14} />
-                      </button>
-                      <button
-                        className="btn btn-sm btn-outline-primary action-btn"
-                        title="Edit"
-                        onClick={() => handleEdit(record)}
-                        style={{ width: '32px', height: '32px', padding: '0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                      >
-                        <FaEdit size={14} />
-                      </button>
-                      <button
-                        className="btn btn-sm btn-outline-danger action-btn"
-                        title="Delete"
-                        onClick={() => handleDeleteClick(record)}
-                        style={{ width: '32px', height: '32px', padding: '0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                      >
-                        <FaTrashAlt size={14} />
-                      </button>
-                    </div>
-                  </td>
+        <div className="card-header bg-light py-3">
+          <h6 className="mb-0 fw-bold">Attendance Records ({filteredRecords.length})</h6>
+        </div>
+        <div className="card-body p-0">
+          <div className="table-responsive">
+            <table className="table table-hover align-middle mb-0">
+              <thead className="bg-light">
+                <tr>
+                  <th className="fw-semibold text-nowrap">DATE</th>
+                  <th className="fw-semibold text-nowrap">STAFF NAME</th>
+                  <th className="fw-semibold text-nowrap">ROLE</th>
+                  <th className="fw-semibold text-nowrap">CHECK-IN</th>
+                  <th className="fw-semibold text-nowrap">CHECK-OUT</th>
+                  <th className="fw-semibold text-nowrap">MODE</th>
+                  <th className="fw-semibold text-nowrap">SHIFT</th>
+                  <th className="fw-semibold text-nowrap">STATUS</th>
+                  <th className="fw-semibold text-center text-nowrap">ACTIONS</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filteredRecords.length > 0 ? (
+                  filteredRecords.map((record) => (
+                    <tr key={record.attendance_id}>
+                      <td className="text-nowrap">{formatDate(record.date)}</td>
+                      <td className="text-nowrap">
+                        <strong>{record.staff_name}</strong>
+                      </td>
+                      <td className="text-nowrap">{getRoleBadge(record.role)}</td>
+                      <td className="text-nowrap">{formatTime(record.checkin_time)}</td>
+                      <td className="text-nowrap">{formatTime(record.checkout_time)}</td>
+                      <td className="text-nowrap">
+                        <span className={`badge rounded-pill ${
+                          record.mode === 'QR' ? 'bg-info text-white' : 'bg-secondary text-white'
+                        } px-2 py-1`}>
+                          {record.mode}
+                        </span>
+                      </td>
+                      <td className="text-nowrap">{record.shift_name}</td>
+                      <td className="text-nowrap">{getStatusBadge(record.status)}</td>
+                      <td className="text-center text-nowrap">
+                        <div className="d-flex justify-content-center gap-1">
+                          <button
+                            className="btn btn-sm action-btn"
+                            title="View"
+                            onClick={() => handleView(record)}
+                            style={{ borderColor: customColor, color: customColor }}
+                          >
+                            <FaEye size={12} />
+                          </button>
+                          <button
+                            className="btn btn-sm action-btn"
+                            title="Edit"
+                            onClick={() => handleEdit(record)}
+                            style={{ borderColor: customColor, color: customColor }}
+                          >
+                            <FaEdit size={12} />
+                          </button>
+                          <button
+                            className="btn btn-sm btn-outline-danger action-btn"
+                            title="Delete"
+                            onClick={() => handleDeleteClick(record)}
+                          >
+                            <FaTrashAlt size={12} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="9" className="text-center py-4">
+                      <div className="text-muted">
+                        <FaSearch size={24} className="mb-2" />
+                        <p className="mb-0">No attendance records found matching your criteria.</p>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -421,20 +541,20 @@ const StaffAttendance = () => {
             key={selectedRecord ? selectedRecord.attendance_id : 'add'}
           >
             <div className="modal-content">
-              <div className="modal-header border-0 pb-0">
+              <div className="modal-header border-0 pb-0" style={{ backgroundColor: customColor, color: 'white' }}>
                 <h5 className="modal-title fw-bold">{getModalTitle()}</h5>
                 <button
                   type="button"
-                  className="btn-close"
+                  className="btn-close btn-close-white"
                   onClick={closeModal}
                 ></button>
               </div>
               <div className="modal-body p-4">
                 <form onSubmit={handleFormSubmit}>
-                  {/* Staff & Role (Auto-filled from selection) */}
+                  {/* Staff & Role */}
                   <div className="row mb-3 g-3">
                     <div className="col-12 col-md-6">
-                      <label className="form-label">Staff Member <span className="text-danger">*</span></label>
+                      <label className="form-label fw-semibold">Staff Member <span className="text-danger">*</span></label>
                       <select
                         name="staff_id"
                         className="form-select rounded-3"
@@ -451,9 +571,8 @@ const StaffAttendance = () => {
                       </select>
                     </div>
 
-                    {/* Display Selected Role (Read-only in View/Edit) */}
                     <div className="col-12 col-md-6">
-                      <label className="form-label">Assigned Role</label>
+                      <label className="form-label fw-semibold">Assigned Role</label>
                       <input
                         type="text"
                         className="form-control rounded-3"
@@ -467,7 +586,7 @@ const StaffAttendance = () => {
                   {/* Date & Shift */}
                   <div className="row mb-3 g-3">
                     <div className="col-12 col-md-6">
-                      <label className="form-label">Date <span className="text-danger">*</span></label>
+                      <label className="form-label fw-semibold">Date <span className="text-danger">*</span></label>
                       <input
                         name="date"
                         type="date"
@@ -478,7 +597,7 @@ const StaffAttendance = () => {
                       />
                     </div>
                     <div className="col-12 col-md-6">
-                      <label className="form-label">Shift</label>
+                      <label className="form-label fw-semibold">Shift</label>
                       <select
                         name="shift_id"
                         className="form-select rounded-3"
@@ -498,7 +617,7 @@ const StaffAttendance = () => {
                   {/* Check-in / Check-out */}
                   <div className="row mb-3 g-3">
                     <div className="col-12 col-md-6">
-                      <label className="form-label">Check-in Time</label>
+                      <label className="form-label fw-semibold">Check-in Time</label>
                       <input
                         name="checkin_time"
                         type="datetime-local"
@@ -508,7 +627,7 @@ const StaffAttendance = () => {
                       />
                     </div>
                     <div className="col-12 col-md-6">
-                      <label className="form-label">Check-out Time</label>
+                      <label className="form-label fw-semibold">Check-out Time</label>
                       <input
                         name="checkout_time"
                         type="datetime-local"
@@ -522,7 +641,7 @@ const StaffAttendance = () => {
                   {/* Mode & Status */}
                   <div className="row mb-3 g-3">
                     <div className="col-12 col-md-6">
-                      <label className="form-label">Mode <span className="text-danger">*</span></label>
+                      <label className="form-label fw-semibold">Mode <span className="text-danger">*</span></label>
                       <select
                         name="mode"
                         className="form-select rounded-3"
@@ -535,7 +654,7 @@ const StaffAttendance = () => {
                       </select>
                     </div>
                     <div className="col-12 col-md-6">
-                      <label className="form-label">Status <span className="text-danger">*</span></label>
+                      <label className="form-label fw-semibold">Status <span className="text-danger">*</span></label>
                       <select
                         name="status"
                         className="form-select rounded-3"
@@ -553,7 +672,7 @@ const StaffAttendance = () => {
 
                   {/* Notes */}
                   <div className="mb-4">
-                    <label className="form-label">Notes</label>
+                    <label className="form-label fw-semibold">Notes</label>
                     <textarea
                       name="notes"
                       className="form-control rounded-3"
@@ -568,21 +687,21 @@ const StaffAttendance = () => {
                   <div className="d-flex flex-column flex-sm-row justify-content-end gap-2 mt-4">
                     <button
                       type="button"
-                      className="btn btn-outline-secondary px-4 py-2 w-100 w-sm-auto"
+                      className="btn px-4 py-2"
                       onClick={closeModal}
+                      style={{ borderColor: customColor, color: customColor }}
                     >
                       Cancel
                     </button>
                     {modalType !== 'view' && (
                       <button
                         type="submit"
-                        className="btn w-100 w-sm-auto"
+                        className="btn px-4 py-2"
                         style={{
-                          backgroundColor: '#6EB2CC',
+                          backgroundColor: customColor,
                           color: 'white',
                           border: 'none',
                           borderRadius: '8px',
-                          padding: '10px 20px',
                           fontWeight: '500',
                         }}
                       >
@@ -610,11 +729,11 @@ const StaffAttendance = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="modal-content">
-              <div className="modal-header border-0 pb-0">
+              <div className="modal-header border-0 pb-0" style={{ backgroundColor: customColor, color: 'white' }}>
                 <h5 className="modal-title fw-bold">Confirm Deletion</h5>
                 <button
                   type="button"
-                  className="btn-close"
+                  className="btn-close btn-close-white"
                   onClick={closeDeleteModal}
                 ></button>
               </div>
@@ -624,21 +743,22 @@ const StaffAttendance = () => {
                 </div>
                 <h5>Are you sure?</h5>
                 <p className="text-muted">
-                  This will permanently delete the attendance record for <strong>{selectedRecord?.staff_name}</strong> ({selectedRecord?.role}) on <strong>{selectedRecord ? formatDate(selectedRecord.date) : ''}</strong>.<br />
+                  This will permanently delete attendance record for <strong>{selectedRecord?.staff_name}</strong> ({selectedRecord?.role}) on <strong>{selectedRecord ? formatDate(selectedRecord.date) : ''}</strong>.<br />
                   This action cannot be undone.
                 </p>
               </div>
               <div className="modal-footer border-0 justify-content-center pb-4">
                 <button
                   type="button"
-                  className="btn btn-outline-secondary px-4 w-100 w-sm-auto"
+                  className="btn px-4"
                   onClick={closeDeleteModal}
+                  style={{ borderColor: customColor, color: customColor }}
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
-                  className="btn btn-danger px-4 w-100 w-sm-auto"
+                  className="btn btn-danger px-4"
                   onClick={confirmDelete}
                 >
                   Delete
@@ -651,23 +771,24 @@ const StaffAttendance = () => {
       
       <style jsx global>{`
         .action-btn {
-          width: 36px;
-          height: 36px;
+          width: 32px;
+          height: 32px;
           padding: 0;
           display: flex;
           align-items: center;
           justify-content: center;
+          border-radius: 6px;
         }
         
         @media (max-width: 768px) {
           .action-btn {
-            width: 32px;
-            height: 32px;
+            width: 28px;
+            height: 28px;
           }
         }
         
-        .form-control, .form-select {
-          width: 100%;
+        .table-responsive {
+          border-radius: 0 0 0.375rem 0.375rem;
         }
         
         @media (max-width: 576px) {
@@ -678,13 +799,67 @@ const StaffAttendance = () => {
           .modal-content {
             border-radius: 0.5rem;
           }
+          .table {
+            font-size: 0.875rem;
+          }
+          .badge {
+            font-size: 0.75rem;
+          }
+        }
+        
+        @media (max-width: 768px) {
+          .container-fluid {
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+          }
+        }
+        
+        .card {
+          border: none;
+          box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
         }
         
         .table thead th {
-          font-size: 0.9rem;
+          border-bottom: 2px solid #dee2e6;
+          font-weight: 600;
+          font-size: 0.875rem;
         }
+        
         .table td {
-          font-size: 0.9rem;
+          vertical-align: middle;
+          font-size: 0.875rem;
+        }
+        
+        .form-control, .form-select {
+          border-radius: 0.5rem !important;
+        }
+        
+        .btn {
+          border-radius: 0.5rem;
+          font-weight: 500;
+        }
+        
+        .modal-header {
+          border-radius: 0.5rem 0.5rem 0 0;
+        }
+        
+        .modal-footer {
+          border-radius: 0 0 0.5rem 0.5rem;
+        }
+        
+        .filter-dropdown {
+          position: relative;
+        }
+        
+        .dropdown-menu {
+          min-width: 200px;
+          right: 0;
+          left: auto;
+        }
+        
+        .dropdown-item.active {
+          background-color: ${customColor} !important;
+          color: white !important;
         }
       `}</style>
     </div>

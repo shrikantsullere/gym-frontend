@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaEye, FaEdit, FaTrashAlt } from 'react-icons/fa';
 
-const SuperAdminBranches = () => {
+const AdminBranches = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [modalType, setModalType] = useState('add'); // 'add' | 'edit' | 'view'
@@ -58,26 +58,8 @@ const SuperAdminBranches = () => {
 
   // --- Sample data
   const companies = [
-    {
-      id: 1,
-      name: "Global Fitness Co.",
-      code: "GC01",
-      address: "100 Main Street, NY",
-      manager: { name: "Alex Martinez", role: "Company Manager", initials: "AM" },
-      status: "Active",
-      phone: "+1 555-123-4567",
-      email: "contact@globalfitness.com",
-    },
-    {
-      id: 2,
-      name: "FitLife Corp.",
-      code: "FL02",
-      address: "200 Park Ave, NY",
-      manager: { name: "Sarah Kim", role: "Senior Manager", initials: "SK" },
-      status: "Active",
-      phone: "+1 555-987-6543",
-      email: "info@fitlifecorp.com",
-    },
+    { id: 1, name: "Global Fitness Co.", code: "GC01", address: "100 Main Street, NY", status: "Active", phone: "+1 555-123-4567", email: "contact@globalfitness.com" },
+    { id: 2, name: "FitLife Corp.", code: "FL02", address: "200 Park Ave, NY", status: "Active", phone: "+1 555-987-6543", email: "info@fitlifecorp.com" },
   ];
 
   // --- UI helpers
@@ -131,7 +113,6 @@ const SuperAdminBranches = () => {
                 <th className="fw-semibold">COMPANY NAME</th>
                 <th className="fw-semibold">CODE</th>
                 <th className="fw-semibold">ADDRESS</th>
-                <th className="fw-semibold">MANAGER</th>
                 <th className="fw-semibold">STATUS</th>
                 <th className="fw-semibold text-center">ACTIONS</th>
               </tr>
@@ -142,15 +123,6 @@ const SuperAdminBranches = () => {
                   <td onClick={() => handleView(company)}><strong>{company.name}</strong></td>
                   <td onClick={() => handleView(company)}>{company.code}</td>
                   <td onClick={() => handleView(company)}><small className="text-muted d-block">{company.address}</small></td>
-                  <td onClick={() => handleView(company)}>
-                    <div className="d-flex align-items-center gap-2">
-                      <Avatar initials={company.manager.initials} />
-                      <div>
-                        <div><strong>{company.manager.name}</strong></div>
-                        <div><small className="text-muted">{company.manager.role}</small></div>
-                      </div>
-                    </div>
-                  </td>
                   <td onClick={() => handleView(company)}>{getStatusBadge(company.status)}</td>
                   <td className="text-center">
                     <div className="d-flex justify-content-center gap-1">
@@ -202,24 +174,9 @@ const SuperAdminBranches = () => {
   );
 };
 
-// Avatar
-const Avatar = ({ initials }) => {
-  const bg = getInitialColor(initials);
-  return (
-    <div
-      className="rounded-circle text-white d-flex align-items-center justify-content-center"
-      style={{ width: 32, height: 32, fontSize: '0.85rem', fontWeight: 'bold', backgroundColor: bg }}
-    >
-      {initials}
-    </div>
-  );
-};
-
-// Company Form
+// Company Form without Manager
 const CompanyForm = ({ mode, company, onCancel, onSubmit }) => {
-  // SuperAdmin: always editable
-  const isView = false; 
-
+  const isView = false;
   const initialActive = (company?.status || 'Inactive') === 'Active';
 
   const handleSubmit = (e) => {
@@ -230,7 +187,6 @@ const CompanyForm = ({ mode, company, onCancel, onSubmit }) => {
       name: payload.name,
       code: payload.code,
       address: payload.address,
-      manager: { name: payload.managerName || '', role: 'Company Manager', initials: (payload.managerName || 'NA').split(' ').map(s => s[0]).join('').slice(0,2).toUpperCase() },
       phone: payload.phone,
       email: payload.email,
       status: payload.statusToggle ? 'Active' : 'Inactive',
@@ -258,16 +214,12 @@ const CompanyForm = ({ mode, company, onCancel, onSubmit }) => {
           <input name="address" type="text" className="form-control rounded-3" defaultValue={company?.address || ''} readOnly={isView} />
         </div>
         <div className="col-12 col-md-6">
-          <label className="form-label">Manager <span className="text-danger">*</span></label>
-          <input name="managerName" type="text" className="form-control rounded-3" defaultValue={company?.manager?.name || ''} readOnly={isView} />
+          <label className="form-label">Phone Number</label>
+          <input name="phone" type="tel" className="form-control rounded-3" defaultValue={company?.phone || ''} readOnly={isView} />
         </div>
       </div>
 
       <div className="row mb-3 g-3">
-        <div className="col-12 col-md-6">
-          <label className="form-label">Phone Number</label>
-          <input name="phone" type="tel" className="form-control rounded-3" defaultValue={company?.phone || ''} readOnly={isView} />
-        </div>
         <div className="col-12 col-md-6">
           <label className="form-label">Email</label>
           <input name="email" type="email" className="form-control rounded-3" defaultValue={company?.email || ''} readOnly={isView} />
@@ -317,13 +269,6 @@ const DeleteModal = ({ name, onCancel, onConfirm }) => (
   </div>
 );
 
-// Avatar color helper
-const getInitialColor = (initials) => {
-  const colors = ['#6EB2CC', '#F4B400', '#E84A5F', '#4ECDC4', '#96CEB4', '#FFEAA7'];
-  const code = (initials && initials.charCodeAt && initials.charCodeAt(0)) || 65;
-  return colors[code % colors.length];
-};
-
 // Simple reusable modal wrapper
 const Modal = ({ title, content, onClose }) => (
   <div className="modal fade show" tabIndex="-1" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }} onClick={onClose}>
@@ -339,4 +284,4 @@ const Modal = ({ title, content, onClose }) => (
   </div>
 );
 
-export default SuperAdminBranches;
+export default AdminBranches;

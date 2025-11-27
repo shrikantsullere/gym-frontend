@@ -1,12 +1,20 @@
 import React, { useState, useRef } from 'react';
-import { FaEye, FaEdit, FaTrashAlt } from 'react-icons/fa';
+import { FaEye, FaEdit, FaTrashAlt, FaPlus, FaSearch, FaFilter, FaUser, FaCaretDown } from 'react-icons/fa';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const ManageStaff = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [modalType, setModalType] = useState('add'); // 'add', 'edit', 'view'
   const [selectedStaff, setSelectedStaff] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
+  const [roleFilter, setRoleFilter] = useState('All');
+  const [statusFilter, setStatusFilter] = useState('All');
   const fileInputRef = useRef(null);
+
+  // Custom color for all blue elements
+  const customColor = '#6EB2CC';
 
   // Sample branches for dropdown
   const branches = [
@@ -34,9 +42,7 @@ const ManageStaff = () => {
       join_date: "2020-01-15",
       exit_date: null,
       salary_type: "Fixed",
-      hourly_rate: null,
       fixed_salary: 60000,
-      commission_rate_percent: 0,
       login_enabled: true,
       username: "alex.m",
       password: "auto-generated"
@@ -56,10 +62,8 @@ const ManageStaff = () => {
       branch_id: 2,
       join_date: "2021-03-10",
       exit_date: null,
-      salary_type: "Hourly",
-      hourly_rate: 35,
-      fixed_salary: null,
-      commission_rate_percent: 15,
+      salary_type: "Fixed",
+      fixed_salary: 45000,
       login_enabled: true,
       username: "sarah.k",
       password: "auto-generated"
@@ -80,14 +84,22 @@ const ManageStaff = () => {
       join_date: "2019-08-01",
       exit_date: "2025-01-31",
       salary_type: "Fixed",
-      hourly_rate: null,
       fixed_salary: 35000,
-      commission_rate_percent: 0,
       login_enabled: false,
       username: "raj.p",
       password: "auto-generated"
     }
   ]);
+
+  // Filter staff based on search query and filters
+  const filteredStaff = staff.filter(member => 
+    (member.first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    member.last_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    member.role_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    member.email.toLowerCase().includes(searchQuery.toLowerCase())) &&
+    (roleFilter === 'All' || member.role_id === roleFilter) &&
+    (statusFilter === 'All' || member.status === statusFilter)
+  );
 
   const handleAddNew = () => {
     setModalType('add');
@@ -209,9 +221,43 @@ const ManageStaff = () => {
   };
 
   const getInitialColor = (initials) => {
-    const colors = ['#6EB2CC', '#F4B400', '#E84A5F', '#4ECDC4', '#96CEB4', '#FFEAA7'];
+    const colors = [customColor, '#F4B400', '#E84A5F', '#4ECDC4', '#96CEB4', '#FFEAA7'];
     const index = initials.charCodeAt(0) % colors.length;
     return colors[index];
+  };
+
+  const clearFilters = () => {
+    setRoleFilter('All');
+    setStatusFilter('All');
+  };
+
+  const exportData = () => {
+    // Create CSV content
+    const headers = ['ID', 'First Name', 'Last Name', 'Email', 'Phone', 'Role', 'Status'];
+    const csvContent = [
+      headers.join(','),
+      ...filteredStaff.map(member => [
+        member.staff_id,
+        member.first_name,
+        member.last_name,
+        member.email,
+        member.phone,
+        member.role_id,
+        member.status
+      ].join(','))
+    ].join('\n');
+
+    // Create a blob with the CSV content
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    
+    // Create a link element and trigger download
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `staff_data_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -226,7 +272,7 @@ const ManageStaff = () => {
           <button
             className="btn w-100 w-lg-auto"
             style={{
-              backgroundColor: '#6EB2CC',
+              backgroundColor: customColor,
               color: 'white',
               border: 'none',
               borderRadius: '8px',
@@ -237,7 +283,7 @@ const ManageStaff = () => {
             }}
             onClick={handleAddNew}
           >
-            <i className="fas fa-plus me-2"></i> Add Staff
+            <FaPlus className="me-2" /> Add Staff
           </button>
         </div>
       </div>
@@ -247,23 +293,129 @@ const ManageStaff = () => {
         <div className="col-12 col-md-6 col-lg-5">
           <div className="input-group">
             <span className="input-group-text bg-light border">
-              <i className="fas fa-search text-muted"></i>
+              <FaSearch style={{ color: customColor }} />
             </span>
             <input
               type="text"
               className="form-control border"
               placeholder="Search staff by name or role..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
         </div>
         <div className="col-6 col-md-3 col-lg-2">
-          <button className="btn btn-outline-secondary w-100">
-            <i className="fas fa-filter me-1"></i> <span className="">Filter</span>
-          </button>
+          <div className="dropdown">
+            <button 
+              className="btn btn-outline-secondary w-100 dropdown-toggle" 
+              type="button" 
+              id="filterDropdown" 
+              data-bs-toggle="dropdown" 
+              aria-expanded="false"
+              onClick={() => setFilterDropdownOpen(!filterDropdownOpen)}
+            >
+              <FaFilter className="me-1" /> <span className="">Filter</span>
+              <FaCaretDown className="ms-1" />
+            </button>
+            <ul className={`dropdown-menu ${filterDropdownOpen ? 'show' : ''}`} aria-labelledby="filterDropdown">
+              <li><h6 className="dropdown-header">Filter by Role</h6></li>
+              <li>
+                <button 
+                  className={`dropdown-item ${roleFilter === 'All' ? 'active' : ''}`}
+                  onClick={() => {
+                    setRoleFilter('All');
+                    setFilterDropdownOpen(false);
+                  }}
+                >
+                  All Roles
+                </button>
+              </li>
+              <li>
+                <button 
+                  className={`dropdown-item ${roleFilter === 'Manager' ? 'active' : ''}`}
+                  onClick={() => {
+                    setRoleFilter('Manager');
+                    setFilterDropdownOpen(false);
+                  }}
+                >
+                  Manager
+                </button>
+              </li>
+              <li>
+                <button 
+                  className={`dropdown-item ${roleFilter === 'Trainer' ? 'active' : ''}`}
+                  onClick={() => {
+                    setRoleFilter('Trainer');
+                    setFilterDropdownOpen(false);
+                  }}
+                >
+                  Trainer
+                </button>
+              </li>
+              <li>
+                <button 
+                  className={`dropdown-item ${roleFilter === 'Receptionist' ? 'active' : ''}`}
+                  onClick={() => {
+                    setRoleFilter('Receptionist');
+                    setFilterDropdownOpen(false);
+                  }}
+                >
+                  Receptionist
+                </button>
+              </li>
+              <li><hr className="dropdown-divider" /></li>
+              <li><h6 className="dropdown-header">Filter by Status</h6></li>
+              <li>
+                <button 
+                  className={`dropdown-item ${statusFilter === 'All' ? 'active' : ''}`}
+                  onClick={() => {
+                    setStatusFilter('All');
+                    setFilterDropdownOpen(false);
+                  }}
+                >
+                  All Status
+                </button>
+              </li>
+              <li>
+                <button 
+                  className={`dropdown-item ${statusFilter === 'Active' ? 'active' : ''}`}
+                  onClick={() => {
+                    setStatusFilter('Active');
+                    setFilterDropdownOpen(false);
+                  }}
+                >
+                  Active
+                </button>
+              </li>
+              <li>
+                <button 
+                  className={`dropdown-item ${statusFilter === 'Inactive' ? 'active' : ''}`}
+                  onClick={() => {
+                    setStatusFilter('Inactive');
+                    setFilterDropdownOpen(false);
+                  }}
+                >
+                  Inactive
+                </button>
+              </li>
+              <li><hr className="dropdown-divider" /></li>
+              <li>
+                <button 
+                  className="dropdown-item text-primary"
+                  onClick={() => {
+                    clearFilters();
+                    setFilterDropdownOpen(false);
+                  }}
+                >
+                  Clear All Filters
+                </button>
+              </li>
+            </ul>
+          </div>
         </div>
         <div className="col-6 col-md-3 col-lg-2">
-          <button className="btn btn-outline-secondary w-100">
-            <i className="fas fa-file-export me-1"></i> <span className="">Export</span>
+          <button className="btn btn-outline-secondary w-100" onClick={exportData}>
+            <FaUser className="me-1" /> <span className="">Export</span>
           </button>
         </div>
       </div>
@@ -277,7 +429,6 @@ const ManageStaff = () => {
                 <th className="fw-semibold">PHOTO</th>
                 <th className="fw-semibold">NAME</th>
                 <th className="fw-semibold">ROLE</th>
-      
                 <th className="fw-semibold">EMAIL</th>
                 <th className="fw-semibold">PHONE</th>
                 <th className="fw-semibold">STATUS</th>
@@ -285,7 +436,7 @@ const ManageStaff = () => {
               </tr>
             </thead>
             <tbody>
-              {staff.map((member) => (
+              {filteredStaff.map((member) => (
                 <tr key={member.id}>
                   <td>
                     {member.profile_photo ? (
@@ -320,7 +471,6 @@ const ManageStaff = () => {
                     <div><small className="text-muted">{member.staff_id}</small></div>
                   </td>
                   <td>{getRoleBadge(member.role_id)}</td>
-
                   <td>{member.email}</td>
                   <td>{member.phone}</td>
                   <td>{getStatusBadge(member.status)}</td>
@@ -335,10 +485,19 @@ const ManageStaff = () => {
                         <FaEye size={14} />
                       </button>
                       <button
-                        className="btn btn-sm btn-outline-primary action-btn"
+                        className="btn btn-sm"
+                        style={{ 
+                          width: '32px', 
+                          height: '32px', 
+                          padding: '0', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center',
+                          borderColor: customColor,
+                          color: customColor
+                        }}
                         title="Edit"
                         onClick={() => handleEdit(member)}
-                        style={{ width: '32px', height: '32px', padding: '0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                       >
                         <FaEdit size={14} />
                       </button>
@@ -372,11 +531,11 @@ const ManageStaff = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="modal-content">
-              <div className="modal-header border-0 pb-0">
+              <div className="modal-header border-0 pb-0" style={{ backgroundColor: customColor, color: 'white' }}>
                 <h5 className="modal-title fw-bold">{getModalTitle()}</h5>
                 <button
                   type="button"
-                  className="btn-close"
+                  className="btn-close btn-close-white"
                   onClick={closeModal}
                 ></button>
               </div>
@@ -495,14 +654,25 @@ const ManageStaff = () => {
                         disabled={modalType === 'view'}
                         required
                       >
-                       
-                        <option value="Manager">Personal Trainer</option>
-                        <option value="Receptionist">Receptionist</option>
+                        <option value="Manager">Manager</option>
                         <option value="Trainer">Trainer</option>
+                        <option value="Receptionist">Receptionist</option>
                         <option value="Housekeeping">Housekeeping</option>
                       </select>
                     </div>
-                   
+                    <div className="col-12 col-md-6">
+                      <label className="form-label">Branch <span className="text-danger">*</span></label>
+                      <select
+                        className="form-select rounded-3"
+                        defaultValue={selectedStaff?.branch_id || 1}
+                        disabled={modalType === 'view'}
+                        required
+                      >
+                        {branches.map(branch => (
+                          <option key={branch.id} value={branch.id}>{branch.name}</option>
+                        ))}
+                      </select>
+                    </div>
                     <div className="col-12 col-md-6">
                       <label className="form-label">Join Date <span className="text-danger">*</span></label>
                       <input
@@ -534,63 +704,19 @@ const ManageStaff = () => {
                         defaultValue={selectedStaff?.salary_type || 'Fixed'}
                         disabled={modalType === 'view'}
                         required
-                        id="salaryType"
-                        onChange={(e) => {
-                          if (modalType !== 'view') {
-                            const hourlyInput = document.getElementById('hourlyRate');
-                            const fixedInput = document.getElementById('fixedSalary');
-                            if (e.target.value === 'Hourly') {
-                              hourlyInput.removeAttribute('disabled');
-                              fixedInput.setAttribute('disabled', 'disabled');
-                            } else {
-                              hourlyInput.setAttribute('disabled', 'disabled');
-                              fixedInput.removeAttribute('disabled');
-                            }
-                          }
-                        }}
                       >
                         <option value="Fixed">Fixed Salary</option>
-                        <option value="Hourly">Hourly Rate</option>
                       </select>
-                    </div>
-                    <div className="col-12 col-md-6">
-                      <label className="form-label">Hourly Rate ($)</label>
-                      <input
-                        type="number"
-                        className="form-control rounded-3"
-                        id="hourlyRate"
-                        placeholder="e.g., 25.50"
-                        defaultValue={selectedStaff?.hourly_rate || ''}
-                        readOnly={modalType === 'view'}
-                        step="0.01"
-                        min="0"
-                        disabled={selectedStaff?.salary_type === 'Fixed' && modalType !== 'add'}
-                      />
                     </div>
                     <div className="col-12 col-md-6">
                       <label className="form-label">Fixed Salary ($)</label>
                       <input
                         type="number"
                         className="form-control rounded-3"
-                        id="fixedSalary"
                         placeholder="e.g., 50000"
                         defaultValue={selectedStaff?.fixed_salary || ''}
                         readOnly={modalType === 'view'}
                         min="0"
-                        disabled={selectedStaff?.salary_type === 'Hourly' && modalType !== 'add'}
-                      />
-                    </div>
-                    <div className="col-12 col-md-6">
-                      <label className="form-label">Commission Rate (%)</label>
-                      <input
-                        type="number"
-                        className="form-control rounded-3"
-                        placeholder="e.g., 10"
-                        defaultValue={selectedStaff?.commission_rate_percent || 0}
-                        readOnly={modalType === 'view'}
-                        min="0"
-                        max="100"
-                        step="0.1"
                       />
                     </div>
                   </div>
@@ -681,7 +807,7 @@ const ManageStaff = () => {
                         type="button"
                         className="btn w-100 w-sm-auto"
                         style={{
-                          backgroundColor: '#6EB2CC',
+                          backgroundColor: customColor,
                           color: 'white',
                           border: 'none',
                           borderRadius: '8px',
@@ -722,11 +848,11 @@ const ManageStaff = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="modal-content">
-              <div className="modal-header border-0 pb-0">
+              <div className="modal-header border-0 pb-0" style={{ backgroundColor: customColor, color: 'white' }}>
                 <h5 className="modal-title fw-bold">Confirm Deletion</h5>
                 <button
                   type="button"
-                  className="btn-close"
+                  className="btn-close btn-close-white"
                   onClick={closeDeleteModal}
                 ></button>
               </div>
@@ -791,6 +917,15 @@ const ManageStaff = () => {
           .modal-content {
             border-radius: 0.5rem;
           }
+        }
+        
+        .dropdown-menu {
+          min-width: 200px;
+        }
+        
+        .dropdown-item.active {
+          background-color: ${customColor} !important;
+          color: white !important;
         }
       `}</style>
     </div>
