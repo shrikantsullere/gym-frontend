@@ -193,7 +193,7 @@ const SalaryCalculator = () => {
             }}
             onClick={handleAddNew}
           >
-            <FaPlus size={14} className="me-2" /> Add Salary Record
+            <FaPlus size={14} className="me-2" /> Add Salary 
           </button>
         </div>
       </div>
@@ -309,8 +309,8 @@ const SalaryCalculator = () => {
             <div className="modal-content">
               <div className="modal-header border-0 pb-0">
                 <h5 className="modal-title fw-bold">
-                  {modalType === 'add' ? 'Add New Salary Record' :
-                   modalType === 'edit' ? 'Edit Salary Record' : 'View Salary Record'}
+                  {modalType === 'add' ? 'Add New Salary ' :
+                   modalType === 'edit' ? 'Edit Salary ' : 'View Salary '}
                 </h5>
                 <button type="button" className="btn-close" onClick={closeModal}></button>
               </div>

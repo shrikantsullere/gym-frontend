@@ -1,464 +1,513 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { FaEye, FaEdit, FaTrashAlt } from "react-icons/fa";
-import "bootstrap/dist/css/bootstrap.min.css";
+import React, { useState } from 'react';
+import { FaEye, FaEdit, FaTrashAlt, FaUserPlus, FaTimes } from 'react-icons/fa';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const ClassesSchedule = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [modalType, setModalType] = useState("add"); // 'add', 'edit', 'view'
+  const [modalType, setModalType] = useState('add'); // 'add', 'edit', 'view'
   const [selectedClass, setSelectedClass] = useState(null);
-  const [selectedDays, setSelectedDays] = useState([]);
-  const [search, setSearch] = useState("");
-  const [perPage, setPerPage] = useState(10);
-  const [page, setPage] = useState(1);
-  
-  // Form state for controlled inputs
-  const [formData, setFormData] = useState({
-    id: "",
-    class_name: "",
-    trainer_name: "",
-    date: new Date().toISOString().split("T")[0],
-    time: "",
-    total_sheets: "",
-    status: "Active"
-  });
+  const [memberSearch, setMemberSearch] = useState('');
 
-  const trainers = [
-    { id: 1, name: "John Smith" },
-    { id: 2, name: "Mike Williams" },
-    { id: 3, name: "Sarah Johnson" },
-    { id: 4, name: "Robert Davis" },
-  ];
-
-  const days = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
-
+  // क्लासेस का डेटा - हर क्लास में members ऐरे है जिससे काउंट आता है
   const [classes, setClasses] = useState([
-    { id: 101, class_name: "Strength Training", trainer_name: "John Smith", date: "2023-06-20", time: "10:00 - 11:00", schedule_day: "Tuesday", total_sheets: 15, status: "Active" },
-    { id: 102, class_name: "Cardio & HIIT", trainer_name: "Mike Williams", date: "2023-06-22", time: "14:00 - 15:00", schedule_day: "Thursday", total_sheets: 20, status: "Active" },
-    { id: 103, class_name: "Yoga Basics", trainer_name: "Sarah Johnson", date: "2023-06-24", time: "09:00 - 10:00", schedule_day: "Saturday", total_sheets: 12, status: "Active" },
-    { id: 104, class_name: "Advanced Pilates", trainer_name: "Robert Davis", date: "2023-06-26", time: "18:00 - 19:00", schedule_day: "Monday", total_sheets: 10, status: "Inactive" }
+    {
+      id: 101,
+      class_name: "Strength Training",
+      trainer_name: "John Smith",
+      date: "2023-06-20",
+      time: "10:00 - 11:00",
+      schedule_day: "Tuesday",
+      status: "Active",
+      members: ["Alice", "Bob"]  // यहाँ 2 मेंबर हैं - काउंट = 2
+    },
+    {
+      id: 102,
+      class_name: "Cardio & HIIT",
+      trainer_name: "Mike Williams",
+      date: "2023-06-22",
+      time: "14:00 - 15:00",
+      schedule_day: "Thursday",
+      status: "Active",
+      members: ["Charlie"]  // यहाँ 1 मेंबर है - काउंट = 1
+    }
   ]);
 
-  // Filter + Pagination
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return classes.filter(c =>
-      c.class_name.toLowerCase().includes(q) ||
-      c.trainer_name.toLowerCase().includes(q) ||
-      c.schedule_day.toLowerCase().includes(q)
-    );
-  }, [search, classes]);
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
-  const current = useMemo(() => {
-    const start = (page - 1) * perPage;
-    return filtered.slice(start, start + perPage);
-  }, [filtered, page, perPage]);
-
-  useEffect(() => { setPage(1); }, [search, perPage]);
-
-  // Sync days and form data when opening modal
-  useEffect(() => {
-    if (selectedClass?.schedule_day) {
-      // Handle both string and array cases for schedule_day
-      const daysArray = Array.isArray(selectedClass.schedule_day)
-        ? selectedClass.schedule_day
-        : selectedClass.schedule_day.split(",");
-      
-      setSelectedDays(daysArray);
-    } else {
-      setSelectedDays([]);
-    }
-    
-    // Update form data when selectedClass changes
-    if (selectedClass) {
-      setFormData({
-        id: selectedClass.id,
-        class_name: selectedClass.class_name,
-        trainer_name: selectedClass.trainer_name,
-        date: selectedClass.date,
-        time: selectedClass.time,
-        total_sheets: selectedClass.total_sheets,
-        status: selectedClass.status
-      });
-    } else if (modalType === "add") {
-      // Reset form for adding new class
-      setFormData({
-        id: getNextClassId(),
-        class_name: "",
-        trainer_name: trainers[0].name,
-        date: new Date().toISOString().split("T")[0],
-        time: "",
-        total_sheets: "",
-        status: "Active"
-      });
-      setSelectedDays([]);
-    }
-  }, [selectedClass, modalType]);
-
-  // Form input handler
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+  const handleAddNew = () => {
+    setModalType('add');
+    setSelectedClass({ members: [] });  // नई क्लास में 0 मेंबर
+    setMemberSearch('');
+    setIsModalOpen(true);
   };
 
-  // Fixed checkbox handlers with proper state management
-  const handleDayChange = (day) => {
-    setSelectedDays(prev => {
-      // Create a new array to avoid mutation
-      const newSelectedDays = [...prev];
-      
-      if (newSelectedDays.includes(day)) {
-        // Remove the day if it's already selected
-        const index = newSelectedDays.indexOf(day);
-        newSelectedDays.splice(index, 1);
-      } else {
-        // Add the day if it's not selected
-        newSelectedDays.push(day);
-      }
-      
-      return newSelectedDays;
-    });
+  const handleView = (gymClass) => {
+    setModalType('view');
+    setSelectedClass(gymClass);
+    setMemberSearch('');
+    setIsModalOpen(true);
   };
 
-  // Fixed handleSelectAll function with proper state management
-  const handleSelectAll = () => {
-    // Use a functional update to ensure we have the latest state
-    setSelectedDays(prev => {
-      // If all days are selected, deselect all
-      if (prev.length === days.length) {
-        return [];
-      } else {
-        // If not all days are selected, select all
-        return [...days];
-      }
-    });
+  const handleEdit = (gymClass) => {
+    setModalType('edit');
+    setSelectedClass({ ...gymClass });
+    setMemberSearch('');
+    setIsModalOpen(true);
   };
 
-  // Actions
-  const handleAddNew = () => { 
-    setModalType("add"); 
-    setSelectedClass(null); 
-    setIsModalOpen(true); 
+  const handleDeleteClick = (gymClass) => {
+    setSelectedClass(gymClass);
+    setIsDeleteModalOpen(true);
   };
-  const handleView = (cls) => { 
-    setModalType("view"); 
-    setSelectedClass(cls); 
-    setIsModalOpen(true); 
-  };
-  const handleEdit = (cls) => { 
-    setModalType("edit"); 
-    setSelectedClass(cls); 
-    setIsModalOpen(true); 
-  };
-  const handleDeleteClick = (cls) => { 
-    setSelectedClass(cls); 
-    setIsDeleteModalOpen(true); 
-  };
+
   const confirmDelete = () => {
-    if (selectedClass) setClasses(prev => prev.filter(c => c.id !== selectedClass.id));
-    setIsDeleteModalOpen(false); 
+    if (selectedClass) {
+      setClasses(prev => prev.filter(c => c.id !== selectedClass.id));
+      alert(`Class "${selectedClass.class_name}" has been deleted.`);
+    }
+    setIsDeleteModalOpen(false);
     setSelectedClass(null);
   };
-  const closeModal = () => { 
-    setIsModalOpen(false); 
-    setSelectedClass(null); 
-  };
-  const closeDeleteModal = () => { 
-    setIsDeleteModalOpen(false); 
-    setSelectedClass(null); 
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedClass(null);
+    setMemberSearch('');
   };
 
-  // Save class (add or update)
+  const closeDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+    setSelectedClass(null);
+  };
+
+  const getStatusBadge = (status) => {
+    const badgeClasses = {
+      Active: "bg-success-subtle text-success-emphasis",
+      Inactive: "bg-danger-subtle text-danger-emphasis"
+    };
+    return (
+      <span className={`badge rounded-pill ${badgeClasses[status] || 'bg-secondary'} px-3 py-1`}>
+        {status}
+      </span>
+    );
+  };
+
+  const getNextClassId = () => {
+    const maxId = classes.length > 0 ? Math.max(...classes.map(c => parseInt(c.id))) : 0;
+    return `CLASS${String(maxId + 1).padStart(3, '0')}`;
+  };
+
+  // मेंबर ऐड करने का फंक्शन - members ऐरे में नाम ऐड होता है
+  const addMember = () => {
+    if (!memberSearch.trim()) return;
+    
+    // चेक करें कि मेंबर पहले से है या नहीं
+    if (selectedClass?.members?.includes(memberSearch.trim())) {
+      alert(`"${memberSearch}" is already in this class.`);
+      return;
+    }
+    
+    // members ऐरे में नया मेंबर ऐड करें
+    setSelectedClass({
+      ...selectedClass,
+      members: [...(selectedClass.members || []), memberSearch.trim()]
+    });
+    setMemberSearch('');
+  };
+
+  // मेंबर रिमूव करने का फंक्शन - members ऐरे से नाम हटाता है
+  const removeMember = (member) => {
+    if (!selectedClass) return;
+    setSelectedClass({
+      ...selectedClass,
+      members: selectedClass.members.filter(m => m !== member)
+    });
+  };
+
   const saveClass = () => {
-    if (modalType === "add") {
-      const newClass = {
-        ...formData,
-        schedule_day: selectedDays.join(",")
+    if (!selectedClass.class_name || !selectedClass.trainer_name) {
+      alert("Please fill class name and trainer.");
+      return;
+    }
+
+    if (modalType === 'add') {
+      const newClass = { 
+        ...selectedClass, 
+        id: getNextClassId(),
+        date: selectedClass.date || new Date().toISOString().split('T')[0],
+        schedule_day: selectedClass.schedule_day || new Date().toLocaleDateString('en-US', { weekday: 'long' }),
+        time: selectedClass.time || "10:00 - 11:00",
+        status: selectedClass.status || "Active",
+        members: selectedClass.members || []  // मेंबर्स सेव हो रहे हैं
       };
       setClasses(prev => [...prev, newClass]);
-      alert("New class added successfully!");
-    } else if (modalType === "edit") {
-      setClasses(prev => prev.map(c => 
-        c.id === selectedClass.id 
-          ? { ...c, ...formData, schedule_day: selectedDays.join(",") }
-          : c
-      ));
-      alert("Class updated successfully!");
+      alert('New class added successfully!');
+    } else if (modalType === 'edit') {
+      setClasses(prev => prev.map(c => c.id === selectedClass.id ? selectedClass : c));
+      alert('Class updated successfully!');
     }
     closeModal();
   };
 
-  // Helpers
-  const getStatusBadge = (status) => (
-    <span className={`badge rounded-pill ${status === "Active" ? "bg-success-subtle text-success-emphasis" : "bg-danger-subtle text-danger-emphasis"} px-3 py-1`}>
-      {status}
-    </span>
-  );
-  const getModalTitle = () => modalType === "add" ? "Add New Class" : modalType === "edit" ? "Edit Class" : "View Class Details";
-  const formatDate = (d) => d ? new Date(d).toLocaleDateString("en-US",{year:"numeric",month:"short",day:"numeric"}) : "—";
-  const getNextClassId = () => `CLASS${String(Math.max(0,...classes.map(c=>+c.id))+1).padStart(3,"0")}`;
-
   return (
     <div className="container-fluid py-4">
       {/* Header */}
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h4 className="fw-bold">All Class Scheduled</h4>
-        <button className="btn" style={{background:"#2F6A87",color:"#fff",borderRadius:"8px"}} onClick={handleAddNew}>
-          <i className="fas fa-plus me-2"></i>Add Class
-        </button>
-      </div>
-
-      {/* Toolbar */}
-      <div className="d-flex flex-wrap justify-content-between mb-2">
-        <div className="d-flex align-items-center gap-2">
-          <span>Show</span>
-          <select className="form-select form-select-sm" style={{width:80}} value={perPage} onChange={e=>setPerPage(+e.target.value)}>
-            {[5,10,20,50].map(n=><option key={n} value={n}>{n}</option>)}
-          </select>
-          <span>Entries</span>
+      <div className="row mb-4 align-items-center">
+        <div className="col-12 col-lg-8">
+          <h2 className="fw-bold">All Class Scheduled</h2>
+          <p className="text-muted mb-0">Manage all gym classes, trainers, and member assignments.</p>
         </div>
-        <div className="input-group" style={{maxWidth:280}}>
-          <span className="input-group-text bg-white border"><i className="bi bi-search text-muted"/></span>
-          <input className="form-control" placeholder="Search..." value={search} onChange={e=>setSearch(e.target.value)}/>
+        <div className="col-12 col-lg-4 text-lg-end mt-3 mt-lg-0">
+          <button
+            className="btn w-100 w-lg-auto"
+            style={{ 
+              backgroundColor: '#6EB2CC', 
+              color: 'white', 
+              borderRadius: '8px', 
+              padding: '10px 20px',
+              fontWeight: '500',
+              transition: 'all 0.2s ease',
+            }}
+            onClick={handleAddNew}
+          >
+            <FaUserPlus className="me-2" /> Add Class
+          </button>
         </div>
       </div>
 
       {/* Table */}
-      <div className="card shadow-sm border-0 mt-4">
+      <div className="card shadow-sm border-0">
         <div className="table-responsive">
           <table className="table table-hover align-middle mb-0">
-            <thead className="bg-light"><tr>
-              <th>Class Name</th><th>Trainer</th><th>Date</th><th>Time</th><th>Day</th><th>Sheets</th><th>Status</th><th className="text-center">Actions</th>
-            </tr></thead>
+            <thead className="bg-light">
+              <tr>
+                <th className="fw-semibold">CLASS NAME</th>
+                <th className="fw-semibold">TRAINER</th>
+                <th className="fw-semibold">DATE</th>
+                <th className="fw-semibold">TIME</th>
+                <th className="fw-semibold">DAY</th>
+                <th className="fw-semibold">STATUS</th>
+                <th className="fw-semibold">MEMBERS</th>
+                <th className="fw-semibold text-center">ACTIONS</th>
+              </tr>
+            </thead>
             <tbody>
-              {current.map(cls=>(
-                <tr key={cls.id}>
-                  <td>{cls.class_name}</td>
-                  <td>{cls.trainer_name}</td>
-                  <td>{formatDate(cls.date)}</td>
-                  <td>{cls.time}</td>
-                  <td>{cls.schedule_day}</td>
-                  <td>{cls.total_sheets}</td>
-                  <td>{getStatusBadge(cls.status)}</td>
+              {classes.map(c => (
+                <tr key={c.id}>
+                  <td>{c.class_name}</td>
+                  <td>{c.trainer_name}</td>
+                  <td>{c.date}</td>
+                  <td>{c.time}</td>
+                  <td>{c.schedule_day}</td>
+                  <td>{getStatusBadge(c.status)}</td>
+                  <td>
+                    {/* यहाँ मेंबर काउंट आ रहा है members ऐरे की लेंथ से */}
+                    {(c.members || []).length > 0 ? (
+                      <span className="badge bg-light text-dark">
+                        {(c.members || []).length} {(c.members || []).length === 1 ? 'Member' : 'Members'}
+                      </span>
+                    ) : (
+                      <span className="text-muted">No members</span>
+                    )}
+                  </td>
                   <td className="text-center">
-                    <div className="btn-group" role="group">
-                      <button className="btn btn-sm btn-outline-secondary" onClick={()=>handleView(cls)} title="View"><FaEye size={14}/></button>
-                      <button className="btn btn-sm btn-outline-primary" onClick={()=>handleEdit(cls)} title="Edit"><FaEdit size={14}/></button>
-                      <button className="btn btn-sm btn-outline-danger" onClick={()=>handleDeleteClick(cls)} title="Delete"><FaTrashAlt size={14}/></button>
+                    <div className="d-flex justify-content-center gap-1">
+                      <button 
+                        className="btn btn-sm btn-outline-secondary action-btn" 
+                        title="View"
+                        onClick={() => handleView(c)}
+                      >
+                        <FaEye size={14} />
+                      </button>
+                      <button 
+                        className="btn btn-sm" 
+                        title="Edit"
+                        onClick={() => handleEdit(c)}
+                        style={{ 
+                          borderColor: '#6EB2CC',
+                          color: '#6EB2CC'
+                        }}
+                      >
+                        <FaEdit size={14} />
+                      </button>
+                      <button 
+                        className="btn btn-sm btn-outline-danger action-btn" 
+                        title="Delete"
+                        onClick={() => handleDeleteClick(c)}
+                      >
+                        <FaTrashAlt size={14} />
+                      </button>
                     </div>
                   </td>
                 </tr>
               ))}
-              {current.length===0 && <tr><td colSpan={8} className="text-center text-muted py-4">No classes found</td></tr>}
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* Pagination */}
-      <div className="d-flex justify-content-between mt-4">
-        <small>Showing {filtered.length?(page-1)*perPage+1:0} to {Math.min(page*perPage,filtered.length)} of {filtered.length} entries</small>
-        <div className="btn-group">
-          <button className="btn btn-outline-secondary btn-sm" disabled={page===1} onClick={()=>setPage(p=>p-1)}>Previous</button>
-          {Array.from({length:totalPages},(_,i)=>
-            <button key={i+1} className={`btn btn-sm ${page===i+1?"btn-primary":"btn-outline-secondary"}`} onClick={()=>setPage(i+1)}>{i+1}</button>
-          )}
-          <button className="btn btn-outline-secondary btn-sm" disabled={page===totalPages} onClick={()=>setPage(p=>p+1)}>Next</button>
-        </div>
-      </div>
-
-      {/* Add/Edit/View Modal */}
+      {/* Modal */}
       {isModalOpen && (
-        <div className="modal fade show" style={{display:"block",background:"rgba(0,0,0,.5)"}} onClick={closeModal}>
-          <div className="modal-dialog modal-lg modal-dialog-centered" onClick={e=>e.stopPropagation()}>
+        <div
+          className="modal fade show"
+          style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}
+          onClick={closeModal}
+        >
+          <div
+            className="modal-dialog modal-lg modal-dialog-centered"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="modal-content">
-              <div className="modal-header border-0"><h5>{getModalTitle()}</h5><button className="btn-close" onClick={closeModal}></button></div>
-              <div className="modal-body">
-                <form>
-                  <div className="row g-3">
-                    <div className="col-md-6">
-                      <label className="form-label">Class ID</label>
-                      <input 
-                        className="form-control" 
-                        name="id"
-                        value={formData.id} 
-                        onChange={handleInputChange}
-                        readOnly={modalType==="view" || modalType==="edit"}
-                      />
-                    </div>
-                    <div className="col-md-6">
-                      <label className="form-label">Class Name *</label>
-                      <input 
-                        className="form-control" 
-                        name="class_name"
-                        value={formData.class_name} 
-                        onChange={handleInputChange}
-                        readOnly={modalType==="view"} 
-                        required
-                      />
-                    </div>
-                    <div className="col-md-6">
-                      <label className="form-label">Trainer *</label>
-                      <select 
-                        className="form-select" 
-                        name="trainer_name"
-                        value={formData.trainer_name} 
-                        onChange={handleInputChange}
-                        disabled={modalType==="view"}
-                      >
-                        {trainers.map(t=><option key={t.id} value={t.name}>{t.name}</option>)}
-                      </select>
-                    </div>
-                    <div className="col-md-6">
-                      <label className="form-label">Schedule Days *</label>
-                      <div className="schedule-days-container">
-                        <div className="d-flex flex-wrap gap-2 mb-2">
-                          <div className="form-check">
-                            <input 
-                              className="form-check-input" 
-                              type="checkbox" 
-                              checked={selectedDays.length===days.length} 
-                              onChange={handleSelectAll} 
-                              disabled={modalType==="view"}
-                              id="selectAllDays"
-                            />
-                            <label className="form-check-label" htmlFor="selectAllDays">All</label>
-                          </div>
-                        </div>
-                        <div className="row g-2">
-                          {days.map(day=>(
-                            <div className="col-6 col-sm-4" key={day}>
-                              <div className="form-check">
-                                <input 
-                                  className="form-check-input" 
-                                  type="checkbox" 
-                                  checked={selectedDays.includes(day)} 
-                                  onChange={()=>handleDayChange(day)} 
-                                  disabled={modalType==="view"}
-                                  id={`day-${day}`}
-                                />
-                                <label className="form-check-label" htmlFor={`day-${day}`}>{day}</label>
-                              </div>
-                            </div>
+              <div className="modal-header border-0 pb-0" style={{ backgroundColor: '#6EB2CC', color: 'white' }}>
+                <h5 className="modal-title fw-bold">
+                  {modalType === 'add' ? 'Add New Class' : modalType === 'edit' ? 'Edit Class' : 'View Class'}
+                </h5>
+                <button
+                  type="button"
+                  className="btn-close btn-close-white"
+                  onClick={closeModal}
+                ></button>
+              </div>
+              <div className="modal-body p-4">
+                <div className="row mb-3">
+                  <div className="col-md-6 mb-3">
+                    <label className="form-label fw-semibold">Class Name <span className="text-danger">*</span></label>
+                    <input 
+                      className="form-control rounded-3" 
+                      defaultValue={selectedClass?.class_name || ''} 
+                      readOnly={modalType==='view'} 
+                      onChange={e=>setSelectedClass({...selectedClass,class_name:e.target.value})}
+                      placeholder="Enter class name"
+                    />
+                  </div>
+                  <div className="col-md-6 mb-3">
+                    <label className="form-label fw-semibold">Trainer Name <span className="text-danger">*</span></label>
+                    <input 
+                      className="form-control rounded-3" 
+                      defaultValue={selectedClass?.trainer_name || ''} 
+                      readOnly={modalType==='view'} 
+                      onChange={e=>setSelectedClass({...selectedClass,trainer_name:e.target.value})}
+                      placeholder="Enter trainer name"
+                    />
+                  </div>
+                </div>
+                <div className="row mb-3">
+                  <div className="col-md-6 mb-3">
+                    <label className="form-label fw-semibold">Date</label>
+                    <input 
+                      type="date"
+                      className="form-control rounded-3" 
+                      defaultValue={selectedClass?.date || ''} 
+                      readOnly={modalType==='view'} 
+                      onChange={e=>setSelectedClass({...selectedClass,date:e.target.value})}
+                    />
+                  </div>
+                  <div className="col-md-6 mb-3">
+                    <label className="form-label fw-semibold">Time</label>
+                    <input 
+                      className="form-control rounded-3" 
+                      defaultValue={selectedClass?.time || ''} 
+                      readOnly={modalType==='view'} 
+                      onChange={e=>setSelectedClass({...selectedClass,time:e.target.value})}
+                      placeholder="e.g., 10:00 - 11:00"
+                    />
+                  </div>
+                </div>
+                <div className="row mb-3">
+                  <div className="col-md-6 mb-3">
+                    <label className="form-label fw-semibold">Day</label>
+                    <select 
+                      className="form-select rounded-3" 
+                      defaultValue={selectedClass?.schedule_day || 'Monday'} 
+                      disabled={modalType==='view'} 
+                      onChange={e=>setSelectedClass({...selectedClass,schedule_day:e.target.value})}
+                    >
+                      <option value="Monday">Monday</option>
+                      <option value="Tuesday">Tuesday</option>
+                      <option value="Wednesday">Wednesday</option>
+                      <option value="Thursday">Thursday</option>
+                      <option value="Friday">Friday</option>
+                      <option value="Saturday">Saturday</option>
+                      <option value="Sunday">Sunday</option>
+                    </select>
+                  </div>
+                  <div className="col-md-6 mb-3">
+                    <label className="form-label fw-semibold">Status</label>
+                    <select 
+                      className="form-select rounded-3" 
+                      defaultValue={selectedClass?.status || 'Active'} 
+                      disabled={modalType==='view'} 
+                      onChange={e=>setSelectedClass({...selectedClass,status:e.target.value})}
+                    >
+                      <option value="Active">Active</option>
+                      <option value="Inactive">Inactive</option>
+                    </select>
+                  </div>
+                </div>
+                
+                {/* Members section */}
+                <div className="mb-3">
+                  <label className="form-label fw-semibold">
+                    Members 
+                    {modalType !== 'view' && <span className="text-muted ms-2">Add members by typing their name</span>}
+                  </label>
+                  
+                  {modalType === 'view' ? (
+                    <div className="border rounded-3 p-3 bg-light">
+                      {/* व्यू मोड में मेंबर्स दिखाना */}
+                      {(selectedClass?.members || []).length > 0 ? (
+                        <div className="d-flex flex-wrap gap-2">
+                          {(selectedClass?.members || []).map(member => (
+                            <span key={member} className="badge bg-light text-dark px-3 py-1">
+                              {member}
+                            </span>
                           ))}
                         </div>
+                      ) : (
+                        <p className="text-muted mb-0">No members assigned to this class</p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="border rounded-3 p-3 bg-light">
+                      <div className="d-flex mb-3">
+                        <input
+                          type="text"
+                          className="form-control rounded-3 me-2"
+                          placeholder="Type member name and click Add..."
+                          value={memberSearch}
+                          onChange={(e) => setMemberSearch(e.target.value)}
+                          onKeyPress={(e) => e.key === 'Enter' && addMember()}
+                        />
+                        <button
+                          className="btn btn-primary rounded-3"
+                          onClick={addMember}
+                        >
+                          Add
+                        </button>
                       </div>
+                      
+                      {/* ऐड/एडिट मोड में मेंबर्स काउंट और लिस्ट */}
+                      {(selectedClass?.members || []).length > 0 && (
+                        <div>
+                          <small className="text-muted d-block mb-2">
+                            {/* यहाँ भी मेंबर काउंट आ रहा है */}
+                            {selectedClass.members.length} member{selectedClass.members.length > 1 ? 's' : ''} in this class:
+                          </small>
+                          <div className="d-flex flex-wrap gap-2">
+                            {(selectedClass?.members || []).map(member => (
+                              <span key={member} className="badge bg-light text-dark px-3 py-1 d-flex align-items-center">
+                                {member}
+                                <FaTimes
+                                  className="ms-2"
+                                  style={{ cursor: 'pointer', fontSize: '12px' }}
+                                  onClick={() => removeMember(member)}
+                                />
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <div className="col-md-6">
-                      <label className="form-label">Date *</label>
-                      <input 
-                        type="date" 
-                        className="form-control" 
-                        name="date"
-                        value={formData.date} 
-                        onChange={handleInputChange}
-                        readOnly={modalType==="view"}
-                      />
-                    </div>
-                    <div className="col-md-6">
-                      <label className="form-label">Time *</label>
-                      <input 
-                        className="form-control" 
-                        name="time"
-                        value={formData.time} 
-                        onChange={handleInputChange}
-                        readOnly={modalType==="view"}
-                      />
-                    </div>
-                    <div className="col-md-6">
-                      <label className="form-label">Total Sheets *</label>
-                      <input 
-                        type="number" 
-                        className="form-control" 
-                        name="total_sheets"
-                        value={formData.total_sheets} 
-                        onChange={handleInputChange}
-                        readOnly={modalType==="view"}
-                      />
-                    </div>
-                    <div className="col-md-6">
-                      <label className="form-label">Status</label>
-                      <select 
-                        className="form-select" 
-                        name="status"
-                        value={formData.status} 
-                        onChange={handleInputChange}
-                        disabled={modalType==="view"}
-                      >
-                        <option value="Active">Active</option>
-                        <option value="Inactive">Inactive</option>
-                      </select>
-                    </div>
+                  )}
+                </div>
+                
+                {modalType !== 'view' && (
+                  <div className="d-flex justify-content-end mt-4">
+                    <button 
+                      className="btn btn-outline-secondary me-2 px-4" 
+                      onClick={closeModal}
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      className="btn px-4" 
+                      style={{background:'#6EB2CC',color:'white'}} 
+                      onClick={saveClass}
+                    >
+                      {modalType==='add'?'Add Class':'Update Class'}
+                    </button>
                   </div>
-                  <div className="d-flex justify-content-end gap-2 mt-4">
-                    <button type="button" className="btn btn-outline-secondary" onClick={closeModal}>Cancel</button>
-                    {modalType!=="view" && 
-                      <button 
-                        type="button" 
-                        style={{background:"#2F6A87",color:"#fff",borderRadius:"8px"}} 
-                        className="btn" 
-                        onClick={saveClass}
-                      >
-                        {modalType==="add"?"Add Class":"Update Class"}
-                      </button>
-                    }
-                  </div>
-                </form>
+                )}
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Delete Modal */}
+      {/* DELETE CONFIRMATION MODAL */}
       {isDeleteModalOpen && (
-        <div className="modal fade show" style={{display:"block",background:"rgba(0,0,0,.5)"}} onClick={closeDeleteModal}>
-          <div className="modal-dialog modal-dialog-centered" onClick={e=>e.stopPropagation()}>
+        <div
+          className="modal fade show"
+          style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}
+          onClick={closeDeleteModal}
+        >
+          <div
+            className="modal-dialog modal-dialog-centered"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="modal-content">
-              <div className="modal-header border-0"><h5>Confirm Deletion</h5><button className="btn-close" onClick={closeDeleteModal}></button></div>
-              <div className="modal-body text-center py-4">
-                <div className="display-6 text-danger mb-3"><i className="fas fa-exclamation-triangle"/></div>
-                <p>Delete <strong>{selectedClass?.class_name}</strong>?</p>
+              <div className="modal-header border-0 pb-0" style={{ backgroundColor: '#6EB2CC', color: 'white' }}>
+                <h5 className="modal-title fw-bold">Confirm Deletion</h5>
+                <button
+                  type="button"
+                  className="btn-close btn-close-white"
+                  onClick={closeDeleteModal}
+                ></button>
               </div>
-              <div className="modal-footer justify-content-center">
-                <button className="btn btn-outline-secondary" onClick={closeDeleteModal}>Cancel</button>
-                <button className="btn btn-danger" onClick={confirmDelete}>Delete</button>
+              <div className="modal-body text-center py-4">
+                <div className="display-6 text-danger mb-3">
+                  <i className="fas fa-exclamation-triangle"></i>
+                </div>
+                <h5>Are you sure?</h5>
+                <p className="text-muted">
+                  This will permanently delete <strong>{selectedClass?.class_name}</strong>.<br />
+                  This action cannot be undone.
+                </p>
+              </div>
+              <div className="modal-footer border-0 justify-content-center pb-4">
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary px-4"
+                  onClick={closeDeleteModal}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-danger px-4"
+                  onClick={confirmDelete}
+                >
+                  Delete
+                </button>
               </div>
             </div>
           </div>
         </div>
       )}
-
-      <style jsx>{`
-        .schedule-days-container {
-          border: 1px solid #ced4da;
-          border-radius: 0.375rem;
-          padding: 0.75rem;
-          background-color: #fff;
-        }
-        
-        .form-check-input:checked {
-          background-color: #2F6A87;
-          border-color: #2F6A87;
-        }
-        
-        .btn-group .btn {
-          padding: 0.25rem 0.5rem;
+      
+      <style jsx global>{`
+        .action-btn {
+          width: 32px;
+          height: 32px;
+          padding: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
         
         @media (max-width: 768px) {
-          .btn-group .btn {
-            padding: 0.2rem 0.4rem;
-            font-size: 0.8rem;
+          .action-btn {
+            width: 28px;
+            height: 28px;
           }
-          
-          .btn-group .btn svg {
-            width: 12px;
-            height: 12px;
+        }
+        
+        /* Ensure modal content is responsive */
+        @media (max-width: 576px) {
+          .modal-dialog {
+            margin: 0.5rem;
+          }
+          .modal-content {
+            border-radius: 0.5rem;
           }
         }
       `}</style>
