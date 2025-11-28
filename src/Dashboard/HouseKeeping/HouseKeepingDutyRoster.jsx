@@ -17,7 +17,13 @@ import {
   FaTh,
   FaList,
   FaChevronLeft,
-  FaChevronRight
+  FaChevronRight,
+  FaEdit,
+  FaSave,
+  FaTimes,
+  FaCheck,
+  FaExclamationTriangle,
+  FaBan
 } from 'react-icons/fa';
 import { 
   Button, 
@@ -168,10 +174,13 @@ const DutyRoster = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showSwapModal, setShowSwapModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showStatusModal, setShowStatusModal] = useState(false);
   const [selectedShift, setSelectedShift] = useState(null);
   const [swapForm, setSwapForm] = useState({ targetStaffId: '', reason: '' });
   const [activeTab, setActiveTab] = useState('myShifts');
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'confirmed', 'pending', 'completed', 'cancelled', 'no-show'
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Initialize
   useEffect(() => {
@@ -180,12 +189,30 @@ const DutyRoster = () => {
     setUnreadNotifications(unreadCount);
   }, [notifications]);
 
-  // Filter shifts based on user
+  // Filter shifts based on user and status
   const getMyShifts = () => {
-    if (user.role === 'manager') {
-      return shifts;
+    let filteredShifts = shifts;
+    
+    // Filter by user role
+    if (user.role !== 'manager') {
+      filteredShifts = filteredShifts.filter(shift => shift.staffId === user.id);
     }
-    return shifts.filter(shift => shift.staffId === user.id);
+    
+    // Filter by status
+    if (statusFilter !== 'all') {
+      filteredShifts = filteredShifts.filter(shift => shift.status === statusFilter);
+    }
+    
+    // Filter by search query
+    if (searchQuery) {
+      filteredShifts = filteredShifts.filter(shift => 
+        shift.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        shift.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (user.role === 'manager' && staffList.find(s => s.id === shift.staffId)?.name.toLowerCase().includes(searchQuery.toLowerCase()))
+      );
+    }
+    
+    return filteredShifts;
   };
 
   // Filter swap requests based on user
@@ -208,6 +235,61 @@ const DutyRoster = () => {
       id: notifications.length + 1,
       type: "shift_confirmed",
       message: "You have confirmed your shift",
+      timestamp: new Date().toISOString(),
+      read: false
+    };
+    setNotifications([newNotification, ...notifications]);
+  };
+
+  // Handle status change
+  const handleStatusChange = (shiftId, newStatus) => {
+    // Show confirmation modal for certain status changes
+    if (newStatus === 'cancelled' || newStatus === 'no-show') {
+      setSelectedShift(shifts.find(s => s.id === shiftId));
+      setNewStatus(newStatus);
+      setShowStatusModal(true);
+    } else {
+      // Directly update for other status changes
+      updateShiftStatus(shiftId, newStatus);
+    }
+  };
+
+  // Update shift status
+  const updateShiftStatus = (shiftId, newStatus) => {
+    setShifts(shifts.map(shift => 
+      shift.id === shiftId ? { 
+        ...shift, 
+        status: newStatus,
+        confirmed: newStatus === 'confirmed' 
+      } : shift
+    ));
+    
+    // Add notification
+    const shift = shifts.find(s => s.id === shiftId);
+    const staff = staffList.find(s => s.id === shift.staffId);
+    
+    let message = '';
+    switch (newStatus) {
+      case 'confirmed':
+        message = `Shift for ${staff.name} on ${formatDate(shift.date)} has been confirmed`;
+        break;
+      case 'completed':
+        message = `Shift for ${staff.name} on ${formatDate(shift.date)} has been marked as completed`;
+        break;
+      case 'cancelled':
+        message = `Shift for ${staff.name} on ${formatDate(shift.date)} has been cancelled`;
+        break;
+      case 'no-show':
+        message = `${staff.name} was a no-show for shift on ${formatDate(shift.date)}`;
+        break;
+      default:
+        message = `Status updated for ${staff.name}'s shift`;
+    }
+    
+    const newNotification = {
+      id: notifications.length + 1,
+      type: "status_updated",
+      message: message,
       timestamp: new Date().toISOString(),
       read: false
     };
@@ -278,6 +360,25 @@ const DutyRoster = () => {
   const formatDate = (dateString) => {
     const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
     return new Date(dateString).toLocaleDateString(undefined, options);
+  };
+
+  // Get status badge with appropriate color
+  const getStatusBadge = (status) => {
+    const statusConfig = {
+      'confirmed': { bg: 'success', icon: <FaCheckCircle /> },
+      'pending': { bg: 'warning', icon: <FaExclamationTriangle /> },
+      'completed': { bg: 'info', icon: <FaCheckCircle /> },
+      'cancelled': { bg: 'danger', icon: <FaBan /> },
+      'no-show': { bg: 'dark', icon: <FaTimes /> }
+    };
+    
+    const config = statusConfig[status] || statusConfig['pending'];
+    
+    return (
+      <Badge bg={config.bg} className="d-flex align-items-center">
+        {config.icon} <span className="ms-1">{status.charAt(0).toUpperCase() + status.slice(1)}</span>
+      </Badge>
+    );
   };
 
   // Render calendar view
@@ -418,9 +519,7 @@ const DutyRoster = () => {
                             <FaClock className="me-1" /> {shift.startTime} - {shift.endTime}
                           </Card.Subtitle>
                         </div>
-                        <Badge bg={shift.confirmed ? 'success' : 'warning'}>
-                          {shift.confirmed ? 'Confirmed' : 'Pending'}
-                        </Badge>
+                        {getStatusBadge(shift.status)}
                       </div>
                       
                       <div className="mb-2">
@@ -497,9 +596,7 @@ const DutyRoster = () => {
                         <FaClock className="me-1" /> {shift.startTime} - {shift.endTime}
                       </Card.Subtitle>
                     </div>
-                    <Badge bg={shift.confirmed ? 'success' : 'warning'}>
-                      {shift.confirmed ? 'Confirmed' : 'Pending'}
-                    </Badge>
+                    {getStatusBadge(shift.status)}
                   </div>
                   
                   <div className="mb-2">
@@ -557,6 +654,7 @@ const DutyRoster = () => {
                   <thead>
                     <tr>
                       <th>Date</th>
+                      <th>Staff</th>
                       <th>Time</th>
                       <th>Location</th>
                       <th>Role</th>
@@ -575,13 +673,35 @@ const DutyRoster = () => {
                           style={{ backgroundColor: isUpcoming ? customStyles.primaryColorLight : '' }}
                         >
                           <td>{formatDate(shift.date)}</td>
+                          <td>{staff.name}</td>
                           <td>{shift.startTime} - {shift.endTime}</td>
                           <td>{shift.location}</td>
                           <td>{shift.role}</td>
                           <td>
-                            <Badge bg={shift.confirmed ? 'success' : 'warning'}>
-                              {shift.confirmed ? 'Confirmed' : 'Pending'}
-                            </Badge>
+                            <div className="d-flex align-items-center">
+                              {getStatusBadge(shift.status)}
+                              {user.role === 'manager' && (
+                                <DropdownButton 
+                                  variant="outline-secondary" 
+                                  size="sm" 
+                                  className="ms-2"
+                                  title="Change Status"
+                                >
+                                  <Dropdown.Item onClick={() => handleStatusChange(shift.id, 'confirmed')}>
+                                    <FaCheckCircle className="me-1 text-success" /> Confirmed
+                                  </Dropdown.Item>
+                                  <Dropdown.Item onClick={() => handleStatusChange(shift.id, 'completed')}>
+                                    <FaCheckCircle className="me-1 text-info" /> Completed
+                                  </Dropdown.Item>
+                                  <Dropdown.Item onClick={() => handleStatusChange(shift.id, 'cancelled')}>
+                                    <FaBan className="me-1 text-danger" /> Cancelled
+                                  </Dropdown.Item>
+                                  <Dropdown.Item onClick={() => handleStatusChange(shift.id, 'no-show')}>
+                                    <FaTimes className="me-1 text-dark" /> No-Show
+                                  </Dropdown.Item>
+                                </DropdownButton>
+                              )}
+                            </div>
                           </td>
                           {user.role === 'staff' && (
                             <td>
@@ -787,13 +907,19 @@ const DutyRoster = () => {
                       <th>Staff Name</th>
                       <th>Total Shifts</th>
                       <th>Confirmed</th>
+                      <th>Completed</th>
+                      <th>Cancelled</th>
+                      <th>No-Show</th>
                       <th>Attendance Rate</th>
                     </tr>
                   </thead>
                   <tbody>
                     {staffList.map(staff => {
                       const staffShifts = shifts.filter(s => s.staffId === staff.id);
-                      const confirmedShifts = staffShifts.filter(s => s.confirmed);
+                      const confirmedShifts = staffShifts.filter(s => s.status === 'confirmed');
+                      const completedShifts = staffShifts.filter(s => s.status === 'completed');
+                      const cancelledShifts = staffShifts.filter(s => s.status === 'cancelled');
+                      const noShowShifts = staffShifts.filter(s => s.status === 'no-show');
                       const attendanceRate = staffShifts.length > 0 
                         ? Math.round((confirmedShifts.length / staffShifts.length) * 100) 
                         : 0;
@@ -803,6 +929,9 @@ const DutyRoster = () => {
                           <td>{staff.name}</td>
                           <td>{staffShifts.length}</td>
                           <td>{confirmedShifts.length}</td>
+                          <td>{completedShifts.length}</td>
+                          <td>{cancelledShifts.length}</td>
+                          <td>{noShowShifts.length}</td>
                           <td>
                             <div className="d-flex align-items-center">
                               <div className="progress me-2" style={{ width: '100px' }}>
@@ -910,6 +1039,83 @@ const DutyRoster = () => {
           </Button>
         </Card.Body>
       </Card>
+    );
+  };
+
+  // Render status filter
+  const renderStatusFilter = () => {
+    return (
+      <div className="d-flex align-items-center mb-3">
+        <span className="me-2">Filter by Status:</span>
+        <div className="btn-group" role="group">
+          <Button 
+            variant={statusFilter === 'all' ? 'primary' : 'outline-primary'}
+            onClick={() => setStatusFilter('all')}
+            style={{ 
+              backgroundColor: statusFilter === 'all' ? customStyles.primaryColor : 'transparent',
+              borderColor: customStyles.primaryColor,
+              color: statusFilter === 'all' ? 'white' : customStyles.primaryColor
+            }}
+          >
+            All
+          </Button>
+          <Button 
+            variant={statusFilter === 'confirmed' ? 'primary' : 'outline-primary'}
+            onClick={() => setStatusFilter('confirmed')}
+            style={{ 
+              backgroundColor: statusFilter === 'confirmed' ? customStyles.primaryColor : 'transparent',
+              borderColor: customStyles.primaryColor,
+              color: statusFilter === 'confirmed' ? 'white' : customStyles.primaryColor
+            }}
+          >
+            Confirmed
+          </Button>
+          <Button 
+            variant={statusFilter === 'pending' ? 'primary' : 'outline-primary'}
+            onClick={() => setStatusFilter('pending')}
+            style={{ 
+              backgroundColor: statusFilter === 'pending' ? customStyles.primaryColor : 'transparent',
+              borderColor: customStyles.primaryColor,
+              color: statusFilter === 'pending' ? 'white' : customStyles.primaryColor
+            }}
+          >
+            Pending
+          </Button>
+          <Button 
+            variant={statusFilter === 'completed' ? 'primary' : 'outline-primary'}
+            onClick={() => setStatusFilter('completed')}
+            style={{ 
+              backgroundColor: statusFilter === 'completed' ? customStyles.primaryColor : 'transparent',
+              borderColor: customStyles.primaryColor,
+              color: statusFilter === 'completed' ? 'white' : customStyles.primaryColor
+            }}
+          >
+            Completed
+          </Button>
+          <Button 
+            variant={statusFilter === 'cancelled' ? 'primary' : 'outline-primary'}
+            onClick={() => setStatusFilter('cancelled')}
+            style={{ 
+              backgroundColor: statusFilter === 'cancelled' ? customStyles.primaryColor : 'transparent',
+              borderColor: customStyles.primaryColor,
+              color: statusFilter === 'cancelled' ? 'white' : customStyles.primaryColor
+            }}
+          >
+            Cancelled
+          </Button>
+          <Button 
+            variant={statusFilter === 'no-show' ? 'primary' : 'outline-primary'}
+            onClick={() => setStatusFilter('no-show')}
+            style={{ 
+              backgroundColor: statusFilter === 'no-show' ? customStyles.primaryColor : 'transparent',
+              borderColor: customStyles.primaryColor,
+              color: statusFilter === 'no-show' ? 'white' : customStyles.primaryColor
+            }}
+          >
+            No-Show
+          </Button>
+        </div>
+      </div>
     );
   };
 
@@ -1052,7 +1258,11 @@ const DutyRoster = () => {
         </div>
         <div className="d-flex">
           <InputGroup className="me-2" style={{ width: '250px' }}>
-            <FormControl placeholder="Search shifts..." />
+            <FormControl 
+              placeholder="Search shifts..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
             <Button variant="outline-secondary">
               <FaSearch />
             </Button>
@@ -1069,6 +1279,7 @@ const DutyRoster = () => {
       {/* Main Content */}
       <Tabs activeKey={activeTab} onSelect={(k) => setActiveTab(k)} className="mb-4">
         <Tab eventKey="myShifts" title="My Shifts">
+          {renderStatusFilter()}
           {viewType === 'calendar' ? renderCalendarView() : renderListView()}
         </Tab>
         
@@ -1156,7 +1367,7 @@ const DutyRoster = () => {
         <Modal.Body>
           {selectedShift && (
             <div>
-              <p>Are you sure you want to confirm your availability for the following shift?</p>
+              <p>Are you sure you want to confirm your availability for following shift?</p>
               <div className="p-3 bg-light rounded">
                 <p className="mb-1"><strong>Date:</strong> {formatDate(selectedShift.date)}</p>
                 <p className="mb-1"><strong>Time:</strong> {selectedShift.startTime} - {selectedShift.endTime}</p>
@@ -1175,6 +1386,45 @@ const DutyRoster = () => {
             onClick={() => handleConfirmShift(selectedShift.id)}
           >
             Confirm Availability
+          </Button>
+        </Modal.Footer>
+      </Modal>
+      
+      {/* Status Change Confirmation Modal */}
+      <Modal show={showStatusModal} onHide={() => setShowStatusModal(false)} centered scrollable>
+        <Modal.Header closeButton>
+          <Modal.Title>Confirm Status Change</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {selectedShift && (
+            <div>
+              <p>Are you sure you want to change the status of this shift to <strong>{newStatus}</strong>?</p>
+              <div className="p-3 bg-light rounded">
+                <p className="mb-1"><strong>Date:</strong> {formatDate(selectedShift.date)}</p>
+                <p className="mb-1"><strong>Time:</strong> {selectedShift.startTime} - {selectedShift.endTime}</p>
+                <p className="mb-1"><strong>Location:</strong> {selectedShift.location}</p>
+                <p className="mb-0"><strong>Current Status:</strong> {getStatusBadge(selectedShift.status)}</p>
+              </div>
+              <p className="mt-3">This action cannot be undone.</p>
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowStatusModal(false)}>
+            Cancel
+          </Button>
+          <Button 
+            variant="primary"
+            style={{ 
+              backgroundColor: customStyles.primaryColor,
+              borderColor: customStyles.primaryColor
+            }}
+            onClick={() => {
+              updateShiftStatus(selectedShift.id, newStatus);
+              setShowStatusModal(false);
+            }}
+          >
+            Change Status
           </Button>
         </Modal.Footer>
       </Modal>
