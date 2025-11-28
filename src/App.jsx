@@ -87,6 +87,10 @@ import Staff from "./Dashboard/SuperAdmin/People/Staff";
 import Members from "./Dashboard/SuperAdmin/People/Members";
 import Invoices from "./Dashboard/SuperAdmin/Payments/Invoices";
 import Payments from "./Dashboard/SuperAdmin/Payments/Payments";
+// import Request from "./Dashboard/SuperAdmin/Request";
+import Request from "./Dashboard/SuperAdmin/Requestplan";
+
+
 
 
 
@@ -176,7 +180,7 @@ function App() {
 
 
                 <Route path="/superadmin/dashboard" element={<DashboardHomePage />} />
-                <Route path="/superadmin/Owner" element={<SuperAdminOwner />} />
+                <Route path="/superadmin/Admin" element={<SuperAdminOwner />} />
 
                 <Route path="/superadmin/Plans&Pricing" element={<Plans />} />
                 <Route path="/superadmin/marketing" element={<Marketing />} />
@@ -196,6 +200,7 @@ function App() {
                 <Route path="superadmin/payments" element={<Payments />} />
                 {/* <Route path="superadmin/setting" element={<Setting />} /> */}
                 <Route path="/superadmin/setting" element={<Setting />} />
+                <Route path="/superadmin/request-plan" element={<Request />} />
 
 
 

@@ -53,6 +53,13 @@ const Attendance = () => {
     }
   };
 
+  // Handle status change
+  const handleStatusChange = (id, newStatus) => {
+    setAttendance(attendance.map(member => 
+      member.attendance_id === id ? { ...member, status: newStatus } : member
+    ));
+  };
+
   // Apply filters
   const filteredAttendance = attendance.filter((m) => {
     return (
@@ -135,18 +142,22 @@ const Attendance = () => {
               <td>{member.member_id}</td>
               <td>{member.name}</td>
               <td>
-                {member.status === "Present" && (
-                  <Badge bg="success">Present</Badge>
-                )}
-                {member.status === "Absent" && (
-                  <Badge bg="danger">Absent</Badge>
-                )}
-                {member.status === "Late" && (
-                  <Badge bg="warning" text="dark">
-                    Late
-                  </Badge>
-                )}
-                {!member.status && <Badge bg="secondary">Not Marked</Badge>}
+                <Form.Select
+                  size="sm"
+                  value={member.status}
+                  onChange={(e) => handleStatusChange(member.attendance_id, e.target.value)}
+                  style={{ 
+                    width: '100px',
+                    backgroundColor: 
+                      member.status === "Present" ? "#d4edda" : 
+                      member.status === "Absent" ? "#f8d7da" : 
+                      member.status === "Late" ? "#fff3cd" : "#e2e3e5"
+                  }}
+                >
+                  <option value="Present">Present</option>
+                  <option value="Absent">Absent</option>
+                  <option value="Late">Late</option>
+                </Form.Select>
               </td>
               <td>{member.checkin_time || "--"}</td>
               <td>{member.checkout_time || "--"}</td>
@@ -200,7 +211,19 @@ const Attendance = () => {
                 <b>Name:</b> {viewMember.name}
               </p>
               <p>
-                <b>Status:</b> {viewMember.status}
+                <b>Status:</b> 
+                {viewMember.status === "Present" && (
+                  <Badge bg="success ms-2">Present</Badge>
+                )}
+                {viewMember.status === "Absent" && (
+                  <Badge bg="danger ms-2">Absent</Badge>
+                )}
+                {viewMember.status === "Late" && (
+                  <Badge bg="warning" text="dark" ms-2>
+                    Late
+                  </Badge>
+                )}
+                {!viewMember.status && <Badge bg="secondary ms-2">Not Marked</Badge>}
               </p>
               <p>
                 <b>Check-in:</b> {viewMember.checkin_time || "--"}

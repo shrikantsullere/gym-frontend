@@ -66,10 +66,12 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
     // ],
    superadmin: [
   { name: "Dashboard", icon: faChartBar, path: "/superadmin/dashboard" },
-  { name: "Owner", icon: faUsers, path: "/superadmin/Owner" },
-  { name: "Plans & Pricing", icon: faStarOfDavid, path: "/superadmin/Plans&Pricing" },
+  { name: "Admin", icon: faUsers, path: "/superadmin/Admin" },
+  { name: "Request Plan", icon:  faClipboardCheck, path: "/superadmin/request-plan" },
+  { name: "Plans & Pricing", icon: faChartLine, path: "/superadmin/Plans&Pricing" },
   { name: "Payments", icon: faMoneyBillAlt, path: "/superadmin/payments" },
   { name: "Setting", icon:  faCogs, path: "/superadmin/setting" },
+  
 ],
 
 
@@ -141,7 +143,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
       { name: "Dashboard", icon: faChartBar, path: "/generaltrainer/dashboard" },
       { name: "Qr Check-in", icon: faGear, path: "/generaltrainer/qrcheckin" },
       { name: "GroupPlans & Bookings", icon: faUserGroup, path: "/generaltrainer/groupplansbookings" },
-      { name: "Daily Schedule", icon: faChartArea, path: "/generaltrainer/DailyScedule" },
+      // { name: "Daily Schedule", icon: faChartArea, path: "/generaltrainer/DailyScedule" },
       { name: "Attendance", icon: faClipboardCheck, path: "/generaltrainer/attendance" },
       { name: "Reports Classes", icon: faFileAlt, path: "/generaltrainer/Reports" }
     ],

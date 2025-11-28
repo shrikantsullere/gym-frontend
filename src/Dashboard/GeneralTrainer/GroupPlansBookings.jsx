@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { Container, Row, Col, Nav, Tab, Card, Table, Button, Modal } from 'react-bootstrap';
-import { FaEye, FaCalendar, FaClock, FaUsers, FaRupeeSign, FaEnvelope, FaPhone } from 'react-icons/fa';
+import { Container, Row, Col, Nav, Tab, Card, Table, Button, Modal, Badge } from 'react-bootstrap';
+import { FaEye, FaCalendar, FaClock, FaUsers, FaRupeeSign, FaEnvelope, FaPhone, FaCheckCircle, FaExclamationCircle, FaTimesCircle } from 'react-icons/fa';
 
 const GroupPlansBookings = () => {
   const [selectedPlanTab, setSelectedPlanTab] = useState(null);
@@ -9,9 +9,9 @@ const GroupPlansBookings = () => {
 
   // Group Training Plans (Read-only, comes from admin)
   const groupPlans = [
-    { id: 1, name: "Starter Group Class", sessions: 8, validity: 30, price: "₹2,499" },
-    { id: 2, name: "Pro Group Class", sessions: 16, validity: 60, price: "₹4,499" },
-    { id: 3, name: "Unlimited Group Access", sessions: 30, validity: 90, price: "₹7,999" },
+    { id: 1, name: "Starter Group Class", sessions: 8, validity: 30, price: "₹2,499", description: "Perfect for beginners" },
+    { id: 2, name: "Pro Group Class", sessions: 16, validity: 60, price: "₹4,499", description: "For intermediate users" },
+    { id: 3, name: "Unlimited Group Access", sessions: 30, validity: 90, price: "₹7,999", description: "Best value for dedicated users" },
   ];
 
   // Mock customer data for each group plan
@@ -121,99 +121,115 @@ const GroupPlansBookings = () => {
     const expiry = new Date(expiryDate);
     
     if (sessionsRemaining === 0) {
-      return <span className="badge bg-secondary">Sessions Completed</span>;
+      return <Badge bg="secondary"><FaTimesCircle className="me-1" />Sessions Completed</Badge>;
     }
     
     if (expiry < today) {
-      return <span className="badge bg-danger">Expired</span>;
+      return <Badge bg="danger"><FaExclamationCircle className="me-1" />Expired</Badge>;
     }
     
-    return <span className="badge bg-success">Active</span>;
+    return <Badge bg="success"><FaCheckCircle className="me-1" />Active</Badge>;
+  };
+
+  // Calculate session progress percentage
+  const getProgressPercentage = (sessionsBooked, sessionsRemaining) => {
+    const totalSessions = sessionsBooked + sessionsRemaining;
+    return totalSessions > 0 ? Math.round((sessionsBooked / totalSessions) * 100) : 0;
   };
 
   return (
-    <div className=" bg-light ">
-      <Container  className=" px-md-5">
-        <h1 className=" mb-5 fw-bold text-dark" style={{ color: '#2f6a87', fontSize: '2.2rem' }}>
-          Group Training Plans & Bookings
-        </h1>
+    <div className="bg-light min-vh-100">
+      <Container fluid className="py-4 px-md-5">
+        <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-5">
+          <h1 className="fw-bold mb-3 mb-md-0" style={{ color: '#2f6a87', fontSize: '2.2rem' }}>
+            Group Training Plans & Bookings
+          </h1>
+          <div className="d-flex gap-2">
+            <Button variant="outline-secondary" size="sm">
+              <FaCalendar className="me-2" />
+              Filter by Date
+            </Button>
+            <Button variant="outline-secondary" size="sm">
+              <FaUsers className="me-2" />
+              Filter by Status
+            </Button>
+          </div>
+        </div>
 
-        {/* Plans as Cards */}
+        {/* Plans as Cards - Optimized Version */}
         <div className="mb-5">
-          
           <Row className="g-4">
             {groupPlans.map((plan) => (
               <Col xs={12} sm={6} lg={4} key={plan.id}>
                 <Card 
-                  className="h-100 shadow-sm border-0"
+                  className="h-100 shadow-sm border-0 plan-card"
                   style={{ 
-                    borderRadius: '16px', 
+                    borderRadius: '12px', 
                     overflow: 'hidden',
                     transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                     cursor: 'pointer',
-                    border: selectedPlanTab === plan.id ? '3px solid #2f6a87' : '1px solid #e9ecef'
+                    border: selectedPlanTab === plan.id ? '2px solid #2f6a87' : '1px solid #e9ecef'
                   }}
                   onClick={() => setSelectedPlanTab(plan.id)}
-                  onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
-                  onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                 >
                   <div style={{ 
                     height: '8px', 
                     backgroundColor: '#2f6a87',
                     width: '100%'
                   }}></div>
-                  <Card.Body className="d-flex flex-column p-4">
-                    <div className="text-center mb-4">
-                      <div className="badge bg-primary mb-3 px-4 py-2" style={{ 
+                  <Card.Body className="d-flex flex-column p-3">
+                    <div className="text-center mb-3">
+                      <div className="badge bg-primary mb-2 px-3 py-1" style={{ 
                         backgroundColor: '#2f6a87', 
                         color: 'white', 
-                        fontSize: '0.9rem',
+                        fontSize: '0.75rem',
                         borderRadius: '50px'
                       }}>
                         GROUP CLASS
                       </div>
-                      <h4 className="fw-bold mb-1" style={{ color: '#2f6a87', fontSize: '1.3rem' }}>{plan.name}</h4>
+                      <h5 className="fw-bold mb-1" style={{ color: '#2f6a87', fontSize: '1.2rem' }}>{plan.name}</h5>
+                      <p className="text-muted small mb-2">{plan.description}</p>
                     </div>
-                    <ul className="list-unstyled mb-4 flex-grow-1">
-                      <li className="mb-3 d-flex align-items-center gap-3">
-                        <div className="bg-light rounded-circle p-2" style={{ width: '40px', height: '40px' }}>
-                          <FaClock size={16} className="text-muted" />
+                    <ul className="list-unstyled mb-3 flex-grow-1">
+                      <li className="mb-2 d-flex align-items-center gap-2">
+                        <div className="bg-light rounded-circle p-2 d-flex align-items-center justify-content-center" style={{ width: '36px', height: '36px' }}>
+                          <FaClock size={14} className="text-muted" />
                         </div>
                         <div>
-                          <div className="fw-bold" style={{ fontSize: '1.1rem' }}>{plan.sessions} Sessions</div>
+                          <div className="fw-medium" style={{ fontSize: '0.95rem' }}>{plan.sessions} Sessions</div>
                         </div>
                       </li>
-                      <li className="mb-3 d-flex align-items-center gap-3">
-                        <div className="bg-light rounded-circle p-2" style={{ width: '40px', height: '40px' }}>
-                          <FaCalendar size={16} className="text-muted" />
+                      <li className="mb-2 d-flex align-items-center gap-2">
+                        <div className="bg-light rounded-circle p-2 d-flex align-items-center justify-content-center" style={{ width: '36px', height: '36px' }}>
+                          <FaCalendar size={14} className="text-muted" />
                         </div>
                         <div>
-                          <div className="fw-bold" style={{ fontSize: '1.1rem' }}>Validity: {plan.validity} Days</div>
+                          <div className="fw-medium" style={{ fontSize: '0.95rem' }}>{plan.validity} Days</div>
                         </div>
                       </li>
-                      <li className="mb-3 d-flex align-items-center gap-3">
-                        <div className="bg-light rounded-circle p-2" style={{ width: '40px', height: '40px' }}>
-                          <FaUsers size={16} className="text-muted" />
+                      <li className="mb-2 d-flex align-items-center gap-2">
+                        <div className="bg-light rounded-circle p-2 d-flex align-items-center justify-content-center" style={{ width: '36px', height: '36px' }}>
+                          <FaUsers size={14} className="text-muted" />
                         </div>
                         <div>
-                          <div className="fw-bold" style={{ fontSize: '1.1rem' }}>
+                          <div className="fw-medium" style={{ fontSize: '0.95rem' }}>
                             {getCustomersForPlan(plan.id).length} Member{getCustomersForPlan(plan.id).length !== 1 ? 's' : ''}
                           </div>
                         </div>
                       </li>
-                      <li className="mb-3 d-flex align-items-center gap-3">
-                        <div className="bg-light rounded-circle p-2" style={{ width: '40px', height: '40px' }}>
-                          <FaRupeeSign size={16} className="text-muted" />
+                      <li className="mb-2 d-flex align-items-center gap-2">
+                        <div className="bg-light rounded-circle p-2 d-flex align-items-center justify-content-center" style={{ width: '36px', height: '36px' }}>
+                          <FaRupeeSign size={14} className="text-muted" />
                         </div>
                         <div>
-                          <div className="fw-bold" style={{ fontSize: '1.1rem' }}>Price: {plan.price}</div>
+                          <div className="fw-medium" style={{ fontSize: '0.95rem' }}>{plan.price}</div>
                         </div>
                       </li>
                     </ul>
-                    <div className="text-center">
+                    <div className="text-center mt-auto">
                       <Button
                         variant="outline-primary"
-                        size="md"
+                        size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
                           setSelectedPlanTab(plan.id);
@@ -223,14 +239,7 @@ const GroupPlansBookings = () => {
                           color: '#2f6a87',
                           transition: 'all 0.2s ease'
                         }}
-                        onMouseOver={(e) => {
-                          e.target.style.backgroundColor = '#2f6a87';
-                          e.target.style.color = 'white';
-                        }}
-                        onMouseOut={(e) => {
-                          e.target.style.backgroundColor = 'transparent';
-                          e.target.style.color = '#2f6a87';
-                        }}
+                        className="w-100"
                       >
                         View Members
                       </Button>
@@ -313,9 +322,7 @@ const GroupPlansBookings = () => {
                       }
                       
                       return customers.map((customer, index) => (
-                        <tr key={customer.id} style={{ transition: 'background-color 0.2s ease' }} 
-                            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
-                            onMouseOut={(e) => e.currentTarget.style.backgroundColor = ''}>
+                        <tr key={customer.id}>
                           <td className="py-3 fw-bold">{index + 1}</td>
                           <td className="py-3">
                             <strong style={{ color: '#2f6a87' }}>{customer.name}</strong>
@@ -347,36 +354,22 @@ const GroupPlansBookings = () => {
                           </td>
                           <td className="py-3">
                             <Button
+                              variant="outline-primary"
                               size="sm"
                               onClick={() => handleViewCustomer(customer)}
                               style={{
-                                backgroundColor: 'transparent',
-                                borderColor: 'transparent',
+                                borderColor: '#2f6a87',
                                 color: '#2f6a87',
-                                padding: '6px 10px',
                                 borderRadius: '50%',
                                 width: '36px',
                                 height: '36px',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                transition: 'all 0.3s ease',
-                                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                              }}
-                              onMouseOver={(e) => {
-                                e.target.style.backgroundColor = '#f0f7fa';
-                                e.target.style.color = '#2f6a87';
-                                e.target.style.transform = 'scale(1.1)';
-                                e.target.style.boxShadow = '0 4px 8px rgba(47, 106, 135, 0.2)';
-                              }}
-                              onMouseOut={(e) => {
-                                e.target.style.backgroundColor = 'transparent';
-                                e.target.style.color = '#2f6a87';
-                                e.target.style.transform = 'scale(1)';
-                                e.target.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+                                padding: '0'
                               }}
                             >
-                              <FaEye size={18} />
+                              <FaEye size={16} />
                             </Button>
                           </td>
                         </tr>
@@ -404,7 +397,7 @@ const GroupPlansBookings = () => {
                     <h4 className="fw-bold mb-3" style={{ color: '#333' }}>{selectedCustomer.name}</h4>
                     <div className="d-flex flex-column gap-3">
                       <div className="d-flex align-items-center gap-3">
-                        <div className="bg-light p-3 rounded" style={{ width: '50px', height: '50px' }}>
+                        <div className="bg-light p-3 rounded d-flex align-items-center justify-content-center" style={{ width: '50px', height: '50px' }}>
                           <FaEnvelope size={24} className="text-muted" />
                         </div>
                         <div>
@@ -413,7 +406,7 @@ const GroupPlansBookings = () => {
                         </div>
                       </div>
                       <div className="d-flex align-items-center gap-3">
-                        <div className="bg-light p-3 rounded" style={{ width: '50px', height: '50px' }}>
+                        <div className="bg-light p-3 rounded d-flex align-items-center justify-content-center" style={{ width: '50px', height: '50px' }}>
                           <FaPhone size={24} className="text-muted" />
                         </div>
                         <div>
@@ -484,21 +477,21 @@ const GroupPlansBookings = () => {
                   </div>
                   
                   <div className="mt-4">
-                    {/* <div className="d-flex justify-content-between mb-2">
-                      <span>Progress: {Math.round((selectedCustomer.sessionsBooked / (selectedCustomer.sessionsBooked + selectedCustomer.sessionsRemaining)) * 100)}%</span>
+                    <div className="d-flex justify-content-between mb-2">
+                      <span>Progress: {getProgressPercentage(selectedCustomer.sessionsBooked, selectedCustomer.sessionsRemaining)}%</span>
                       <span>{selectedCustomer.sessionsBooked}/{selectedCustomer.sessionsBooked + selectedCustomer.sessionsRemaining}</span>
-                    </div> */}
-                    {/* <div className="progress" style={{ height: '12px', borderRadius: '6px' }}>
+                    </div>
+                    <div className="progress" style={{ height: '12px', borderRadius: '6px' }}>
                       <div 
                         className="progress-bar" 
                         role="progressbar" 
                         style={{ 
-                          width: `${Math.round((selectedCustomer.sessionsBooked / (selectedCustomer.sessionsBooked + selectedCustomer.sessionsRemaining)) * 100)}%`,
+                          width: `${getProgressPercentage(selectedCustomer.sessionsBooked, selectedCustomer.sessionsRemaining)}%`,
                           backgroundColor: '#2f6a87',
                           borderRadius: '6px'
                         }}
                       ></div>
-                    </div> */}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -516,8 +509,6 @@ const GroupPlansBookings = () => {
                 padding: '8px 24px',
                 transition: 'background-color 0.3s ease'
               }}
-              onMouseOver={(e) => e.target.style.backgroundColor = '#5a6268'}
-              onMouseOut={(e) => e.target.style.backgroundColor = '#6c757d'}
             >
               Close
             </Button>
