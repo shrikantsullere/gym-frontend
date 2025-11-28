@@ -4,7 +4,7 @@ import { FaEye, FaEdit, FaTrashAlt } from 'react-icons/fa';
 const SuperAdminAdmin = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [modalType, setModalType] = useState('add');
+  const [modalType, setModalType] = useState('add'); // 'view' | 'edit' | 'add'
   const [selectedAdmin, setSelectedAdmin] = useState(null);
 
   const handleAddNew = () => {
@@ -64,9 +64,7 @@ const SuperAdminAdmin = () => {
       email: "john@admin.com",
       status: "Active",
       username: "john_admin",
-      plans: [
-        { planName: "Gold", price: "1200", duration: "12 Months", description: "Full access plan" }
-      ]
+      plans: [{ planName: "Gold", price: "1200", duration: "12 Months", description: "Full access plan" }]
     },
     {
       id: 2,
@@ -128,6 +126,7 @@ const SuperAdminAdmin = () => {
             <thead className="bg-light">
               <tr>
                 <th>ADMIN NAME</th>
+                <th>PLAN NAME</th>
                 <th>ADMIN ID</th>
                 <th>ADDRESS</th>
                 <th>CONTACT / ROLE</th>
@@ -137,41 +136,26 @@ const SuperAdminAdmin = () => {
             </thead>
             <tbody>
               {admins.map((admin) => (
-                <tr key={admin.id} className="hover-row" style={{ cursor: 'pointer' }}>
-
-                  <td onClick={() => handleView(admin)}>
-                    <strong>{admin.name}</strong>
-                    {admin.plans?.[0]?.planName && (
-                      <span className="text-muted ms-2">— {admin.plans[0].planName}</span>
-                    )}
-                  </td>
-
-                  <td onClick={() => handleView(admin)}>{admin.adminId}</td>
-                  <td onClick={() => handleView(admin)}><small className="text-muted">{admin.address}</small></td>
-
-                  <td onClick={() => handleView(admin)}>
-                    <div><strong>{admin.phone}</strong></div>
-                    <small className="text-muted">{admin.role}</small>
-                  </td>
-
-                  <td onClick={() => handleView(admin)}>{getStatusBadge(admin.status)}</td>
-
+                <tr key={admin.id} className="hover-row">
+                  <td><strong>{admin.name}</strong></td>
+                  <td>{admin.plans?.[0]?.planName || <span className="text-muted">No Plan</span>}</td>
+                  <td>{admin.adminId}</td>
+                  <td><small className="text-muted">{admin.address}</small></td>
+                  <td><div><strong>{admin.phone}</strong></div><small className="text-muted">{admin.role}</small></td>
+                  <td>{getStatusBadge(admin.status)}</td>
                   <td className="text-center">
                     <div className="d-flex justify-content-center gap-1">
-                      <button className="btn btn-sm btn-outline-secondary" onClick={(e) => { e.stopPropagation(); handleView(admin); }}>
+                      <button className="btn btn-sm btn-outline-secondary" onClick={() => handleView(admin)}>
                         <FaEye size={14} />
                       </button>
-
-                      <button className="btn btn-sm btn-outline-primary" onClick={(e) => { e.stopPropagation(); handleEdit(admin); }}>
+                      <button className="btn btn-sm btn-outline-primary" onClick={() => handleEdit(admin)}>
                         <FaEdit size={14} />
                       </button>
-
-                      <button className="btn btn-sm btn-outline-danger" onClick={(e) => { e.stopPropagation(); handleDeleteClick(admin); }}>
+                      <button className="btn btn-sm btn-outline-danger" onClick={() => handleDeleteClick(admin)}>
                         <FaTrashAlt size={14} />
                       </button>
                     </div>
                   </td>
-
                 </tr>
               ))}
             </tbody>
@@ -179,16 +163,15 @@ const SuperAdminAdmin = () => {
         </div>
       </div>
 
+      {/* Add/Edit/View Modal */}
       {isModalOpen && (
         <div className="modal fade show" tabIndex="-1" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }} onClick={closeModal}>
           <div className="modal-dialog modal-lg modal-dialog-centered" onClick={(e) => e.stopPropagation()}>
             <div className="modal-content">
-
               <div className="modal-header border-0 pb-0">
                 <h5 className="modal-title fw-bold">{getModalTitle()}</h5>
                 <button type="button" className="btn-close" onClick={closeModal}></button>
               </div>
-
               <div className="modal-body p-4">
                 <AdminForm
                   mode={modalType}
@@ -200,34 +183,30 @@ const SuperAdminAdmin = () => {
                   }}
                 />
               </div>
-
             </div>
           </div>
         </div>
       )}
 
+      {/* Delete Modal */}
       {isDeleteModalOpen && (
         <div className="modal fade show" tabIndex="-1" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }} onClick={closeDeleteModal}>
           <div className="modal-dialog modal-dialog-centered" onClick={(e) => e.stopPropagation()}>
             <div className="modal-content">
-
               <div className="modal-header border-0 pb-0">
                 <h5 className="modal-title fw-bold">Confirm Deletion</h5>
                 <button className="btn-close" onClick={closeDeleteModal}></button>
               </div>
-
               <div className="modal-body text-center py-4">
                 <h5>Are you sure?</h5>
                 <p className="text-muted">
                   This will permanently delete <strong>{selectedAdmin?.name}</strong>.
                 </p>
               </div>
-
               <div className="modal-footer border-0 justify-content-center pb-4">
                 <button className="btn btn-outline-secondary px-4" onClick={closeDeleteModal}>Cancel</button>
                 <button className="btn btn-danger px-4" onClick={confirmDelete}>Delete</button>
               </div>
-
             </div>
           </div>
         </div>
@@ -237,26 +216,22 @@ const SuperAdminAdmin = () => {
   );
 };
 
-
-// ---------------------------
-// AdminForm (previously OwnerForm) stays same except labels changed to Admin
-// ---------------------------
+// AdminForm Component
 const AdminForm = ({ mode, admin, onCancel, onSubmit }) => {
   const isView = mode === 'view';
   const isAdd = mode === 'add';
-
   const initialActive = (admin?.status || 'Inactive') === 'Active';
 
   const planOptions = {
-    Gold: { price: "1200", duration: "12 Months", description: "Best premium plan with full access" },
-    Silver: { price: "800", duration: "6 Months", description: "Affordable mid-range plan for regular users" },
-    Basic: { price: "500", duration: "3 Months", description: "Starter plan for new gym members" }
+    Gold: { price: "1200", duration: "12 Months", description: "Full access plan" },
+    Silver: { price: "800", duration: "6 Months", description: "Mid-tier plan" },
+    Basic: { price: "500", duration: "3 Months", description: "Starter plan" }
   };
 
-  const [selectedPlan, setSelectedPlan] = useState(admin?.plans?.[0]?.planName || "");
-  const [planPrice, setPlanPrice] = useState(admin?.plans?.[0]?.price || "");
-  const [planDuration, setPlanDuration] = useState(admin?.plans?.[0]?.duration || "");
-  const [planDescription, setPlanDescription] = useState(admin?.plans?.[0]?.description || "");
+  const [selectedPlan, setSelectedPlan] = React.useState(admin?.plans?.[0]?.planName || "");
+  const [planPrice, setPlanPrice] = React.useState(admin?.plans?.[0]?.price || "");
+  const [planDuration, setPlanDuration] = React.useState(admin?.plans?.[0]?.duration || "");
+  const [planDescription, setPlanDescription] = React.useState(admin?.plans?.[0]?.description || "");
 
   const handlePlanChange = (e) => {
     const plan = e.target.value;
@@ -277,7 +252,6 @@ const AdminForm = ({ mode, admin, onCancel, onSubmit }) => {
     if (isView) return onCancel();
     const fd = new FormData(e.currentTarget);
     const data = Object.fromEntries(fd.entries());
-
     const payload = {
       name: data.name,
       gymName: data.gymName,
@@ -300,7 +274,6 @@ const AdminForm = ({ mode, admin, onCancel, onSubmit }) => {
           <label className="form-label">Admin Name *</label>
           <input name="name" className="form-control" defaultValue={admin?.name || ""} readOnly={isView} />
         </div>
-
         {isAdd ? (
           <div className="col-md-6">
             <label className="form-label">Gym Name *</label>
