@@ -4,15 +4,14 @@ import { FaEye, FaTrash } from "react-icons/fa";
 
 const Attendance = () => {
   const [search, setSearch] = useState("");
-  // 👇 naya state for view modal
   const [showViewModal, setShowViewModal] = useState(false);
   const [viewMember, setViewMember] = useState(null);
-  // 👇 filter states
   const [filters, setFilters] = useState({
     memberId: "",
     memberName: "",
     status: "",
   });
+
   const [attendance, setAttendance] = useState([
     {
       attendance_id: 1,
@@ -40,7 +39,7 @@ const Attendance = () => {
       name: "Vidhya Sharma",
       status: "Late",
       checkin_time: "07:30",
-      checkout_time: "08:30",
+      checkout_time: "",
       mode: "Manual",
       notes: "Came late due to traffic",
     },
@@ -53,14 +52,36 @@ const Attendance = () => {
     }
   };
 
-  // Handle status change
+  // Handle status change with dynamic logic
   const handleStatusChange = (id, newStatus) => {
-    setAttendance(attendance.map(member => 
-      member.attendance_id === id ? { ...member, status: newStatus } : member
-    ));
+    setAttendance(attendance.map((member) => {
+      if (member.attendance_id === id) {
+        let updatedMember = { ...member, status: newStatus };
+
+        if (newStatus === "Present") {
+          if (!member.checkin_time) {
+            const now = new Date();
+            updatedMember.checkin_time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          }
+        } else if (newStatus === "Absent") {
+          updatedMember.checkin_time = "";
+          updatedMember.checkout_time = "";
+          updatedMember.mode = "";
+        } else if (newStatus === "Late") {
+          if (!member.checkin_time) {
+            const now = new Date();
+            updatedMember.checkin_time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          }
+          updatedMember.checkout_time = "";
+        }
+
+        return updatedMember;
+      }
+      return member;
+    }));
   };
 
-  // Apply filters
+  // Filtered attendance
   const filteredAttendance = attendance.filter((m) => {
     return (
       (filters.memberId
@@ -80,9 +101,9 @@ const Attendance = () => {
       <p className="text-muted mb-4">
         Manage and track attendance records for gym members.
       </p>
-      
-      {/* 🔍 Filters Row */}
-      <Row className="mb-5 g-2">
+
+      {/* Filters Row */}
+      <Row className="mb-4 g-2">
         <Col md={3}>
           <Form.Control
             type="text"
@@ -114,12 +135,12 @@ const Attendance = () => {
             <option value="Late">Late</option>
           </Form.Select>
         </Col>
-        <Col md={3} >
+        <Col md={3}>
           <Button variant="outline-secondary me-2 ms-5">Filter</Button>
           <Button variant="outline-secondary">Export</Button>
         </Col>
       </Row>
-    
+
       {/* Attendance Table */}
       <Table bordered hover responsive className="align-middle">
         <thead style={{ backgroundColor: "#f8f9fa" }}>
@@ -161,8 +182,49 @@ const Attendance = () => {
               </td>
               <td>{member.checkin_time || "--"}</td>
               <td>{member.checkout_time || "--"}</td>
-              <td>{member.mode || "--"}</td>
-              <td>{member.notes || "--"}</td>
+
+              {/* Editable Mode */}
+              <td>
+                {(member.status === "Present" || member.status === "Late") ? (
+                  <Form.Select
+                    size="sm"
+                    value={member.mode || ""}
+                    onChange={(e) => {
+                      setAttendance(attendance.map(m =>
+                        m.attendance_id === member.attendance_id
+                          ? { ...m, mode: e.target.value }
+                          : m
+                      ));
+                    }}
+                  >
+                    <option value="">--Select--</option>
+                    <option value="QR">QR</option>
+                    <option value="Manual">Manual</option>
+                    <option value="App">App</option>
+                  </Form.Select>
+                ) : (
+                  member.mode || "--"
+                )}
+              </td>
+
+              <td>
+                {member.status === "Late" ? (
+                  <Form.Control
+                    type="text"
+                    size="sm"
+                    value={member.notes}
+                    onChange={(e) => {
+                      setAttendance(attendance.map(m => 
+                        m.attendance_id === member.attendance_id 
+                        ? { ...m, notes: e.target.value } 
+                        : m
+                      ));
+                    }}
+                  />
+                ) : (
+                  member.notes || "--"
+                )}
+              </td>
               <td>
                 <div className="d-flex gap-2">
                   <Button
@@ -175,6 +237,21 @@ const Attendance = () => {
                   >
                     <FaEye />
                   </Button>
+                  {member.status === "Present" || member.status === "Late" ? (
+                    <Button
+                      variant="outline-success"
+                      size="sm"
+                      onClick={() => {
+                        setAttendance(attendance.map(m => 
+                          m.attendance_id === member.attendance_id 
+                          ? { ...m, checkout_time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) } 
+                          : m
+                        ));
+                      }}
+                    >
+                      Check-out
+                    </Button>
+                  ) : null}
                   <Button
                     variant="outline-danger"
                     size="sm"
@@ -188,7 +265,7 @@ const Attendance = () => {
           ))}
         </tbody>
       </Table>
-      
+
       {/* View Modal */}
       <Modal
         show={showViewModal}
@@ -201,42 +278,20 @@ const Attendance = () => {
         <Modal.Body>
           {viewMember && (
             <>
-              <p>
-                <b>Attendance ID:</b> {viewMember.attendance_id}
-              </p>
-              <p>
-                <b>Member ID:</b> {viewMember.member_id}
-              </p>
-              <p>
-                <b>Name:</b> {viewMember.name}
-              </p>
+              <p><b>Attendance ID:</b> {viewMember.attendance_id}</p>
+              <p><b>Member ID:</b> {viewMember.member_id}</p>
+              <p><b>Name:</b> {viewMember.name}</p>
               <p>
                 <b>Status:</b> 
-                {viewMember.status === "Present" && (
-                  <Badge bg="success ms-2">Present</Badge>
-                )}
-                {viewMember.status === "Absent" && (
-                  <Badge bg="danger ms-2">Absent</Badge>
-                )}
-                {viewMember.status === "Late" && (
-                  <Badge bg="warning" text="dark" ms-2>
-                    Late
-                  </Badge>
-                )}
+                {viewMember.status === "Present" && <Badge bg="success ms-2">Present</Badge>}
+                {viewMember.status === "Absent" && <Badge bg="danger ms-2">Absent</Badge>}
+                {viewMember.status === "Late" && <Badge bg="warning" text="dark" className="ms-2">Late</Badge>}
                 {!viewMember.status && <Badge bg="secondary ms-2">Not Marked</Badge>}
               </p>
-              <p>
-                <b>Check-in:</b> {viewMember.checkin_time || "--"}
-              </p>
-              <p>
-                <b>Check-out:</b> {viewMember.checkout_time || "--"}
-              </p>
-              <p>
-                <b>Mode:</b> {viewMember.mode || "--"}
-              </p>
-              <p>
-                <b>Notes:</b> {viewMember.notes || "--"}
-              </p>
+              <p><b>Check-in:</b> {viewMember.checkin_time || "--"}</p>
+              <p><b>Check-out:</b> {viewMember.checkout_time || "--"}</p>
+              <p><b>Mode:</b> {viewMember.mode || "--"}</p>
+              <p><b>Notes:</b> {viewMember.notes || "--"}</p>
             </>
           )}
         </Modal.Body>

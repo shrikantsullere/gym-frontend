@@ -1,11 +1,13 @@
 import React, { useState, useMemo } from 'react';
-import { Container, Row, Col, Nav, Tab, Card, Table, Button, Modal, Badge } from 'react-bootstrap';
-import { FaEye, FaCalendar, FaClock, FaUsers, FaRupeeSign, FaEnvelope, FaPhone, FaCheckCircle, FaExclamationCircle, FaTimesCircle } from 'react-icons/fa';
+import { Container, Row, Col, Nav, Tab, Card, Table, Button, Modal, Badge, Form, Dropdown } from 'react-bootstrap';
+import { FaEye, FaCalendar, FaClock, FaUsers, FaRupeeSign, FaEnvelope, FaPhone, FaCheckCircle, FaExclamationCircle, FaTimesCircle, FaFilter } from 'react-icons/fa';
 
 const GroupPlansBookings = () => {
   const [selectedPlanTab, setSelectedPlanTab] = useState(null);
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [dateFilter, setDateFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
 
   // Group Training Plans (Read-only, comes from admin)
   const groupPlans = [
@@ -106,7 +108,35 @@ const GroupPlansBookings = () => {
 
   // Get customers for selected plan
   const getCustomersForPlan = (planId) => {
-    return planCustomers[planId] || [];
+    let customers = planCustomers[planId] || [];
+    
+    // Apply date filter
+    if (dateFilter) {
+      customers = customers.filter(customer => {
+        const purchaseDate = new Date(customer.purchaseDate);
+        const filterDate = new Date(dateFilter);
+        return purchaseDate.toDateString() === filterDate.toDateString();
+      });
+    }
+    
+    // Apply status filter
+    if (statusFilter !== 'all') {
+      customers = customers.filter(customer => {
+        const today = new Date();
+        const expiryDate = new Date(customer.expiryDate);
+        
+        if (statusFilter === 'active') {
+          return customer.sessionsRemaining > 0 && expiryDate >= today;
+        } else if (statusFilter === 'expired') {
+          return expiryDate < today;
+        } else if (statusFilter === 'completed') {
+          return customer.sessionsRemaining === 0;
+        }
+        return true;
+      });
+    }
+    
+    return customers;
   };
 
   // Handle view customer details
@@ -137,6 +167,12 @@ const GroupPlansBookings = () => {
     return totalSessions > 0 ? Math.round((sessionsBooked / totalSessions) * 100) : 0;
   };
 
+  // Reset filters
+  const resetFilters = () => {
+    setDateFilter('');
+    setStatusFilter('all');
+  };
+
   return (
     <div className="bg-light min-vh-100">
       <Container fluid className="py-4 px-md-5">
@@ -145,14 +181,32 @@ const GroupPlansBookings = () => {
             Group Training Plans & Bookings
           </h1>
           <div className="d-flex gap-2">
-            <Button variant="outline-secondary" size="sm">
-              <FaCalendar className="me-2" />
-              Filter by Date
-            </Button>
-            <Button variant="outline-secondary" size="sm">
-              <FaUsers className="me-2" />
-              Filter by Status
-            </Button>
+            <div className="d-flex align-items-center gap-2">
+              <Form.Control
+                type="date"
+                size="sm"
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value)}
+                style={{ width: '150px' }}
+              />
+              <Dropdown>
+                <Dropdown.Toggle variant="outline-secondary" size="sm" id="status-filter-dropdown">
+                  <FaFilter className="me-1" />
+                  {statusFilter === 'all' ? 'All Status' : 
+                   statusFilter === 'active' ? 'Active' :
+                   statusFilter === 'expired' ? 'Expired' : 'Completed'}
+                </Dropdown.Toggle>
+                <Dropdown.Menu>
+                  <Dropdown.Item onClick={() => setStatusFilter('all')}>All Status</Dropdown.Item>
+                  <Dropdown.Item onClick={() => setStatusFilter('active')}>Active</Dropdown.Item>
+                  <Dropdown.Item onClick={() => setStatusFilter('expired')}>Expired</Dropdown.Item>
+                  <Dropdown.Item onClick={() => setStatusFilter('completed')}>Completed</Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown>
+              <Button variant="outline-secondary" size="sm" onClick={resetFilters}>
+                Reset
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -315,7 +369,7 @@ const GroupPlansBookings = () => {
                         return (
                           <tr>
                             <td colSpan="8" className="text-center py-5">
-                              <div className="text-muted">No members have purchased this group plan yet.</div>
+                              <div className="text-muted">No members found matching the current filters.</div>
                             </td>
                           </tr>
                         );
@@ -382,113 +436,103 @@ const GroupPlansBookings = () => {
           </Card>
         )}
 
-        {/* Member Details Modal */}
-        <Modal show={showCustomerModal} onHide={() => setShowCustomerModal(false)} centered size="lg">
-          <Modal.Header closeButton style={{ backgroundColor: '#f8f9fa', borderBottom: '2px solid #2f6a87' }}>
+        {/* Member Details Modal - Simplified Version */}
+        <Modal show={showCustomerModal} onHide={() => setShowCustomerModal(false)} centered>
+          <Modal.Header closeButton style={{ backgroundColor: '#f8f9fa', borderBottom: '1px solid #dee2e6' }}>
             <Modal.Title style={{ color: '#333', fontWeight: '600' }}>
                Member Details
             </Modal.Title>
           </Modal.Header>
-          <Modal.Body>
+          <Modal.Body className="p-3">
             {selectedCustomer && (
-              <div className="p-4">
-                <div className="row mb-4">
-                  <div className="col-md-8">
-                    <h4 className="fw-bold mb-3" style={{ color: '#333' }}>{selectedCustomer.name}</h4>
-                    <div className="d-flex flex-column gap-3">
-                      <div className="d-flex align-items-center gap-3">
-                        <div className="bg-light p-3 rounded d-flex align-items-center justify-content-center" style={{ width: '50px', height: '50px' }}>
-                          <FaEnvelope size={24} className="text-muted" />
-                        </div>
-                        <div>
-                          <div className="text-muted small">Email</div>
-                          <div className="fw-medium">{selectedCustomer.email}</div>
-                        </div>
-                      </div>
-                      <div className="d-flex align-items-center gap-3">
-                        <div className="bg-light p-3 rounded d-flex align-items-center justify-content-center" style={{ width: '50px', height: '50px' }}>
-                          <FaPhone size={24} className="text-muted" />
-                        </div>
-                        <div>
-                          <div className="text-muted small">Phone</div>
-                          <div className="fw-medium">{selectedCustomer.contact}</div>
-                        </div>
+              <div>
+                <div className="mb-3">
+                  <h5 className="fw-bold mb-2" style={{ color: '#2f6a87' }}>{selectedCustomer.name}</h5>
+                  <div className="d-flex align-items-center mb-2">
+                    <span className="text-muted me-2">Status:</span>
+                    {getStatusIndicator(selectedCustomer.sessionsRemaining, selectedCustomer.expiryDate)}
+                  </div>
+                </div>
+                
+                <div className="row mb-3">
+                  <div className="col-6">
+                    <div className="mb-2">
+                      <small className="text-muted d-block">Email</small>
+                      <div className="d-flex align-items-center">
+                        <FaEnvelope size={14} className="text-muted me-2" />
+                        <span>{selectedCustomer.email}</span>
                       </div>
                     </div>
                   </div>
-                  <div className="col-md-4 text-center">
-                    <div className="p-4 rounded" style={{ 
-                      backgroundColor: selectedCustomer.sessionsRemaining > 0 ? '#d4edda' : '#f8d7da',
-                      color: selectedCustomer.sessionsRemaining > 0 ? '#155724' : '#721c24',
-                      border: `2px solid ${selectedCustomer.sessionsRemaining > 0 ? '#c3e6cb' : '#f5c6cb'}`
-                    }}>
-                      <div className="fw-bold text-uppercase">
-                        {selectedCustomer.sessionsRemaining > 0 ? 'Active' : 'Expired'}
+                  <div className="col-6">
+                    <div className="mb-2">
+                      <small className="text-muted d-block">Phone</small>
+                      <div className="d-flex align-items-center">
+                        <FaPhone size={14} className="text-muted me-2" />
+                        <span>{selectedCustomer.contact}</span>
                       </div>
-                      <div className="small">Status</div>
                     </div>
                   </div>
                 </div>
                 
-                <div className="row g-4 mb-4">
-                  <div className="col-md-6">
-                    <div className="p-3 bg-light rounded" style={{ borderLeft: '4px solid #2f6a87' }}>
-                      <div className="d-flex align-items-center mb-2">
-                        <FaCalendar className="me-2" style={{ color: '#2f6a87' }} />
-                        <h6 className="mb-0 text-muted">Purchase Date</h6>
+                <div className="row mb-3">
+                  <div className="col-6">
+                    <div className="mb-2">
+                      <small className="text-muted d-block">Purchase Date</small>
+                      <div className="d-flex align-items-center">
+                        <FaCalendar size={14} className="text-muted me-2" />
+                        <span>{selectedCustomer.purchaseDate}</span>
                       </div>
-                      <div className="fw-bold" style={{ fontSize: '1.2rem' }}>{selectedCustomer.purchaseDate}</div>
                     </div>
                   </div>
-                  <div className="col-md-6">
-                    <div className="p-3 bg-light rounded">
-                      <div className="d-flex align-items-center mb-2">
-                        <FaCalendar className="me-2" style={{ color: '#dc3545' }} />
-                        <h6 className="mb-0 text-muted">Expiry Date</h6>
+                  <div className="col-6">
+                    <div className="mb-2">
+                      <small className="text-muted d-block">Expiry Date</small>
+                      <div className="d-flex align-items-center">
+                        <FaCalendar size={14} className="text-muted me-2" />
+                        <span>{selectedCustomer.expiryDate}</span>
                       </div>
-                      <div className="fw-bold" style={{ fontSize: '1.2rem' }}>{selectedCustomer.expiryDate}</div>
                     </div>
                   </div>
                 </div>
                 
-                <div className="p-4 bg-white rounded" style={{ border: '2px solid #2f6a87', borderRadius: '12px' }}>
-                  <h5 className="fw-bold mb-4" style={{ color: '#2f6a87' }}>Group Class Sessions</h5>
-                  <div className="row g-3">
-                    <div className="col-md-4">
-                      <div className="text-center p-3 bg-light rounded">
-                        <div className="fw-bold" style={{ fontSize: '1.8rem', color: '#2f6a87' }}>{selectedCustomer.sessionsBooked}</div>
-                        <div className="text-muted">Sessions Attended</div>
+                <div className="border-top pt-3">
+                  <h6 className="fw-bold mb-3" style={{ color: '#2f6a87' }}>Session Details</h6>
+                  <div className="row text-center">
+                    <div className="col-4">
+                      <div className="p-2 bg-light rounded">
+                        <div className="fw-bold" style={{ color: '#2f6a87' }}>{selectedCustomer.sessionsBooked}</div>
+                        <small className="text-muted">Attended</small>
                       </div>
                     </div>
-                    <div className="col-md-4">
-                      <div className="text-center p-3 bg-light rounded">
-                        <div className="fw-bold" style={{ fontSize: '1.8rem', color: '#2f6a87' }}>{selectedCustomer.sessionsRemaining}</div>
-                        <div className="text-muted">Sessions Remaining</div>
+                    <div className="col-4">
+                      <div className="p-2 bg-light rounded">
+                        <div className="fw-bold" style={{ color: '#2f6a87' }}>{selectedCustomer.sessionsRemaining}</div>
+                        <small className="text-muted">Remaining</small>
                       </div>
                     </div>
-                    <div className="col-md-4">
-                      <div className="text-center p-3 bg-light rounded">
-                        <div className="fw-bold" style={{ fontSize: '1.8rem', color: '#2f6a87' }}>
+                    <div className="col-4">
+                      <div className="p-2 bg-light rounded">
+                        <div className="fw-bold" style={{ color: '#2f6a87' }}>
                           {selectedCustomer.sessionsBooked + selectedCustomer.sessionsRemaining}
                         </div>
-                        <div className="text-muted">Total Sessions</div>
+                        <small className="text-muted">Total</small>
                       </div>
                     </div>
                   </div>
                   
-                  <div className="mt-4">
-                    <div className="d-flex justify-content-between mb-2">
-                      <span>Progress: {getProgressPercentage(selectedCustomer.sessionsBooked, selectedCustomer.sessionsRemaining)}%</span>
-                      <span>{selectedCustomer.sessionsBooked}/{selectedCustomer.sessionsBooked + selectedCustomer.sessionsRemaining}</span>
+                  <div className="mt-3">
+                    <div className="d-flex justify-content-between mb-1">
+                      <small>Progress: {getProgressPercentage(selectedCustomer.sessionsBooked, selectedCustomer.sessionsRemaining)}%</small>
+                      <small>{selectedCustomer.sessionsBooked}/{selectedCustomer.sessionsBooked + selectedCustomer.sessionsRemaining}</small>
                     </div>
-                    <div className="progress" style={{ height: '12px', borderRadius: '6px' }}>
+                    <div className="progress" style={{ height: '8px' }}>
                       <div 
                         className="progress-bar" 
                         role="progressbar" 
                         style={{ 
                           width: `${getProgressPercentage(selectedCustomer.sessionsBooked, selectedCustomer.sessionsRemaining)}%`,
-                          backgroundColor: '#2f6a87',
-                          borderRadius: '6px'
+                          backgroundColor: '#2f6a87'
                         }}
                       ></div>
                     </div>
@@ -497,18 +541,10 @@ const GroupPlansBookings = () => {
               </div>
             )}
           </Modal.Body>
-          <Modal.Footer style={{ borderTop: '1px solid #eee' }}>
+          <Modal.Footer style={{ borderTop: '1px solid #dee2e6' }}>
             <Button 
               variant="secondary" 
               onClick={() => setShowCustomerModal(false)}
-              style={{
-                backgroundColor: '#6c757d',
-                borderColor: '#6c757d',
-                color: 'white',
-                borderRadius: '50px',
-                padding: '8px 24px',
-                transition: 'background-color 0.3s ease'
-              }}
             >
               Close
             </Button>
