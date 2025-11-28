@@ -14,7 +14,7 @@ const SessionBookingPage = () => {
       duration: 60, 
       status: "Upcoming", 
       description: "Focus on upper body strength and core stability. We'll work on bench press, rows, and various core exercises.",
-      branchName: "Gym Floor" 
+      branchName: "Downtown"
     },
     { 
       id: 2, 
@@ -25,7 +25,7 @@ const SessionBookingPage = () => {
       duration: 45, 
       status: "Upcoming", 
       description: "High intensity interval training with a focus on cardiovascular endurance. Bring water and a towel!",
-      branchName: "Studio A" 
+      branchName: "North Branch"
     },
     { 
       id: 3, 
@@ -36,11 +36,23 @@ const SessionBookingPage = () => {
       duration: 60, 
       status: "Completed", 
       description: "Gentle stretching and mobility exercises to improve flexibility and aid recovery.",
-      branchName: "Studio B" 
+      branchName: "South Branch"
+    },
+    { 
+      id: 4, 
+      sessionName: "Evening Yoga",
+      trainer: "Sarah Williams", 
+      date: "2023-11-17", 
+      time: "6:00 PM", 
+      duration: 60, 
+      status: "Upcoming", 
+      description: "Relaxing yoga session to unwind after a long day. Suitable for all levels.",
+      branchName: "East Branch"
     }
   ]);
 
   const [statusFilter, setStatusFilter] = useState('All');
+  const [branchFilter, setBranchFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddSessionModal, setShowAddSessionModal] = useState(false);
   const [showViewSessionModal, setShowViewSessionModal] = useState(false);
@@ -58,15 +70,19 @@ const SessionBookingPage = () => {
   });
 
   const customColor = '#6EB2CC';
+  
+  // Get unique branches from sessions
+  const branches = [...new Set(sessions.map(session => session.branchName))];
 
   const filteredSessions = sessions.filter(session => {
     const matchesStatus = statusFilter === 'All' || session.status === statusFilter;
+    const matchesBranch = branchFilter === 'All' || session.branchName === branchFilter;
     const matchesSearch =
       searchQuery === '' ||
       session.sessionName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       session.trainer.toLowerCase().includes(searchQuery.toLowerCase());
 
-    return matchesStatus && matchesSearch;
+    return matchesStatus && matchesBranch && matchesSearch;
   });
 
   const handleViewSession = (session) => {
@@ -77,7 +93,7 @@ const SessionBookingPage = () => {
   const handleAddSession = () => {
     // Validation
     if (!newSession.sessionName || !newSession.trainer || 
-        !newSession.date || !newSession.time || !newSession.description) {
+        !newSession.date || !newSession.time || !newSession.description || !newSession.branchName) {
       alert('Please fill in all required fields');
       return;
     }
@@ -130,7 +146,7 @@ const SessionBookingPage = () => {
     }
   };
 
-  // Time options for the dropdown
+  // Time options for dropdown
   const timeOptions = [];
   for (let hour = 0; hour < 24; hour++) {
     for (let minute = 0; minute < 60; minute += 30) {
@@ -149,8 +165,8 @@ const SessionBookingPage = () => {
 
       <div className="card shadow-sm">
         <div className="card-header bg-light d-flex justify-content-between align-items-center flex-wrap">
-          <div className="d-flex align-items-center mb-2 mb-md-0">
-            <div className="input-group me-2" style={{ width: '250px' }}>
+          <div className="d-flex align-items-center mb-2 mb-md-0 flex-wrap">
+            <div className="input-group me-2 mb-2 mb-md-0" style={{ width: '250px' }}>
               <span className="input-group-text"><FaSearch /></span>
               <input 
                 type="text" 
@@ -160,7 +176,7 @@ const SessionBookingPage = () => {
                 onChange={(e) => setSearchQuery(e.target.value)} 
               />
             </div>
-            <div className="input-group" style={{ width: '200px' }}>
+            <div className="input-group me-2 mb-2 mb-md-0" style={{ width: '200px' }}>
               <span className="input-group-text"><FaFilter /></span>
               <select 
                 className="form-select" 
@@ -171,6 +187,19 @@ const SessionBookingPage = () => {
                 <option value="Upcoming">Upcoming</option>
                 <option value="Completed">Completed</option>
                 <option value="Cancelled">Cancelled</option>
+              </select>
+            </div>
+            <div className="input-group mb-2 mb-md-0" style={{ width: '200px' }}>
+              <span className="input-group-text"><FaFilter /></span>
+              <select 
+                className="form-select" 
+                value={branchFilter} 
+                onChange={(e) => setBranchFilter(e.target.value)}
+              >
+                <option value="All">All Branches</option>
+                {branches.map(branch => (
+                  <option key={branch} value={branch}>{branch}</option>
+                ))}
               </select>
             </div>
           </div>
@@ -191,6 +220,7 @@ const SessionBookingPage = () => {
                   <th>Session Name</th>
                   <th>Trainer</th>
                   <th>Date & Time</th>
+                  <th>Branch</th>
                   <th>Status</th>
                   <th>Actions</th>
                 </tr>
@@ -208,6 +238,11 @@ const SessionBookingPage = () => {
                     <td>
                       <div>{s.date}</div>
                       <div className="text-muted small">{s.time}</div>
+                    </td>
+                    <td>
+                      <span className="badge bg-light text-dark">
+                        {s.branchName}
+                      </span>
                     </td>
                     <td>
                       <span className={`badge 
@@ -257,7 +292,7 @@ const SessionBookingPage = () => {
                   </tr>
                 )) : (
                   <tr>
-                    <td colSpan="5" className="text-center py-4">
+                    <td colSpan="6" className="text-center py-4">
                       No sessions found
                     </td>
                   </tr>
@@ -342,13 +377,18 @@ const SessionBookingPage = () => {
                       />
                     </div>
                     <div className="col-md-6 mb-3">
-                      <label className="form-label">Branch Name</label>
-                      <input 
-                        type="text" 
-                        className="form-control" 
+                      <label className="form-label">Branch Name *</label>
+                      <select 
+                        className="form-select" 
                         value={newSession.branchName} 
-                        onChange={(e) => setNewSession({...newSession, branchName: e.target.value})} 
-                      />
+                        onChange={(e) => setNewSession({...newSession, branchName: e.target.value})}
+                        required
+                      >
+                        <option value="">Select branch</option>
+                        {branches.map(branch => (
+                          <option key={branch} value={branch}>{branch}</option>
+                        ))}
+                      </select>
                     </div>
                   </div>
                   <div className="mb-3">
@@ -405,7 +445,7 @@ const SessionBookingPage = () => {
                     <p><strong>Date:</strong> {selectedSession.date}</p>
                     <p><strong>Time:</strong> {selectedSession.time}</p>
                     <p><strong>Duration:</strong> {selectedSession.duration} minutes</p>
-                    {selectedSession.branchName && <p><strong>Branch Name:</strong> {selectedSession.branchName}</p>}
+                    <p><strong>Branch:</strong> {selectedSession.branchName}</p>
                     <p>
                       <strong>Status:</strong>{" "}
                       <span className={`badge 
@@ -482,7 +522,8 @@ const SessionBookingPage = () => {
                     <strong>Session:</strong> {selectedSession.sessionName}<br />
                     <strong>Trainer:</strong> {selectedSession.trainer}<br />
                     <strong>Date:</strong> {selectedSession.date}<br />
-                    <strong>Time:</strong> {selectedSession.time}
+                    <strong>Time:</strong> {selectedSession.time}<br />
+                    <strong>Branch:</strong> {selectedSession.branchName}
                   </div>
                 </div>
                 <div className="modal-footer">

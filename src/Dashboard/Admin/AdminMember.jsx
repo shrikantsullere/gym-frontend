@@ -71,6 +71,7 @@ const AdminMember = () => {
   const [showEditForm, setShowEditForm] = useState(false);
   const [selectedMember, setSelectedMember] = useState(null);
   const [filterStatus, setFilterStatus] = useState("");
+  const [filterBranch, setFilterBranch] = useState("");
   
   // Form states
   const [newMember, setNewMember] = useState({
@@ -106,12 +107,16 @@ const AdminMember = () => {
     amountPaid: ""
   });
 
-  // Filter members based on search term and status
+  // Get unique branches for filter
+  const uniqueBranches = [...new Set(members.map(member => member.branch))];
+
+  // Filter members based on search term, status and branch
   const filteredMembers = members.filter(member => {
     const matchesSearch = member.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                          member.phone.includes(searchTerm);
     const matchesStatus = filterStatus === "" || member.status === filterStatus;
-    return matchesSearch && matchesStatus;
+    const matchesBranch = filterBranch === "" || member.branch === filterBranch;
+    return matchesSearch && matchesStatus && matchesBranch;
   });
 
   // Handle add member
@@ -280,7 +285,7 @@ const AdminMember = () => {
 
       {/* Search and Filter - Responsive */}
       <div className="row mb-3 mb-md-4 g-2 g-md-3">
-        <div className="col-12 col-md-6">
+        <div className="col-12 col-md-4">
           <div className="input-group">
             <span className="input-group-text">
               <Search size={18} />
@@ -294,7 +299,19 @@ const AdminMember = () => {
             />
           </div>
         </div>
-        <div className="col-12 col-md-6">
+        <div className="col-12 col-md-4">
+          <select 
+            className="form-select"
+            value={filterBranch}
+            onChange={(e) => setFilterBranch(e.target.value)}
+          >
+            <option value="">All Branches</option>
+            {uniqueBranches.map(branch => (
+              <option key={branch} value={branch}>{branch}</option>
+            ))}
+          </select>
+        </div>
+        <div className="col-12 col-md-4">
           <select 
             className="form-select"
             value={filterStatus}
