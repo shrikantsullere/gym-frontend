@@ -195,7 +195,105 @@ const HouseKeepingDashboard = () => {
           </div>
 
         </div>
+<<<<<<< HEAD
 
+=======
+        
+        {/* Weekly Duty Roster */}
+        {/* <div className="card shadow-sm mb-4">
+          <div className="card-body">
+            <h2 className="h5 fw-semibold mb-4">Weekly Duty Roster</h2>
+            <div className="overflow-auto">
+              <div className="d-flex gap-3 pb-3" style={{ minWidth: 'max-content' }}>
+                <div className="flex-shrink-0" style={{ width: '128px' }}>
+                  <div className="text-center mb-3">
+                    <div className="fw-medium">Mon</div>
+                    <div className="text-muted small">Sep 2</div>
+                  </div>
+                  <div className="bg-success bg-opacity-10 border-start border-success border-4 p-3 rounded">
+                    <div className="fw-medium text-success small">8:00 AM - 4:00 PM</div>
+                    <div className="text-success small mt-1">Locker Area</div>
+                    <div className="text-success small mt-1">✅ Completed</div>
+                  </div>
+                </div>
+                
+                <div className="flex-shrink-0" style={{ width: '128px' }}>
+                  <div className="text-center mb-3">
+                    <div className="fw-medium">Tue</div>
+                    <div className="text-muted small">Sep 3</div>
+                  </div>
+                  <div className="bg-success bg-opacity-10 border-start border-success border-4 p-3 rounded">
+                    <div className="fw-medium text-success small">8:00 AM - 4:00 PM</div>
+                    <div className="text-success small mt-1">Cardio Zone</div>
+                    <div className="text-success small mt-1">✅ Completed</div>
+                  </div>
+                </div>
+                
+                <div className="flex-shrink-0" style={{ width: '128px' }}>
+                  <div className="text-center mb-3">
+                    <div className="fw-medium">Wed</div>
+                    <div className="text-muted small">Sep 4</div>
+                  </div>
+                  <div className="bg-primary bg-opacity-10 border-start border-primary border-4 p-3 rounded">
+                    <div className="fw-medium text-primary small">8:00 AM - 4:00 PM</div>
+                    <div className="text-primary small mt-1">Reception Area</div>
+                    <div className="text-primary small mt-1">🔄 In Progress</div>
+                  </div>
+                </div>
+                
+                <div className="flex-shrink-0" style={{ width: '128px' }}>
+                  <div className="text-center mb-3">
+                    <div className="fw-medium">Thu</div>
+                    <div className="text-muted small">Sep 5</div>
+                  </div>
+                  <div className="bg-light border-start border-secondary border-4 p-3 rounded">
+                    <div className="fw-medium text-secondary small">2:00 PM - 10:00 PM</div>
+                    <div className="text-muted small mt-1">Weight Room</div>
+                    <div className="text-muted small mt-1">⏳ Upcoming</div>
+                  </div>
+                </div>
+                
+                <div className="flex-shrink-0" style={{ width: '128px' }}>
+                  <div className="text-center mb-3">
+                    <div className="fw-medium">Fri</div>
+                    <div className="text-muted small">Sep 6</div>
+                  </div>
+                  <div className="bg-warning bg-opacity-10 border-start border-warning border-4 p-3 rounded">
+                    <div className="fw-medium text-warning small">6:00 AM - 2:00 PM</div>
+                    <div className="text-warning small mt-1">Pool Area</div>
+                    <div className="text-warning small mt-1">⚡ Overtime</div>
+                  </div>
+                </div>
+                
+                <div className="flex-shrink-0" style={{ width: '128px' }}>
+                  <div className="text-center mb-3">
+                    <div className="fw-medium">Sat</div>
+                    <div className="text-muted small">Sep 7</div>
+                  </div>
+                  <div className="bg-light border-start border-secondary border-4 p-3 rounded">
+                    <div className="fw-medium text-secondary small">8:00 AM - 4:00 PM</div>
+                    <div className="text-muted small mt-1">Full Facility</div>
+                    <div className="text-muted small mt-1">⏳ Upcoming</div>
+                  </div>
+                </div>
+                
+                <div className="flex-shrink-0" style={{ width: '128px' }}>
+                  <div className="text-center mb-3">
+                    <div className="fw-medium">Sun</div>
+                    <div className="text-muted small">Sep 8</div>
+                  </div>
+                  <div className="bg-white border-start border-light border-4 p-3 rounded">
+                    <div className="fw-medium text-muted small">Day Off</div>
+                    <div className="text-muted small mt-1">Rest Day</div>
+                    <div className="text-muted small mt-1">🏠 Off</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div> */}
+        
+>>>>>>> bcaa2035232fe78a220ed0299beb6d8aae3aa95e
         {/* Charts Section */}
         <div className="row g-3">
           <div className="col-12 col-lg-6">

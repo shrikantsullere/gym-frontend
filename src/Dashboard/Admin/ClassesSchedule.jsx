@@ -9,7 +9,7 @@ const ClassesSchedule = () => {
   const [selectedClass, setSelectedClass] = useState(null);
   const [memberSearch, setMemberSearch] = useState('');
 
-  // क्लासेस का डेटा - हर क्लास में members ऐरे है जिससे काउंट आता है
+  // Classes data - each class has a members array for counting
   const [classes, setClasses] = useState([
     {
       id: 101,
@@ -20,7 +20,7 @@ const ClassesSchedule = () => {
       schedule_day: "Tuesday",
       status: "Active",
       branch: "Downtown",
-      members: ["Alice", "Bob"]  // यहाँ 2 मेंबर हैं - काउंट = 2
+      members: ["Alice", "Bob"]  // 2 members here - count = 2
     },
     {
       id: 102,
@@ -31,13 +31,13 @@ const ClassesSchedule = () => {
       schedule_day: "Thursday",
       status: "Active",
       branch: "North Branch",
-      members: ["Charlie"]  // यहाँ 1 मेंबर है - काउंट = 1
+      members: ["Charlie"]  // 1 member here - count = 1
     }
   ]);
 
   const handleAddNew = () => {
     setModalType('add');
-    setSelectedClass({ members: [], branch: "Downtown" });  // नई क्लास में 0 मेंबर और डिफ़ॉल्ट ब्रांच
+    setSelectedClass({ members: [], branch: "Downtown" });  // New class with 0 members and default branch
     setMemberSearch('');
     setIsModalOpen(true);
   };
@@ -106,17 +106,17 @@ const ClassesSchedule = () => {
     return `CLASS${String(maxId + 1).padStart(3, '0')}`;
   };
 
-  // मेंबर ऐड करने का फंक्शन - members ऐरे में नाम ऐड होता है
+  // Function to add a member - adds name to members array
   const addMember = () => {
     if (!memberSearch.trim()) return;
     
-    // चेक करें कि मेंबर पहले से है या नहीं
+    // Check if member already exists
     if (selectedClass?.members?.includes(memberSearch.trim())) {
       alert(`"${memberSearch}" is already in this class.`);
       return;
     }
     
-    // members ऐरे में नया मेंबर ऐड करें
+    // Add new member to the members array
     setSelectedClass({
       ...selectedClass,
       members: [...(selectedClass.members || []), memberSearch.trim()]
@@ -124,7 +124,7 @@ const ClassesSchedule = () => {
     setMemberSearch('');
   };
 
-  // मेंबर रिमूव करने का फंक्शन - members ऐरे से नाम हटाता है
+  // Function to remove a member - removes name from members array
   const removeMember = (member) => {
     if (!selectedClass) return;
     setSelectedClass({
@@ -148,7 +148,7 @@ const ClassesSchedule = () => {
         time: selectedClass.time || "10:00 - 11:00",
         status: selectedClass.status || "Active",
         branch: selectedClass.branch || "Downtown",
-        members: selectedClass.members || []  // मेंबर्स सेव हो रहे हैं
+        members: selectedClass.members || []  // Members are being saved
       };
       setClasses(prev => [...prev, newClass]);
       alert('New class added successfully!');
@@ -158,6 +158,72 @@ const ClassesSchedule = () => {
     }
     closeModal();
   };
+
+  // Mobile card view for classes
+  const MobileClassCard = ({ gymClass }) => (
+    <div className="card mb-3 shadow-sm">
+      <div className="card-body">
+        <div className="d-flex justify-content-between align-items-start mb-2">
+          <h5 className="card-title mb-0">{gymClass.class_name}</h5>
+          <div className="d-flex gap-1">
+            <button 
+              className="btn btn-sm btn-outline-secondary action-btn" 
+              title="View"
+              onClick={() => handleView(gymClass)}
+            >
+              <FaEye size={14} />
+            </button>
+            <button 
+              className="btn btn-sm" 
+              title="Edit"
+              onClick={() => handleEdit(gymClass)}
+              style={{ 
+                borderColor: '#6EB2CC',
+                color: '#6EB2CC'
+              }}
+            >
+              <FaEdit size={14} />
+            </button>
+            <button 
+              className="btn btn-sm btn-outline-danger action-btn" 
+              title="Delete"
+              onClick={() => handleDeleteClick(gymClass)}
+            >
+              <FaTrashAlt size={14} />
+            </button>
+          </div>
+        </div>
+        
+        <div className="row mb-2">
+          <div className="col-6">
+            <p className="mb-1"><strong>Trainer:</strong> {gymClass.trainer_name}</p>
+            <p className="mb-1"><strong>Branch:</strong> {getBranchBadge(gymClass.branch)}</p>
+          </div>
+          <div className="col-6">
+            <p className="mb-1"><strong>Date:</strong> {gymClass.date}</p>
+            <p className="mb-1"><strong>Time:</strong> {gymClass.time}</p>
+          </div>
+        </div>
+        
+        <div className="d-flex justify-content-between align-items-center">
+          <div>
+            <span className="me-2"><strong>Day:</strong> {gymClass.schedule_day}</span>
+            <span><strong>Status:</strong> {getStatusBadge(gymClass.status)}</span>
+          </div>
+          <div>
+            {/* Member count from members array length */}
+            {(gymClass.members || []).length > 0 ? (
+              <span className="badge bg-light text-dark">
+                {(gymClass.members || []).length} {(gymClass.members || []).length === 1 ? 'Member' : 'Members'}
+              </span>
+            ) : (
+              <span className="text-muted">No members</span>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="container-fluid py-4">
@@ -185,77 +251,86 @@ const ClassesSchedule = () => {
         </div>
       </div>
 
-      {/* Table */}
-      <div className="card shadow-sm border-0">
-        <div className="table-responsive">
-          <table className="table table-hover align-middle mb-0">
-            <thead className="bg-light">
-              <tr>
-                <th className="fw-semibold">CLASS NAME</th>
-                <th className="fw-semibold">TRAINER</th>
-                <th className="fw-semibold">BRANCH</th>
-                <th className="fw-semibold">DATE</th>
-                <th className="fw-semibold">TIME</th>
-                <th className="fw-semibold">DAY</th>
-                <th className="fw-semibold">STATUS</th>
-                <th className="fw-semibold">MEMBERS</th>
-                <th className="fw-semibold text-center">ACTIONS</th>
-              </tr>
-            </thead>
-            <tbody>
-              {classes.map(c => (
-                <tr key={c.id}>
-                  <td>{c.class_name}</td>
-                  <td>{c.trainer_name}</td>
-                  <td>{getBranchBadge(c.branch)}</td>
-                  <td>{c.date}</td>
-                  <td>{c.time}</td>
-                  <td>{c.schedule_day}</td>
-                  <td>{getStatusBadge(c.status)}</td>
-                  <td>
-                    {/* यहाँ मेंबर काउंट आ रहा है members ऐरे की लेंथ से */}
-                    {(c.members || []).length > 0 ? (
-                      <span className="badge bg-light text-dark">
-                        {(c.members || []).length} {(c.members || []).length === 1 ? 'Member' : 'Members'}
-                      </span>
-                    ) : (
-                      <span className="text-muted">No members</span>
-                    )}
-                  </td>
-                  <td className="text-center">
-                    <div className="d-flex justify-content-center gap-1">
-                      <button 
-                        className="btn btn-sm btn-outline-secondary action-btn" 
-                        title="View"
-                        onClick={() => handleView(c)}
-                      >
-                        <FaEye size={14} />
-                      </button>
-                      <button 
-                        className="btn btn-sm" 
-                        title="Edit"
-                        onClick={() => handleEdit(c)}
-                        style={{ 
-                          borderColor: '#6EB2CC',
-                          color: '#6EB2CC'
-                        }}
-                      >
-                        <FaEdit size={14} />
-                      </button>
-                      <button 
-                        className="btn btn-sm btn-outline-danger action-btn" 
-                        title="Delete"
-                        onClick={() => handleDeleteClick(c)}
-                      >
-                        <FaTrashAlt size={14} />
-                      </button>
-                    </div>
-                  </td>
+      {/* Desktop Table View - Hidden on Mobile */}
+      <div className="d-none d-md-block">
+        <div className="card shadow-sm border-0">
+          <div className="table-responsive">
+            <table className="table table-hover align-middle mb-0">
+              <thead className="bg-light">
+                <tr>
+                  <th className="fw-semibold">CLASS NAME</th>
+                  <th className="fw-semibold">TRAINER</th>
+                  <th className="fw-semibold">BRANCH</th>
+                  <th className="fw-semibold">DATE</th>
+                  <th className="fw-semibold">TIME</th>
+                  <th className="fw-semibold">DAY</th>
+                  <th className="fw-semibold">STATUS</th>
+                  <th className="fw-semibold">MEMBERS</th>
+                  <th className="fw-semibold text-center">ACTIONS</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {classes.map(c => (
+                  <tr key={c.id}>
+                    <td>{c.class_name}</td>
+                    <td>{c.trainer_name}</td>
+                    <td>{getBranchBadge(c.branch)}</td>
+                    <td>{c.date}</td>
+                    <td>{c.time}</td>
+                    <td>{c.schedule_day}</td>
+                    <td>{getStatusBadge(c.status)}</td>
+                    <td>
+                      {/* Member count from members array length */}
+                      {(c.members || []).length > 0 ? (
+                        <span className="badge bg-light text-dark">
+                          {(c.members || []).length} {(c.members || []).length === 1 ? 'Member' : 'Members'}
+                        </span>
+                      ) : (
+                        <span className="text-muted">No members</span>
+                      )}
+                    </td>
+                    <td className="text-center">
+                      <div className="d-flex justify-content-center gap-1">
+                        <button 
+                          className="btn btn-sm btn-outline-secondary action-btn" 
+                          title="View"
+                          onClick={() => handleView(c)}
+                        >
+                          <FaEye size={14} />
+                        </button>
+                        <button 
+                          className="btn btn-sm" 
+                          title="Edit"
+                          onClick={() => handleEdit(c)}
+                          style={{ 
+                            borderColor: '#6EB2CC',
+                            color: '#6EB2CC'
+                          }}
+                        >
+                          <FaEdit size={14} />
+                        </button>
+                        <button 
+                          className="btn btn-sm btn-outline-danger action-btn" 
+                          title="Delete"
+                          onClick={() => handleDeleteClick(c)}
+                        >
+                          <FaTrashAlt size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
+      </div>
+
+      {/* Mobile Card View - Hidden on Desktop */}
+      <div className="d-md-none">
+        {classes.map(c => (
+          <MobileClassCard key={c.id} gymClass={c} />
+        ))}
       </div>
 
       {/* Modal */}
@@ -382,7 +457,7 @@ const ClassesSchedule = () => {
                   
                   {modalType === 'view' ? (
                     <div className="border rounded-3 p-3 bg-light">
-                      {/* व्यू मोड में मेंबर्स दिखाना */}
+                      {/* View mode - showing members */}
                       {(selectedClass?.members || []).length > 0 ? (
                         <div className="d-flex flex-wrap gap-2">
                           {(selectedClass?.members || []).map(member => (
@@ -397,10 +472,10 @@ const ClassesSchedule = () => {
                     </div>
                   ) : (
                     <div className="border rounded-3 p-3 bg-light">
-                      <div className="d-flex mb-3">
+                      <div className="d-flex flex-column flex-sm-row mb-3 gap-2">
                         <input
                           type="text"
-                          className="form-control rounded-3 me-2"
+                          className="form-control rounded-3"
                           placeholder="Type member name and click Add..."
                           value={memberSearch}
                           onChange={(e) => setMemberSearch(e.target.value)}
@@ -414,11 +489,11 @@ const ClassesSchedule = () => {
                         </button>
                       </div>
                       
-                      {/* ऐड/एडिट मोड में मेंबर्स काउंट और लिस्ट */}
+                      {/* Add/Edit mode - member count and list */}
                       {(selectedClass?.members || []).length > 0 && (
                         <div>
                           <small className="text-muted d-block mb-2">
-                            {/* यहाँ भी मेंबर काउंट आ रहा है */}
+                            {/* Member count from members array */}
                             {selectedClass.members.length} member{selectedClass.members.length > 1 ? 's' : ''} in this class:
                           </small>
                           <div className="d-flex flex-wrap gap-2">
@@ -528,14 +603,22 @@ const ClassesSchedule = () => {
             width: 28px;
             height: 28px;
           }
+          
+          .modal-dialog {
+            max-width: 95%;
+            margin: 1rem auto;
+          }
         }
         
-        /* Ensure modal content is responsive */
         @media (max-width: 576px) {
           .modal-dialog {
             margin: 0.5rem;
           }
           .modal-content {
+            border-radius: 0.5rem;
+          }
+          
+          .table-responsive {
             border-radius: 0.5rem;
           }
         }

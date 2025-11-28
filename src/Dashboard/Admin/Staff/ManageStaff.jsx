@@ -16,9 +16,7 @@ const ManageStaff = () => {
   const [branchFilter, setBranchFilter] = useState('All');
   const fileInputRef = useRef(null);
   
-  // State for salary type and status
-  const [salaryType, setSalaryType] = useState('Fixed');
-  const [fixedSalary, setFixedSalary] = useState('');
+  // State for status
   const [staffStatus, setStaffStatus] = useState('Active');
 
   // Custom color for all blue elements
@@ -120,8 +118,6 @@ const ManageStaff = () => {
     setModalType('add');
     setSelectedStaff(null);
     // Reset form states
-    setSalaryType('Fixed');
-    setFixedSalary('');
     setStaffStatus('Active');
     setIsModalOpen(true);
   };
@@ -130,8 +126,6 @@ const ManageStaff = () => {
     setModalType('view');
     setSelectedStaff(staffMember);
     // Set form states from selected staff
-    setSalaryType(staffMember.salary_type || 'Fixed');
-    setFixedSalary(staffMember.fixed_salary || '');
     setStaffStatus(staffMember.status || 'Active');
     setIsModalOpen(true);
   };
@@ -140,8 +134,6 @@ const ManageStaff = () => {
     setModalType('edit');
     setSelectedStaff(staffMember);
     // Set form states from selected staff
-    setSalaryType(staffMember.salary_type || 'Fixed');
-    setFixedSalary(staffMember.fixed_salary || '');
     setStaffStatus(staffMember.status || 'Active');
     setIsModalOpen(true);
   };
@@ -171,38 +163,6 @@ const ManageStaff = () => {
   const closeDeleteModal = () => {
     setIsDeleteModalOpen(false);
     setSelectedStaff(null);
-  };
-
-  // Handle salary type change
-  const handleSalaryTypeChange = (e) => {
-    const newSalaryType = e.target.value;
-    setSalaryType(newSalaryType);
-    
-    // Update status based on salary type
-    if (newSalaryType === 'Volunteer' || newSalaryType === 'Intern') {
-      setStaffStatus('Active'); // Volunteers and interns are active but unpaid
-    } else if (newSalaryType === 'Commission') {
-      setStaffStatus('Active'); // Commission-based staff are active
-    } else if (newSalaryType === 'Unpaid') {
-      setStaffStatus('Inactive'); // Unpaid staff are inactive
-    }
-    
-    // Clear fixed salary if not Fixed salary type
-    if (newSalaryType !== 'Fixed') {
-      setFixedSalary('');
-    }
-  };
-
-  // Handle fixed salary change
-  const handleFixedSalaryChange = (e) => {
-    setFixedSalary(e.target.value);
-    
-    // Update status based on salary amount
-    if (e.target.value === '' || e.target.value === '0') {
-      setStaffStatus('Inactive');
-    } else {
-      setStaffStatus('Active');
-    }
   };
 
   // Prevent background scroll
@@ -361,8 +321,8 @@ const ManageStaff = () => {
         branch_id: parseInt(document.getElementById('branch').value),
         join_date: document.getElementById('joinDate').value,
         exit_date: document.getElementById('exitDate').value || null,
-        salary_type: salaryType, // Use the salary type from state
-        fixed_salary: salaryType === 'Fixed' ? parseFloat(fixedSalary) : 0,
+        salary_type: "Fixed", // Default salary type
+        fixed_salary: 0, // Default salary
         login_enabled: document.getElementById('loginEnabled').checked,
         username: document.getElementById('username').value,
         password: document.getElementById('passwordField').value || 'auto-generated'
@@ -388,8 +348,6 @@ const ManageStaff = () => {
             branch_id: parseInt(document.getElementById('branch').value),
             join_date: document.getElementById('joinDate').value,
             exit_date: document.getElementById('exitDate').value || null,
-            salary_type: salaryType, // Use the salary type from state
-            fixed_salary: salaryType === 'Fixed' ? parseFloat(fixedSalary) : 0,
             login_enabled: document.getElementById('loginEnabled').checked,
             username: document.getElementById('username').value,
             password: document.getElementById('passwordField').value || member.password
@@ -817,15 +775,6 @@ const ManageStaff = () => {
                   <h6 className="fw-bold mb-3">Basic Information</h6>
                   <div className="row mb-3 g-3">
                     <div className="col-12 col-md-6">
-                      <label className="form-label">Staff ID</label>
-                      <input
-                        type="text"
-                        className="form-control rounded-3"
-                        defaultValue={selectedStaff?.staff_id || (modalType === 'add' ? getNextStaffId() : '')}
-                        readOnly
-                      />
-                    </div>
-                    <div className="col-12 col-md-6">
                       <label className="form-label">Profile Photo</label>
                       <input
                         type="file"
@@ -920,11 +869,6 @@ const ManageStaff = () => {
                         <option value="Active">Active</option>
                         <option value="Inactive">Inactive</option>
                       </select>
-                      {salaryType === 'Unpaid' && (
-                        <small className="text-danger">
-                          Status automatically set to Inactive for unpaid staff
-                        </small>
-                      )}
                     </div>
                   </div>
 
@@ -983,67 +927,7 @@ const ManageStaff = () => {
                     </div>
                   </div>
 
-                  {/* SECTION 3: Compensation */}
-                  <h6 className="fw-bold mb-3">Compensation</h6>
-                  <div className="row mb-3 g-3">
-                    <div className="col-12 col-md-6">
-                      <label className="form-label">Salary Type <span className="text-danger">*</span></label>
-                      <select
-                        className="form-select rounded-3"
-                        id="salaryType"
-                        value={salaryType}
-                        onChange={handleSalaryTypeChange}
-                        disabled={modalType === 'view'}
-                        required
-                      >
-                        <option value="Fixed">Fixed Salary</option>
-                        <option value="Commission">Commission-based</option>
-                        <option value="Volunteer">Volunteer</option>
-                        <option value="Intern">Intern</option>
-                        <option value="Unpaid">Unpaid</option>
-                      </select>
-                      {salaryType !== 'Fixed' && (
-                        <small className="text-info">
-                          {salaryType === 'Commission' && 'Staff will be paid based on commission'}
-                          {salaryType === 'Volunteer' && 'Staff is working voluntarily'}
-                          {salaryType === 'Intern' && 'Staff is an intern'}
-                          {salaryType === 'Unpaid' && 'Staff will not be paid'}
-                        </small>
-                      )}
-                    </div>
-                    <div className="col-12 col-md-6">
-                      <label className="form-label">
-                        {salaryType === 'Fixed' ? 'Fixed Salary ($)' : 'Compensation Details'}
-                      </label>
-                      {salaryType === 'Fixed' ? (
-                        <input
-                          type="number"
-                          className="form-control rounded-3"
-                          placeholder="e.g., 50000"
-                          id="fixedSalary"
-                          value={fixedSalary}
-                          onChange={handleFixedSalaryChange}
-                          readOnly={modalType === 'view'}
-                          min="0"
-                        />
-                      ) : (
-                        <input
-                          type="text"
-                          className="form-control rounded-3"
-                          placeholder="No fixed salary"
-                          value="No fixed salary"
-                          readOnly
-                        />
-                      )}
-                      {salaryType === 'Fixed' && fixedSalary === '' && (
-                        <small className="text-danger">
-                          Please enter a fixed salary amount
-                        </small>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* SECTION 4: System Access */}
+                  {/* SECTION 3: System Access */}
                   <h6 className="fw-bold mb-3">System Access</h6>
                   <div className="row mb-3 g-3">
                     <div className="col-12">

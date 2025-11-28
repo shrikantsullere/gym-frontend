@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Table, Button, Modal, Form, Badge } from "react-bootstrap";
+import { Table, Button, Modal, Form, Badge, Container, Row, Col, Card } from "react-bootstrap";
 import { FaEye, FaEdit, FaTrashAlt } from "react-icons/fa";
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -73,125 +73,192 @@ const RoleManagement = () => {
     setRoleToDelete(null);
   };
 
-  return (
-    <div className="">
-      <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3">
-        <h2 style={{ color: "#2f6a87" }} className="mb-3 mb-md-0">Role Management</h2>
-
-        {/* Add Role Button */}
-        <Button
-          onClick={() => handleShowModal(null, "edit")}
-          style={{ backgroundColor: "#2f6a87", border: "none" }}
-          className="px-4"
-        >
-          Add Role
-        </Button>
-      </div>
-
-      {/* Filter Buttons as text links */}
-      <div className="mb-4">
-        {["All", "Active", "Inactive"].map((f) => (
-          <span
-            key={f}
-            onClick={() => setFilter(f)}
-            style={{
-              cursor: "pointer",
-              color: filter === f ? "#2f6a87" : "#555",
-              fontWeight: filter === f ? "bold" : "normal",
-              marginRight: "15px",
-            }}
-          >
-            {f}
-          </span>
-        ))}
-      </div>
-
-      {/* Roles Table */}
-      <div className="table-responsive">
-        <Table bordered hover className="align-middle mb-0">
-          <thead style={{ backgroundColor: "#2f6a87", color: "#fff" }}>
-            <tr>
-              <th>Role Name</th>
-              <th>Description</th>
-              <th>Permissions</th>
-              <th>Status</th>
-              <th className="text-center" style={{ width: '120px' }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredRoles.map((role) => (
-              <tr key={role.id}>
-                <td>{role.name}</td>
-                <td>{role.description}</td>
-                <td>
-                  {role.permissions.map((perm, index) => (
-                    <badge
-                      key={index}
-                      style={{
-                        backgroundColor: '#2f6a87',
-                        color: '#ffffff',
-                        padding: '3px 5px',
-                        fontSize: '0.85em',
-                        fontWeight: '500',
-                        borderRadius: '4px',
-                      }}
-                      className="me-2 mb-3"
-                    >
-                      {perm}
-                    </badge>
-                  ))}
-                </td>
-                <td>
-                  <badge
-                    style={{
-                      backgroundColor: role.status === "Active" ? "green" : "red",
-                      color: '#ffffff',
-                      padding: '0.35em 0.7em',
-                      fontSize: '0.85em',
-                      fontWeight: '500',
-                      borderRadius: '4px',
-                    }}
-                    className="me-2 mb-2"
+  // Render role cards for mobile view
+  const renderRoleCards = () => {
+    return (
+      <Row className="g-3">
+        {filteredRoles.map((role) => (
+          <Col xs={12} sm={6} key={role.id}>
+            <Card className="h-100">
+              <Card.Header className="d-flex justify-content-between align-items-center" style={{ backgroundColor: "#2f6a87", color: "#fff" }}>
+                <Card.Title className="mb-0">{role.name}</Card.Title>
+                <div>
+                  <Button
+                    variant="outline-light"
+                    size="sm"
+                    title="View"
+                    onClick={() => handleShowModal(role, "view")}
+                    className="me-1"
+                  >
+                    <FaEye />
+                  </Button>
+                  <Button
+                    variant="outline-light"
+                    size="sm"
+                    title="Edit"
+                    onClick={() => handleShowModal(role, "edit")}
+                    className="me-1"
+                  >
+                    <FaEdit />
+                  </Button>
+                  <Button
+                    variant="outline-light"
+                    size="sm"
+                    title="Delete"
+                    onClick={() => handleDeleteClick(role)}
+                  >
+                    <FaTrashAlt />
+                  </Button>
+                </div>
+              </Card.Header>
+              <Card.Body>
+                <p className="mb-2"><strong>Description:</strong> {role.description}</p>
+                <p className="mb-2"><strong>Status:</strong> 
+                  <Badge
+                    bg={role.status === "Active" ? "success" : "danger"}
+                    className="ms-2"
                   >
                     {role.status}
-                  </badge>
-                </td>
-                <td className="text-center">
-                  <div className="d-flex justify-content-center gap-1" style={{ whiteSpace: 'nowrap' }}>
-                    <Button
-                      variant="outline-secondary"
-                      size="sm"
-                      title="View"
-                      onClick={() => handleShowModal(role, "view")}
+                  </Badge>
+                </p>
+                <p className="mb-0"><strong>Permissions:</strong></p>
+                <div className="mt-2">
+                  {role.permissions.map((perm, index) => (
+                    <Badge
+                      key={index}
+                      bg="primary"
+                      className="me-2 mb-2"
                     >
-                      <FaEye />
-                    </Button>
-                    <Button
-                      variant="outline-info"
-                      size="sm"
-                      title="Edit"
-                      onClick={() => handleShowModal(role, "edit")}
-                    >
-                      <FaEdit />
-                    </Button>
-                    <Button
-                      variant="outline-danger"
-                      size="sm"
-                      title="Delete"
-                      onClick={() => handleDeleteClick(role)}
-                    >
-                      <FaTrashAlt />
-                    </Button>
-                  </div>
-                </td>
-              </tr>
+                      {perm}
+                    </Badge>
+                  ))}
+                </div>
+              </Card.Body>
+            </Card>
+          </Col>
+        ))}
+      </Row>
+    );
+  };
+
+  return (
+    <Container fluid className="py-4">
+      <Row className="mb-4">
+        <Col xs={12} md={8}>
+          <h2 style={{ color: "#2f6a87" }}>Role Management</h2>
+        </Col>
+        <Col xs={12} md={4} className="d-flex justify-content-md-end mt-3 mt-md-0">
+          <Button
+            onClick={() => handleShowModal(null, "edit")}
+            style={{ backgroundColor: "#2f6a87", border: "none" }}
+            className="px-4 w-100 w-md-auto"
+          >
+            Add Role
+          </Button>
+        </Col>
+      </Row>
+
+      {/* Filter Buttons */}
+      <Row className="mb-4">
+        <Col xs={12}>
+          <div className="d-flex flex-wrap">
+            {["All", "Active", "Inactive"].map((f) => (
+              <Button
+                key={f}
+                variant={filter === f ? "primary" : "outline-secondary"}
+                onClick={() => setFilter(f)}
+                className="me-2 mb-2"
+                style={{ 
+                  backgroundColor: filter === f ? "#2f6a87" : "transparent",
+                  borderColor: filter === f ? "#2f6a87" : "#6c757d",
+                  color: filter === f ? "#fff" : "#6c757d"
+                }}
+              >
+                {f}
+              </Button>
             ))}
-          </tbody>
-        </Table>
+          </div>
+        </Col>
+      </Row>
+
+      {/* Roles Table for desktop, Cards for mobile */}
+      <div className="d-none d-lg-block">
+        <div className="table-responsive">
+          <Table bordered hover className="align-middle mb-0">
+            <thead style={{ backgroundColor: "#2f6a87", color: "#fff" }}>
+              <tr>
+                <th>Role Name</th>
+                <th>Description</th>
+                <th>Permissions</th>
+                <th>Status</th>
+                <th className="text-center" style={{ width: '120px' }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredRoles.map((role) => (
+                <tr key={role.id}>
+                  <td>{role.name}</td>
+                  <td>{role.description}</td>
+                  <td>
+                    {role.permissions.map((perm, index) => (
+                      <Badge
+                        key={index}
+                        bg="primary"
+                        className="me-2 mb-2"
+                      >
+                        {perm}
+                      </Badge>
+                    ))}
+                  </td>
+                  <td>
+                    <Badge
+                      bg={role.status === "Active" ? "success" : "danger"}
+                    >
+                      {role.status}
+                    </Badge>
+                  </td>
+                  <td className="text-center">
+                    <div className="d-flex justify-content-center gap-1" style={{ whiteSpace: 'nowrap' }}>
+                      <Button
+                        variant="outline-secondary"
+                        size="sm"
+                        title="View"
+                        onClick={() => handleShowModal(role, "view")}
+                      >
+                        <FaEye />
+                      </Button>
+                      <Button
+                        variant="outline-info"
+                        size="sm"
+                        title="Edit"
+                        onClick={() => handleShowModal(role, "edit")}
+                      >
+                        <FaEdit />
+                      </Button>
+                      <Button
+                        variant="outline-danger"
+                        size="sm"
+                        title="Delete"
+                        onClick={() => handleDeleteClick(role)}
+                      >
+                        <FaTrashAlt />
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </div>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="d-lg-none">
+        {renderRoleCards()}
       </div>
 
       {/* Add/Edit/View Role Modal */}
-      <Modal show={showModal} onHide={handleCloseModal} size="lg">
+      <Modal show={showModal} onHide={handleCloseModal} size="lg" fullscreen="sm-down">
         <Modal.Header style={{ backgroundColor: "#2f6a87", color: "#fff" }} closeButton>
           <Modal.Title>
             {modalMode === "add" || !editingRole
@@ -281,7 +348,7 @@ const RoleManagement = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-    </div>
+    </Container>
   );
 };
 

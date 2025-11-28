@@ -96,24 +96,24 @@ const ViewPlans = () => {
   };
 
   return (
-    <div className=" bg-light  md-5">
+    <div className="bg-light py-2">
       <Container>
-        <h1 className=" mb-5 fw-bold text-dark" style={{ fontSize: '2.2rem' }}>
+        <h1 className="mb-4 mb-md-5 fw-bold text-dark" style={{ fontSize: 'clamp(1.5rem, 4vw, 2rem)' }}>
           Choose Your Fitness Plan
         </h1>
 
         {/* Button-style Tabs */}
-        <div className="d-flex flex-column flex-md-row  gap-3 mb-5">
+        <div className="d-flex flex-column flex-md-row gap-2 gap-md-3 mb-4 mb-md-5">
           <Button
             variant={activeTab === 'group' ? 'primary' : 'outline-primary'}
             onClick={() => setActiveTab('group')}
-            className="px-4  fw-bold d-flex align-items-center justify-content-center gap-2 flex-grow-2"
+            className="px-3 px-md-4 py-2 fw-bold d-flex align-items-center justify-content-center gap-2 flex-grow-2"
             style={{
               backgroundColor: activeTab === 'group' ? '#2f6a87' : 'transparent',
               borderColor: '#2f6a87',
               color: activeTab === 'group' ? 'white' : '#2f6a87',
               borderRadius: '12px',
-              fontSize: '1.1rem',
+              fontSize: 'clamp(0.9rem, 2vw, 1.1rem)',
               transition: 'all 0.3s ease',
               boxShadow: activeTab === 'group' ? '0 4px 12px rgba(47, 106, 135, 0.25)' : '0 2px 6px rgba(0,0,0,0.1)'
             }}
@@ -128,18 +128,18 @@ const ViewPlans = () => {
               }
             }}
           >
-            <span> Group Classes</span>
+            <span>Group Classes</span>
           </Button>
           <Button
             variant={activeTab === 'personal' ? 'primary' : 'outline-primary'}
             onClick={() => setActiveTab('personal')}
-            className="px-4 py-2 fw-bold d-flex align-items-center justify-content-center gap-2 flex-grow-2"
+            className="px-3 px-md-4 py-2 fw-bold d-flex align-items-center justify-content-center gap-2 flex-grow-2"
             style={{
               backgroundColor: activeTab === 'personal' ? '#2f6a87' : 'transparent',
               borderColor: '#2f6a87',
               color: activeTab === 'personal' ? 'white' : '#2f6a87',
               borderRadius: '12px',
-              fontSize: '1.1rem',
+              fontSize: 'clamp(0.9rem, 2vw, 1.1rem)',
               transition: 'all 0.3s ease',
               boxShadow: activeTab === 'personal' ? '0 4px 12px rgba(47, 106, 135, 0.25)' : '0 2px 6px rgba(0,0,0,0.1)'
             }}
@@ -154,17 +154,17 @@ const ViewPlans = () => {
               }
             }}
           >
-            <span> Personal Training</span>
+            <span>Personal Training</span>
           </Button>
         </div>
 
         {/* Group Classes Tab */}
         {activeTab === 'group' && (
-          <Row className="g-4">
+          <Row className="g-3 g-md-4">
             {groupPlans.map((plan) => (
               <Col xs={12} sm={6} lg={4} key={plan.id} className="d-flex">
                 <Card className="h-100 shadow-sm border-0 flex-fill" style={{
-                  borderRadius: '16px',
+                  borderRadius: '12px',
                   overflow: 'hidden',
                   transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                   border: '1px solid #e9ecef'
@@ -173,45 +173,45 @@ const ViewPlans = () => {
                   onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                 >
                   <div style={{
-                    height: '8px',
+                    height: '6px',
                     backgroundColor: '#2f6a87',
                     width: '100%'
                   }}></div>
-                  <Card.Body className="d-flex flex-column p-4">
-                    <div className="text-center mb-4">
-                      <div className="badge bg-primary mb-3 px-4 py-2" style={{
+                  <Card.Body className="d-flex flex-column p-3 p-md-4">
+                    <div className="text-center mb-2 mb-md-3">
+                      <div className="badge bg-primary mb-2 px-3 py-1" style={{
                         backgroundColor: '#2f6a87',
                         color: 'white',
-                        fontSize: '0.9rem',
+                        fontSize: '0.75rem',
                         borderRadius: '50px'
                       }}>
                         GROUP CLASS
                       </div>
-                      <h4 className="fw-bold mb-1" style={{ color: '#2f6a87', fontSize: '1.3rem' }}>{plan.name}</h4>
+                      <h4 className="fw-bold mb-1" style={{ color: '#2f6a87', fontSize: 'clamp(1rem, 2.5vw, 1.2rem)' }}>{plan.name}</h4>
                     </div>
-                    <ul className="list-unstyled mb-4 flex-grow-1">
-                      <li className="mb-3 d-flex align-items-center gap-3">
-                        <div className="bg-light rounded-circle p-2" style={{ width: '40px', height: '40px' }}>
-                          <span className="text-muted">🎯</span>
+                    <ul className="list-unstyled mb-2 mb-md-3 flex-grow-1">
+                      <li className="mb-2 d-flex align-items-center gap-2">
+                        <div className="bg-light rounded-circle p-1" style={{ width: '32px', height: '32px' }}>
+                          <span className="text-muted" style={{ fontSize: '0.9rem' }}>🎯</span>
                         </div>
                         <div>
-                          <div className="fw-bold" style={{ fontSize: '1.1rem' }}>{plan.sessions} Sessions</div>
+                          <div className="fw-bold" style={{ fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>{plan.sessions} Sessions</div>
                         </div>
                       </li>
-                      <li className="mb-3 d-flex align-items-center gap-3">
-                        <div className="bg-light rounded-circle p-2" style={{ width: '40px', height: '40px' }}>
-                          <span className="text-muted">📅</span>
+                      <li className="mb-2 d-flex align-items-center gap-2">
+                        <div className="bg-light rounded-circle p-1" style={{ width: '32px', height: '32px' }}>
+                          <span className="text-muted" style={{ fontSize: '0.9rem' }}>📅</span>
                         </div>
                         <div>
-                          <div className="fw-bold" style={{ fontSize: '1.1rem' }}>Validity: {plan.validity} Days</div>
+                          <div className="fw-bold" style={{ fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>Validity: {plan.validity} Days</div>
                         </div>
                       </li>
-                      <li className="mb-3 d-flex align-items-center gap-3">
-                        <div className="bg-light rounded-circle p-2" style={{ width: '40px', height: '40px' }}>
-                          <span className="text-muted">💰</span>
+                      <li className="mb-2 d-flex align-items-center gap-2">
+                        <div className="bg-light rounded-circle p-1" style={{ width: '32px', height: '32px' }}>
+                          <span className="text-muted" style={{ fontSize: '0.9rem' }}>💰</span>
                         </div>
                         <div>
-                          <div className="fw-bold" style={{ fontSize: '1.1rem' }}>Price: {plan.price}</div>
+                          <div className="fw-bold" style={{ fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>Price: {plan.price}</div>
                         </div>
                       </li>
                     </ul>
@@ -221,8 +221,8 @@ const ViewPlans = () => {
                         borderColor: '#2f6a87',
                         transition: 'background-color 0.3s ease',
                         borderRadius: '50px',
-                        padding: '12px 24px',
-                        fontSize: '1.1rem',
+                        padding: '8px 16px',
+                        fontSize: 'clamp(0.9rem, 2vw, 1rem)',
                         fontWeight: '600'
                       }}
                       onMouseOver={(e) => e.target.style.backgroundColor = '#25556e'}
@@ -241,11 +241,11 @@ const ViewPlans = () => {
 
         {/* Personal Training Tab */}
         {activeTab === 'personal' && (
-          <Row className="g-4">
+          <Row className="g-3 g-md-4">
             {personalPlans.map((plan) => (
               <Col xs={12} sm={6} lg={4} key={plan.id} className="d-flex">
                 <Card className="h-100 shadow-sm border-0 flex-fill" style={{
-                  borderRadius: '16px',
+                  borderRadius: '12px',
                   overflow: 'hidden',
                   transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                   border: '1px solid #e9ecef'
@@ -254,45 +254,45 @@ const ViewPlans = () => {
                   onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                 >
                   <div style={{
-                    height: '8px',
+                    height: '6px',
                     backgroundColor: '#2f6a87',
                     width: '100%'
                   }}></div>
-                  <Card.Body className="d-flex flex-column p-4">
-                    <div className="text-center mb-4">
-                      <div className="badge bg-primary mb-3 px-4 py-2" style={{
+                  <Card.Body className="d-flex flex-column p-3 p-md-4">
+                    <div className="text-center mb-2 mb-md-3">
+                      <div className="badge bg-primary mb-2 px-3 py-1" style={{
                         backgroundColor: '#2f6a87',
                         color: 'white',
-                        fontSize: '0.9rem',
+                        fontSize: '0.75rem',
                         borderRadius: '50px'
                       }}>
                         PERSONAL TRAINING
                       </div>
-                      <h4 className="fw-bold mb-1" style={{ color: '#2f6a87', fontSize: '1.3rem' }}>{plan.name}</h4>
+                      <h4 className="fw-bold mb-1" style={{ color: '#2f6a87', fontSize: 'clamp(1rem, 2.5vw, 1.2rem)' }}>{plan.name}</h4>
                     </div>
-                    <ul className="list-unstyled mb-4 flex-grow-1">
-                      <li className="mb-3 d-flex align-items-center gap-3">
-                        <div className="bg-light rounded-circle p-2" style={{ width: '40px', height: '40px' }}>
-                          <span className="text-muted">🎯</span>
+                    <ul className="list-unstyled mb-2 mb-md-3 flex-grow-1">
+                      <li className="mb-2 d-flex align-items-center gap-2">
+                        <div className="bg-light rounded-circle p-1" style={{ width: '32px', height: '32px' }}>
+                          <span className="text-muted" style={{ fontSize: '0.9rem' }}>🎯</span>
                         </div>
                         <div>
-                          <div className="fw-bold" style={{ fontSize: '1.1rem' }}>{plan.sessions} Sessions</div>
+                          <div className="fw-bold" style={{ fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>{plan.sessions} Sessions</div>
                         </div>
                       </li>
-                      <li className="mb-3 d-flex align-items-center gap-3">
-                        <div className="bg-light rounded-circle p-2" style={{ width: '40px', height: '40px' }}>
-                          <span className="text-muted">📅</span>
+                      <li className="mb-2 d-flex align-items-center gap-2">
+                        <div className="bg-light rounded-circle p-1" style={{ width: '32px', height: '32px' }}>
+                          <span className="text-muted" style={{ fontSize: '0.9rem' }}>📅</span>
                         </div>
                         <div>
-                          <div className="fw-bold" style={{ fontSize: '1.1rem' }}>Validity: {plan.validity} Days</div>
+                          <div className="fw-bold" style={{ fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>Validity: {plan.validity} Days</div>
                         </div>
                       </li>
-                      <li className="mb-3 d-flex align-items-center gap-3">
-                        <div className="bg-light rounded-circle p-2" style={{ width: '40px', height: '40px' }}>
-                          <span className="text-muted">💰</span>
+                      <li className="mb-2 d-flex align-items-center gap-2">
+                        <div className="bg-light rounded-circle p-1" style={{ width: '32px', height: '32px' }}>
+                          <span className="text-muted" style={{ fontSize: '0.9rem' }}>💰</span>
                         </div>
                         <div>
-                          <div className="fw-bold" style={{ fontSize: '1.1rem' }}>Price: {plan.price}</div>
+                          <div className="fw-bold" style={{ fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>Price: {plan.price}</div>
                         </div>
                       </li>
                     </ul>
@@ -302,8 +302,8 @@ const ViewPlans = () => {
                         borderColor: '#2f6a87',
                         transition: 'background-color 0.3s ease',
                         borderRadius: '50px',
-                        padding: '12px 24px',
-                        fontSize: '1.1rem',
+                        padding: '8px 16px',
+                        fontSize: 'clamp(0.9rem, 2vw, 1rem)',
                         fontWeight: '600'
                       }}
                       onMouseOver={(e) => e.target.style.backgroundColor = '#25556e'}
@@ -323,30 +323,30 @@ const ViewPlans = () => {
         {/* Payment Modal */}
         <Modal show={showPaymentModal} onHide={() => setShowPaymentModal(false)} centered size="md">
           <Modal.Header closeButton style={{ backgroundColor: '#f8f9fa', borderBottom: '3px solid #2f6a87' }}>
-            <Modal.Title style={{ color: '#333', fontWeight: '600', fontSize: '1.3rem' }}>Complete Payment</Modal.Title>
+            <Modal.Title style={{ color: '#333', fontWeight: '600', fontSize: '1.2rem' }}>Complete Payment</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             {bookingStatus === 'pending' ? (
-              <div className="text-center py-5">
+              <div className="text-center py-4">
                 <div className="spinner-border" role="status" style={{ color: '#333', width: '3rem', height: '3rem' }}>
                   <span className="visually-hidden">Processing...</span>
                 </div>
-                <p className="mt-4 fw-bold" style={{ color: '#333', fontSize: '1.2rem' }}>Processing your payment...</p>
+                <p className="mt-3 fw-bold" style={{ color: '#333', fontSize: '1.1rem' }}>Processing your payment...</p>
                 <p className="text-muted">Please wait while we complete your transaction</p>
               </div>
             ) : (
               <Form onSubmit={handlePaymentSubmit}>
-                <div className="text-center mb-4 p-4 rounded" style={{ backgroundColor: '#f0f7fa', border: '2px dashed #2f6a87', borderRadius: '12px' }}>
-                  <h5 className="mb-3" style={{ color: '#333' }}>Payment Details</h5>
-                  <p className="mb-2">
+                <div className="text-center mb-3 p-3 rounded" style={{ backgroundColor: '#f0f7fa', border: '2px dashed #2f6a87', borderRadius: '12px' }}>
+                  <h5 className="mb-2" style={{ color: '#333', fontSize: '1.1rem' }}>Payment Details</h5>
+                  <p className="mb-1" style={{ fontSize: '0.95rem' }}>
                     <strong>Plan:</strong> {selectedPlan?.name} ({selectedPlan?.type === 'group' ? 'Group' : 'Personal'})
                   </p>
                   <p className="mb-0">
-                    <strong>Amount:</strong> <span className="fw-bold" style={{ fontSize: '1.3rem', color: '#2f6a87' }}>{selectedPlan?.price}</span>
+                    <strong>Amount:</strong> <span className="fw-bold" style={{ fontSize: '1.2rem', color: '#2f6a87' }}>{selectedPlan?.price}</span>
                   </p>
                 </div>
-                <Form.Group className="mb-4">
-                  <Form.Label style={{ color: '#333', fontWeight: '600', fontSize: '1.1rem' }}>UPI ID</Form.Label>
+                <Form.Group className="mb-3">
+                  <Form.Label style={{ color: '#333', fontWeight: '600', fontSize: '1rem' }}>UPI ID</Form.Label>
                   <Form.Control
                     type="text"
                     placeholder="yourname@upi"
@@ -354,8 +354,8 @@ const ViewPlans = () => {
                     onChange={(e) => setPaymentDetails({ ...paymentDetails, upi: e.target.value })}
                     required
                     style={{
-                      padding: '12px',
-                      fontSize: '1.1rem',
+                      padding: '10px',
+                      fontSize: '1rem',
                       borderRadius: '8px',
                       borderColor: '#2f6a87'
                     }}
@@ -364,24 +364,24 @@ const ViewPlans = () => {
                     Enter your UPI ID (e.g., yourname@upi, yournumber@ybl, etc.)
                   </Form.Text>
                 </Form.Group>
-               <div className="d-flex justify-content-center">
-  <Button
-    type="submit"
-    className="w-100 py-3 fw-bold rounded-pill"
-    style={{
-      backgroundColor: '#2f6a87',
-      borderColor: '#2f6a87',
-      fontSize: '1.2rem',
-      transition: 'background-color 0.3s ease',
-      padding: '12px 24px',
-      maxWidth: '400px' // Optional: prevents button from being too wide on large screens
-    }}
-    onMouseOver={(e) => e.target.style.backgroundColor = '#25556e'}
-    onMouseOut={(e) => e.target.style.backgroundColor = '#2f6a87'}
-  >
-    Pay {selectedPlan?.price} via UPI
-  </Button>
-</div>
+                <div className="d-flex justify-content-center">
+                  <Button
+                    type="submit"
+                    className="w-100 py-2 fw-bold rounded-pill"
+                    style={{
+                      backgroundColor: '#2f6a87',
+                      borderColor: '#2f6a87',
+                      fontSize: '1.1rem',
+                      transition: 'background-color 0.3s ease',
+                      padding: '10px 20px',
+                      maxWidth: '400px'
+                    }}
+                    onMouseOver={(e) => e.target.style.backgroundColor = '#25556e'}
+                    onMouseOut={(e) => e.target.style.backgroundColor = '#2f6a87'}
+                  >
+                    Pay {selectedPlan?.price} via UPI
+                  </Button>
+                </div>
               </Form>
             )}
           </Modal.Body>
@@ -391,12 +391,12 @@ const ViewPlans = () => {
         {bookingStatus === 'success' && (
           <div className="position-fixed bottom-0 start-50 translate-middle-x mb-4" style={{ zIndex: 1000 }}>
             <div className="alert p-3 rounded-pill shadow-lg" style={{
-              backgroundColor: 'rgba(93, 93, 93, 0.85)', // Gray with 85% opacity
+              backgroundColor: 'rgba(93, 93, 93, 0.85)',
               color: 'white',
               border: 'none',
               minWidth: '300px',
               animation: 'fadeInUp 0.5s ease',
-              backdropFilter: 'blur(10px)' 
+              backdropFilter: 'blur(10px)'
             }}>
               <div className="d-flex align-items-center justify-content-center gap-2">
                 <FaCheckCircle size={24} />
@@ -411,20 +411,20 @@ const ViewPlans = () => {
 
         {/* Your Bookings Table */}
         {bookings.length > 0 && (
-          <div className="mt-5 pt-5 border-top" >
-            <h3 className="fw-bold mb-4 text-dark" style={{ color: '#333', fontSize: '1.6rem' }}> Your Bookings</h3>
+          <div className="mt-4 mt-md-5 pt-4 pt-md-5 border-top">
+            <h3 className="fw-bold mb-3 mb-md-4 text-dark" style={{ color: '#333', fontSize: 'clamp(1.3rem, 3vw, 1.6rem)' }}>Your Bookings</h3>
             <div className="table-responsive">
-              <Card className="border-0 shadow-sm" style={{ borderRadius: '16px', overflow: 'hidden' }}>
+              <Card className="border-0 shadow-sm" style={{ borderRadius: '12px', overflow: 'hidden' }}>
                 <Card.Body className="p-0">
                   <Table hover responsive className="align-middle mb-0">
                     <thead className="bg-light" style={{ backgroundColor: '#f8f9fa' }}>
                       <tr>
-                        <th className="py-3" style={{ backgroundColor: '#f8f9fa', color: '#333', fontWeight: '600' }}>#</th>
-                        <th className="py-3" style={{ backgroundColor: '#f8f9fa', color: '#333', fontWeight: '600' }}>Plan Name</th>
-                        <th className="py-3" style={{ backgroundColor: '#f8f9fa', color: '#333', fontWeight: '600' }}>Type</th>
-                        <th className="py-3" style={{ backgroundColor: '#f8f9fa', color: '#333', fontWeight: '600' }}>Purchased On</th>
-                        <th className="py-3" style={{ backgroundColor: '#f8f9fa', color: '#333', fontWeight: '600' }}>Status</th>
-                        <th className="py-3" style={{ backgroundColor: '#f8f9fa', color: '#333', fontWeight: '600' }}>Action</th>
+                        <th className="py-2 py-md-3" style={{ backgroundColor: '#f8f9fa', color: '#333', fontWeight: '600', fontSize: '0.9rem' }}>#</th>
+                        <th className="py-2 py-md-3" style={{ backgroundColor: '#f8f9fa', color: '#333', fontWeight: '600', fontSize: '0.9rem' }}>Plan Name</th>
+                        <th className="py-2 py-md-3 d-none d-md-table-cell" style={{ backgroundColor: '#f8f9fa', color: '#333', fontWeight: '600', fontSize: '0.9rem' }}>Type</th>
+                        <th className="py-2 py-md-3 d-none d-md-table-cell" style={{ backgroundColor: '#f8f9fa', color: '#333', fontWeight: '600', fontSize: '0.9rem' }}>Purchased On</th>
+                        <th className="py-2 py-md-3" style={{ backgroundColor: '#f8f9fa', color: '#333', fontWeight: '600', fontSize: '0.9rem' }}>Status</th>
+                        <th className="py-2 py-md-3" style={{ backgroundColor: '#f8f9fa', color: '#333', fontWeight: '600', fontSize: '0.9rem' }}>Action</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -432,34 +432,34 @@ const ViewPlans = () => {
                         <tr key={booking.id} style={{ transition: 'background-color 0.2s ease' }}
                           onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
                           onMouseOut={(e) => e.currentTarget.style.backgroundColor = ''}>
-                          <td className="py-3 fw-bold">{index + 1}</td>
-                          <td className="py-3">
-                            <strong style={{ color: '#333', fontSize: '1.1rem' }}>{booking.planName}</strong>
+                          <td className="py-2 py-md-3 fw-bold">{index + 1}</td>
+                          <td className="py-2 py-md-3">
+                            <strong style={{ color: '#333', fontSize: '1rem' }}>{booking.planName}</strong>
                           </td>
-                          <td className="py-3">
+                          <td className="py-2 py-md-3 d-none d-md-table-cell">
                             {booking.type === 'Group' ? (
-                              <span className="badge bg-primary px-3 py-2" style={{
+                              <span className="badge bg-primary px-2 py-1" style={{
                                 backgroundColor: '#2f6a87',
                                 color: 'white',
                                 borderRadius: '20px',
-                                fontSize: '0.9rem'
+                                fontSize: '0.8rem'
                               }}>Group</span>
                             ) : (
-                              <span className="badge bg-primary px-3 py-2" style={{
+                              <span className="badge bg-primary px-2 py-1" style={{
                                 backgroundColor: '#2f6a87',
                                 color: 'white',
                                 borderRadius: '20px',
-                                fontSize: '0.9rem'
+                                fontSize: '0.8rem'
                               }}>Personal</span>
                             )}
                           </td>
-                          <td className="py-3" style={{ fontSize: '1.05rem' }}>{booking.purchasedAt}</td>
-                          <td className="py-3">
-                            {booking.status === 'approved' && <span className="badge bg-success px-3 py-2" style={{ borderRadius: '20px', fontSize: '0.9rem' }}>Approved</span>}
-                            {booking.status === 'pending' && <span className="badge bg-warning text-dark px-3 py-2" style={{ borderRadius: '20px', fontSize: '0.9rem' }}>Pending</span>}
-                            {booking.status === 'rejected' && <span className="badge bg-danger px-3 py-2" style={{ borderRadius: '20px', fontSize: '0.9rem' }}>Rejected</span>}
+                          <td className="py-2 py-md-3 d-none d-md-table-cell" style={{ fontSize: '0.95rem' }}>{booking.purchasedAt}</td>
+                          <td className="py-2 py-md-3">
+                            {booking.status === 'approved' && <span className="badge bg-success px-2 py-1" style={{ borderRadius: '20px', fontSize: '0.8rem' }}>Approved</span>}
+                            {booking.status === 'pending' && <span className="badge bg-warning text-dark px-2 py-1" style={{ borderRadius: '20px', fontSize: '0.8rem' }}>Pending</span>}
+                            {booking.status === 'rejected' && <span className="badge bg-danger px-2 py-1" style={{ borderRadius: '20px', fontSize: '0.8rem' }}>Rejected</span>}
                           </td>
-                          <td className="py-3">
+                          <td className="py-2 py-md-3">
                             <Button
                               variant="outline-secondary"
                               size="sm"
@@ -470,8 +470,9 @@ const ViewPlans = () => {
                                 color: booking.status === 'approved' ? '#2f6a87' : '#ccc',
                                 cursor: booking.status === 'approved' ? 'pointer' : 'not-allowed',
                                 borderRadius: '20px',
-                                padding: '6px 16px',
+                                padding: '4px 12px',
                                 fontWeight: '600',
+                                fontSize: '0.85rem',
                                 transition: 'all 0.2s ease'
                               }}
                               onMouseOver={(e) => {
@@ -498,41 +499,41 @@ const ViewPlans = () => {
           </div>
         )}
 
-        {/* View Booking Modal */}
-        <Modal show={showViewModal} onHide={() => setShowViewModal(false)} centered size="lg">
+        {/* View Booking Modal - Smaller and More Compact */}
+        <Modal show={showViewModal} onHide={() => setShowViewModal(false)} centered size="md">
           <Modal.Header closeButton style={{ backgroundColor: '#f8f9fa', borderBottom: '1px solid #2f6a87' }}>
-            <Modal.Title style={{ color: '#333', fontWeight: '600', fontSize: '1.3rem' }}>Plan Details</Modal.Title>
+            <Modal.Title style={{ color: '#333', fontWeight: '600', fontSize: '1.1rem' }}>Plan Details</Modal.Title>
           </Modal.Header>
-          <Modal.Body>
+          <Modal.Body className="p-3">
             {selectedBooking && (
-              <div className="p-4 bg-light rounded" style={{
+              <div className="p-3 bg-light rounded" style={{
                 borderRadius: '12px'
               }}>
-                <h4 className="fw-bold mb-4" style={{ color: '#333', fontSize: '1.4rem' }}>
+                <h4 className="fw-bold mb-3" style={{ color: '#333', fontSize: '1.2rem' }}>
                   {selectedBooking.planName} ({selectedBooking.type})
                 </h4>
-                <div className="row g-4">
-                  <div className="col-md-6">
-                    <div className="p-3 bg-white rounded" style={{ border: '1px solid #e9ecef' }}>
-                      <div className="d-flex align-items-center mb-2">
-                        <span className="me-3" style={{ color: '#2f6a87', fontSize: '1.4rem' }}>📅</span>
-                        <h6 className="mb-0 text-muted">Purchased On</h6>
+                <div className="row g-3">
+                  <div className="col-6">
+                    <div className="p-2 bg-white rounded" style={{ border: '1px solid #e9ecef' }}>
+                      <div className="d-flex align-items-center mb-1">
+                        <span className="me-2" style={{ color: '#2f6a87', fontSize: '1.2rem' }}>📅</span>
+                        <h6 className="mb-0 text-muted" style={{ fontSize: '0.85rem' }}>Purchased On</h6>
                       </div>
-                      <p className="fw-bold mb-0" style={{ fontSize: '1.1rem' }}>{selectedBooking.purchasedAt}</p>
+                      <p className="fw-bold mb-0" style={{ fontSize: '0.95rem' }}>{selectedBooking.purchasedAt}</p>
                     </div>
                   </div>
-                  <div className="col-md-6">
-                    <div className="p-3 bg-white rounded" style={{ border: '1px solid #e9ecef' }}>
-                      <div className="d-flex align-items-center mb-2">
-                        <span className="me-3" style={{ color: '#2f6a87', fontSize: '1.4rem' }}>⏳</span>
-                        <h6 className="mb-0 text-muted">Validity</h6>
+                  <div className="col-6">
+                    <div className="p-2 bg-white rounded" style={{ border: '1px solid #e9ecef' }}>
+                      <div className="d-flex align-items-center mb-1">
+                        <span className="me-2" style={{ color: '#2f6a87', fontSize: '1.2rem' }}>⏳</span>
+                        <h6 className="mb-0 text-muted" style={{ fontSize: '0.85rem' }}>Validity</h6>
                       </div>
                       <div className="d-flex align-items-center">
                         <span className="badge" style={{
                           backgroundColor: '#2f6a87',
                           color: 'white',
-                          fontSize: '1.1rem',
-                          padding: '8px 16px',
+                          fontSize: '0.9rem',
+                          padding: '6px 12px',
                           borderRadius: '20px'
                         }}>
                           {selectedBooking.validity} Days
@@ -540,18 +541,18 @@ const ViewPlans = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="col-md-6">
-                    <div className="p-3 bg-white rounded" style={{ border: '1px solid #e9ecef' }}>
-                      <div className="d-flex align-items-center mb-2">
-                        <span className="me-3" style={{ color: '#2f6a87', fontSize: '1.4rem' }}>🎯</span>
-                        <h6 className="mb-0 text-muted">Total Sessions</h6>
+                  <div className="col-6">
+                    <div className="p-2 bg-white rounded" style={{ border: '1px solid #e9ecef' }}>
+                      <div className="d-flex align-items-center mb-1">
+                        <span className="me-2" style={{ color: '#2f6a87', fontSize: '1.2rem' }}>🎯</span>
+                        <h6 className="mb-0 text-muted" style={{ fontSize: '0.85rem' }}>Total Sessions</h6>
                       </div>
                       <div className="d-flex align-items-center">
                         <span className="badge" style={{
                           backgroundColor: '#2f6a87',
                           color: 'white',
-                          fontSize: '1.1rem',
-                          padding: '8px 16px',
+                          fontSize: '0.9rem',
+                          padding: '6px 12px',
                           borderRadius: '20px'
                         }}>
                           {selectedBooking.totalSessions}
@@ -559,16 +560,16 @@ const ViewPlans = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="col-md-6">
-                    <div className="p-3 bg-white rounded" style={{ border: '1px solid #e9ecef' }}>
-                      <div className="d-flex align-items-center mb-2">
-                        <span className="me-3" style={{ color: '#2f6a87', fontSize: '1.4rem' }}>✅</span>
-                        <h6 className="mb-0 text-muted">Remaining Sessions</h6>
+                  <div className="col-6">
+                    <div className="p-2 bg-white rounded" style={{ border: '1px solid #e9ecef' }}>
+                      <div className="d-flex align-items-center mb-1">
+                        <span className="me-2" style={{ color: '#2f6a87', fontSize: '1.2rem' }}>✅</span>
+                        <h6 className="mb-0 text-muted" style={{ fontSize: '0.85rem' }}>Remaining Sessions</h6>
                       </div>
                       <div className="d-flex align-items-center">
                         <span className="badge bg-success" style={{
-                          fontSize: '1.1rem',
-                          padding: '8px 16px',
+                          fontSize: '0.9rem',
+                          padding: '6px 12px',
                           borderRadius: '20px'
                         }}>
                           {selectedBooking.remainingSessions}
@@ -579,15 +580,15 @@ const ViewPlans = () => {
                 </div>
 
                 {selectedBooking.validity > 0 && (
-                  <div className="mt-4 p-4 bg-white rounded" style={{
+                  <div className="mt-3 p-3 bg-white rounded" style={{
                     border: '1px solid #2f6a87',
                     borderRadius: '12px',
                     backgroundColor: '#f0f7fa'
                   }}>
-                    <div className="d-flex align-items-center mb-2">
-                      <h5 className="mb-0" style={{ color: '#333' }}> Plan Active</h5>
+                    <div className="d-flex align-items-center mb-1">
+                      <h5 className="mb-0" style={{ color: '#333', fontSize: '1rem' }}>Plan Active</h5>
                     </div>
-                    <p className="mb-0 text-muted">
+                    <p className="mb-0 text-muted" style={{ fontSize: '0.85rem' }}>
                       You can book sessions until your validity expires or sessions run out.
                     </p>
                   </div>
@@ -604,7 +605,8 @@ const ViewPlans = () => {
                 borderColor: '#6c757d',
                 color: 'white',
                 borderRadius: '50px',
-                padding: '8px 24px',
+                padding: '6px 20px',
+                fontSize: '0.9rem',
                 transition: 'background-color 0.3s ease'
               }}
               onMouseOver={(e) => e.target.style.backgroundColor = '#5a6268'}
