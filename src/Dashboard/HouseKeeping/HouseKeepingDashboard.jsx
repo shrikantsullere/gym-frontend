@@ -1,10 +1,13 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { 
   RiCalendarLine, 
   RiTaskLine, 
   RiToolsLine, 
   RiUserLine,
-  RiBarChartLine
+  RiBarChartLine,
+  RiFilterLine,
+  RiArrowLeftLine,
+  RiArrowRightLine
 } from 'react-icons/ri';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import * as echarts from 'echarts';
@@ -12,6 +15,129 @@ import * as echarts from 'echarts';
 const HouseKeepingDashboard = () => {
   const barChartRef = useRef(null);
   const pieChartRef = useRef(null);
+  const [selectedDay, setSelectedDay] = useState(null);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [filterStatus, setFilterStatus] = useState('all'); // all, completed, pending, upcoming
+  const [currentWeekStart, setCurrentWeekStart] = useState(new Date());
+  
+  // Generate week days dynamically
+  const generateWeekDays = () => {
+    const days = [];
+    const startDate = new Date(currentWeekStart);
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    
+    for (let i = 0; i < 7; i++) {
+      const currentDate = new Date(startDate);
+      currentDate.setDate(startDate.getDate() + i);
+      
+      const dayName = dayNames[currentDate.getDay()];
+      const dayOfMonth = currentDate.getDate();
+      const month = currentDate.toLocaleDateString('en-US', { month: 'short' });
+      
+      // Randomly assign status for demo (in real app, this would come from API)
+      const statuses = ['completed', 'in-progress', 'upcoming', 'overtime', 'off'];
+      const status = i === 0 ? 'in-progress' : i === 6 ? 'off' : statuses[Math.floor(Math.random() * (statuses.length - 1))];
+      
+      // Randomly assign areas for demo
+      const areas = ['Locker Area', 'Cardio Zone', 'Reception Area', 'Weight Room', 'Pool Area', 'Full Facility'];
+      const area = status === 'off' ? 'Day Off' : areas[Math.floor(Math.random() * areas.length)];
+      
+      // Randomly assign times for demo
+      const times = ['8:00 AM - 4:00 PM', '2:00 PM - 10:00 PM', '6:00 AM - 2:00 PM'];
+      const time = status === 'off' ? 'Day Off' : times[Math.floor(Math.random() * times.length)];
+      
+      days.push({
+        id: i,
+        dayName,
+        date: `${month} ${dayOfMonth}`,
+        status,
+        area,
+        time,
+        fullDate: currentDate
+      });
+    }
+    
+    return days;
+  };
+  
+  const [weekDays, setWeekDays] = useState(generateWeekDays());
+  
+  // Filter days based on selected status
+  const filteredDays = filterStatus === 'all' 
+    ? weekDays 
+    : weekDays.filter(day => day.status === filterStatus);
+  
+  // Navigate to previous/next week
+  const navigateWeek = (direction) => {
+    const newDate = new Date(currentWeekStart);
+    newDate.setDate(currentWeekStart.getDate() + (direction === 'next' ? 7 : -7));
+    setCurrentWeekStart(newDate);
+    setWeekDays(generateWeekDays());
+  };
+  
+  // Format date for display
+  const formatDateRange = () => {
+    const start = new Date(currentWeekStart);
+    const end = new Date(currentWeekStart);
+    end.setDate(start.getDate() + 6);
+    
+    const options = { month: 'short', day: 'numeric' };
+    return `${start.toLocaleDateString('en-US', options)} - ${end.toLocaleDateString('en-US', options)}`;
+  };
+  
+  // Get status styling
+  const getStatusStyling = (status) => {
+    switch (status) {
+      case 'completed':
+        return {
+          bgClass: 'bg-success bg-opacity-10',
+          borderClass: 'border-success',
+          textClass: 'text-success',
+          icon: '✅',
+          label: 'Completed'
+        };
+      case 'in-progress':
+        return {
+          bgClass: 'bg-primary bg-opacity-10',
+          borderClass: 'border-primary',
+          textClass: 'text-primary',
+          icon: '🔄',
+          label: 'In Progress'
+        };
+      case 'upcoming':
+        return {
+          bgClass: 'bg-light',
+          borderClass: 'border-secondary',
+          textClass: 'text-secondary',
+          icon: '⏳',
+          label: 'Upcoming'
+        };
+      case 'overtime':
+        return {
+          bgClass: 'bg-warning bg-opacity-10',
+          borderClass: 'border-warning',
+          textClass: 'text-warning',
+          icon: '⚡',
+          label: 'Overtime'
+        };
+      case 'off':
+        return {
+          bgClass: 'bg-white',
+          borderClass: 'border-light',
+          textClass: 'text-muted',
+          icon: '🏠',
+          label: 'Day Off'
+        };
+      default:
+        return {
+          bgClass: 'bg-light',
+          borderClass: 'border-secondary',
+          textClass: 'text-secondary',
+          icon: '⏳',
+          label: 'Unknown'
+        };
+    }
+  };
 
   useEffect(() => {
     // Initialize Bar Chart
@@ -195,98 +321,186 @@ const HouseKeepingDashboard = () => {
         </div>
         
         {/* Weekly Duty Roster */}
-        {/* <div className="card shadow-sm mb-4">
+        <div className="card shadow-sm mb-4">
           <div className="card-body">
-            <h2 className="h5 fw-semibold mb-4">Weekly Duty Roster</h2>
-            <div className="overflow-auto">
+            <div className="d-flex justify-content-between align-items-center mb-4">
+              <h2 className="h5 fw-semibold mb-0">Weekly Duty Roster</h2>
+              <div className="d-flex align-items-center">
+                <button 
+                  className="btn btn-sm btn-outline-secondary me-2 d-none d-md-block"
+                  onClick={() => setFilterStatus('all')}
+                >
+                  All
+                </button>
+                <button 
+                  className="btn btn-sm btn-outline-success me-2 d-none d-md-block"
+                  onClick={() => setFilterStatus('completed')}
+                >
+                  Completed
+                </button>
+                <button 
+                  className="btn btn-sm btn-outline-primary me-2 d-none d-md-block"
+                  onClick={() => setFilterStatus('in-progress')}
+                >
+                  In Progress
+                </button>
+                <button 
+                  className="btn btn-sm btn-outline-secondary d-none d-md-block"
+                  onClick={() => setFilterStatus('upcoming')}
+                >
+                  Upcoming
+                </button>
+                <button 
+                  className="btn btn-sm btn-outline-secondary d-md-none"
+                  onClick={() => setShowMobileMenu(!showMobileMenu)}
+                >
+                  <RiFilterLine />
+                </button>
+              </div>
+            </div>
+            
+            {/* Mobile Filter Menu */}
+            {showMobileMenu && (
+              <div className="d-md-none mb-3 p-3 bg-white rounded border">
+                <div className="d-flex flex-wrap gap-2">
+                  <button 
+                    className={`btn btn-sm ${filterStatus === 'all' ? 'btn-secondary' : 'btn-outline-secondary'}`}
+                    onClick={() => {
+                      setFilterStatus('all');
+                      setShowMobileMenu(false);
+                    }}
+                  >
+                    All
+                  </button>
+                  <button 
+                    className={`btn btn-sm ${filterStatus === 'completed' ? 'btn-success' : 'btn-outline-success'}`}
+                    onClick={() => {
+                      setFilterStatus('completed');
+                      setShowMobileMenu(false);
+                    }}
+                  >
+                    Completed
+                  </button>
+                  <button 
+                    className={`btn btn-sm ${filterStatus === 'in-progress' ? 'btn-primary' : 'btn-outline-primary'}`}
+                    onClick={() => {
+                      setFilterStatus('in-progress');
+                      setShowMobileMenu(false);
+                    }}
+                  >
+                    In Progress
+                  </button>
+                  <button 
+                    className={`btn btn-sm ${filterStatus === 'upcoming' ? 'btn-secondary' : 'btn-outline-secondary'}`}
+                    onClick={() => {
+                      setFilterStatus('upcoming');
+                      setShowMobileMenu(false);
+                    }}
+                  >
+                    Upcoming
+                  </button>
+                </div>
+              </div>
+            )}
+            
+            {/* Week Navigation */}
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <button 
+                className="btn btn-sm btn-outline-secondary"
+                onClick={() => navigateWeek('prev')}
+              >
+                <RiArrowLeftLine /> Previous Week
+              </button>
+              <span className="fw-medium">{formatDateRange()}</span>
+              <button 
+                className="btn btn-sm btn-outline-secondary"
+                onClick={() => navigateWeek('next')}
+              >
+                Next Week <RiArrowRightLine />
+              </button>
+            </div>
+            
+            {/* Desktop View - Horizontal Scroll */}
+            <div className="d-none d-lg-block overflow-auto">
               <div className="d-flex gap-3 pb-3" style={{ minWidth: 'max-content' }}>
-                <div className="flex-shrink-0" style={{ width: '128px' }}>
-                  <div className="text-center mb-3">
-                    <div className="fw-medium">Mon</div>
-                    <div className="text-muted small">Sep 2</div>
-                  </div>
-                  <div className="bg-success bg-opacity-10 border-start border-success border-4 p-3 rounded">
-                    <div className="fw-medium text-success small">8:00 AM - 4:00 PM</div>
-                    <div className="text-success small mt-1">Locker Area</div>
-                    <div className="text-success small mt-1">✅ Completed</div>
-                  </div>
-                </div>
-                
-                <div className="flex-shrink-0" style={{ width: '128px' }}>
-                  <div className="text-center mb-3">
-                    <div className="fw-medium">Tue</div>
-                    <div className="text-muted small">Sep 3</div>
-                  </div>
-                  <div className="bg-success bg-opacity-10 border-start border-success border-4 p-3 rounded">
-                    <div className="fw-medium text-success small">8:00 AM - 4:00 PM</div>
-                    <div className="text-success small mt-1">Cardio Zone</div>
-                    <div className="text-success small mt-1">✅ Completed</div>
-                  </div>
-                </div>
-                
-                <div className="flex-shrink-0" style={{ width: '128px' }}>
-                  <div className="text-center mb-3">
-                    <div className="fw-medium">Wed</div>
-                    <div className="text-muted small">Sep 4</div>
-                  </div>
-                  <div className="bg-primary bg-opacity-10 border-start border-primary border-4 p-3 rounded">
-                    <div className="fw-medium text-primary small">8:00 AM - 4:00 PM</div>
-                    <div className="text-primary small mt-1">Reception Area</div>
-                    <div className="text-primary small mt-1">🔄 In Progress</div>
-                  </div>
-                </div>
-                
-                <div className="flex-shrink-0" style={{ width: '128px' }}>
-                  <div className="text-center mb-3">
-                    <div className="fw-medium">Thu</div>
-                    <div className="text-muted small">Sep 5</div>
-                  </div>
-                  <div className="bg-light border-start border-secondary border-4 p-3 rounded">
-                    <div className="fw-medium text-secondary small">2:00 PM - 10:00 PM</div>
-                    <div className="text-muted small mt-1">Weight Room</div>
-                    <div className="text-muted small mt-1">⏳ Upcoming</div>
-                  </div>
-                </div>
-                
-                <div className="flex-shrink-0" style={{ width: '128px' }}>
-                  <div className="text-center mb-3">
-                    <div className="fw-medium">Fri</div>
-                    <div className="text-muted small">Sep 6</div>
-                  </div>
-                  <div className="bg-warning bg-opacity-10 border-start border-warning border-4 p-3 rounded">
-                    <div className="fw-medium text-warning small">6:00 AM - 2:00 PM</div>
-                    <div className="text-warning small mt-1">Pool Area</div>
-                    <div className="text-warning small mt-1">⚡ Overtime</div>
-                  </div>
-                </div>
-                
-                <div className="flex-shrink-0" style={{ width: '128px' }}>
-                  <div className="text-center mb-3">
-                    <div className="fw-medium">Sat</div>
-                    <div className="text-muted small">Sep 7</div>
-                  </div>
-                  <div className="bg-light border-start border-secondary border-4 p-3 rounded">
-                    <div className="fw-medium text-secondary small">8:00 AM - 4:00 PM</div>
-                    <div className="text-muted small mt-1">Full Facility</div>
-                    <div className="text-muted small mt-1">⏳ Upcoming</div>
-                  </div>
-                </div>
-                
-                <div className="flex-shrink-0" style={{ width: '128px' }}>
-                  <div className="text-center mb-3">
-                    <div className="fw-medium">Sun</div>
-                    <div className="text-muted small">Sep 8</div>
-                  </div>
-                  <div className="bg-white border-start border-light border-4 p-3 rounded">
-                    <div className="fw-medium text-muted small">Day Off</div>
-                    <div className="text-muted small mt-1">Rest Day</div>
-                    <div className="text-muted small mt-1">🏠 Off</div>
-                  </div>
-                </div>
+                {filteredDays.map(day => {
+                  const styling = getStatusStyling(day.status);
+                  return (
+                    <div 
+                      key={day.id} 
+                      className="flex-shrink-0" 
+                      style={{ width: '128px' }}
+                      onClick={() => setSelectedDay(day.id)}
+                    >
+                      <div className="text-center mb-3">
+                        <div className="fw-medium">{day.dayName}</div>
+                        <div className="text-muted small">{day.date}</div>
+                      </div>
+                      <div 
+                        className={`${styling.bgClass} border-start ${styling.borderClass} border-4 p-3 rounded cursor-pointer ${selectedDay === day.id ? 'shadow' : ''}`}
+                      >
+                        <div className={`fw-medium ${styling.textClass} small`}>{day.time}</div>
+                        <div className={`${styling.textClass} small mt-1`}>{day.area}</div>
+                        <div className={`${styling.textClass} small mt-1`}>{styling.icon} {styling.label}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            
+            {/* Tablet View - Grid */}
+            <div className="d-none d-md-block d-lg-none">
+              <div className="row g-3">
+                {filteredDays.map(day => {
+                  const styling = getStatusStyling(day.status);
+                  return (
+                    <div 
+                      key={day.id} 
+                      className="col-6 col-sm-4"
+                      onClick={() => setSelectedDay(day.id)}
+                    >
+                      <div className="text-center mb-2">
+                        <div className="fw-medium">{day.dayName}</div>
+                        <div className="text-muted small">{day.date}</div>
+                      </div>
+                      <div 
+                        className={`${styling.bgClass} border-start ${styling.borderClass} border-4 p-2 rounded cursor-pointer ${selectedDay === day.id ? 'shadow' : ''}`}
+                      >
+                        <div className={`fw-medium ${styling.textClass} small`}>{day.time}</div>
+                        <div className={`${styling.textClass} small mt-1`}>{day.area}</div>
+                        <div className={`${styling.textClass} small mt-1`}>{styling.icon} {styling.label}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            
+            {/* Mobile View - List */}
+            <div className="d-md-none">
+              <div className="list-group">
+                {filteredDays.map(day => {
+                  const styling = getStatusStyling(day.status);
+                  return (
+                    <div 
+                      key={day.id} 
+                      className={`list-group-item ${selectedDay === day.id ? 'active' : ''}`}
+                      onClick={() => setSelectedDay(day.id)}
+                    >
+                      <div className="d-flex w-100 justify-content-between">
+                        <h6 className="mb-1">{day.dayName}, {day.date}</h6>
+                        <small>{styling.icon} {styling.label}</small>
+                      </div>
+                      <p className="mb-1">{day.area}</p>
+                      <small>{day.time}</small>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
-        </div> */}
+        </div>
         
         {/* Charts Section */}
         <div className="row g-3">
