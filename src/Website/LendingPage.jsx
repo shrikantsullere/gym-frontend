@@ -457,7 +457,7 @@ const navigate = useNavigate();
                   ))}
                 </div>
                 
-                <Button variant="primary" className="mt-4">
+                <Button className="mt-4 demo-btn">
                   See All Benefits
                   <FiArrowRight className="btn-icon" />
                 </Button>

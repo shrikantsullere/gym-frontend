@@ -80,11 +80,12 @@ const RequestedPlans = () => {
       padding: "20px",
       borderRadius: "18px",
       boxShadow: "0 4px 15px rgba(0,0,0,0.08)",
+      overflowX: "auto", // Added to handle overflow
     },
 
     headerRow: {
       display: "grid",
-      gridTemplateColumns: "1.4fr 1.6fr 1fr 1fr 1fr 1fr 1fr",
+      gridTemplateColumns: "1.5fr 2fr 1fr 1fr 1fr 1fr 1.5fr", // Adjusted column widths
       padding: "16px 10px",
       fontWeight: 600,
       borderBottom: "2px solid #eee",
@@ -94,7 +95,7 @@ const RequestedPlans = () => {
 
     row: {
       display: "grid",
-      gridTemplateColumns: "1.4fr 1.6fr 1fr 1fr 1fr 1fr 1fr",
+      gridTemplateColumns: "1.5fr 2fr 1fr 1fr 1fr 1fr 1.5fr", // Adjusted column widths to match header
       padding: "16px 10px",
       fontSize: "14px",
       alignItems: "center",
@@ -114,6 +115,8 @@ const RequestedPlans = () => {
       borderRadius: "20px",
       fontWeight: 600,
       fontSize: "13px",
+      display: "inline-block", // Ensures proper sizing
+      textAlign: "center",
     },
 
     gold: { background: "#ffd200", color: "#111" },
@@ -125,6 +128,7 @@ const RequestedPlans = () => {
       fontWeight: 600,
       fontSize: "13px",
       textAlign: "center",
+      display: "inline-block", // Ensures proper sizing
     },
 
     pending: { background: "#ffe9b3", color: "#8a5d00" },
@@ -133,18 +137,19 @@ const RequestedPlans = () => {
 
     actions: {
       display: "flex",
-      gap: "10px",
+      gap: "8px", // Reduced gap for better fit
+      justifyContent: "flex-start", // Align to start
     },
 
     button: {
-      padding: "8px 16px",
+      padding: "6px 12px", // Adjusted padding
       borderRadius: "20px",
-      fontSize: "13px",
+      fontSize: "12px", // Slightly smaller font
       cursor: "pointer",
       border: "none",
       display: "flex",
       alignItems: "center",
-      gap: "6px",
+      gap: "4px", // Reduced gap
       transition: "0.25s",
       fontWeight: 600,
     },
