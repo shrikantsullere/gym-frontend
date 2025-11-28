@@ -7,8 +7,12 @@ import {
   FaExclamationTriangle,
   FaFilePdf,
   FaTrash,
+  FaArrowRight,
+  FaCheck,
+  FaTimes,
 } from "react-icons/fa";
 import { BsEye } from "react-icons/bs";
+import { FaEdit } from "react-icons/fa";
 
 const tabs = ["All Payments", "Failed Transactions", "Payment Settings"];
 
@@ -26,6 +30,7 @@ const Payments = () => {
   const [activeTab, setActiveTab] = useState("All Payments");
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -37,9 +42,34 @@ const Payments = () => {
     paymentMethods: ["Credit Card", "PayPal", "Bank Transfer", "Digital Wallet"]
   });
 
+  // Edit form state
+  const [editForm, setEditForm] = useState({
+    id: "",
+    date: "",
+    customer: "",
+    method: "",
+    amount: "",
+    status: "",
+    reason: ""
+  });
+
   const handleViewDetails = (txn) => {
     setSelectedTransaction(txn);
     setShowModal(true);
+  };
+
+  const handleEditClick = (txn) => {
+    setSelectedTransaction(txn);
+    setEditForm({
+      id: txn.id,
+      date: txn.date,
+      customer: txn.customer,
+      method: txn.method.name,
+      amount: txn.amount,
+      status: txn.status,
+      reason: txn.reason || ""
+    });
+    setShowEditModal(true);
   };
 
   const handleDeleteClick = (txn) => {
@@ -47,10 +77,29 @@ const Payments = () => {
     setShowDeleteModal(true);
   };
 
+  const handleEditSubmit = (e) => {
+    e.preventDefault();
+    const updatedTransactions = transactionsList.map(txn => 
+      txn.id === editForm.id 
+        ? { ...txn, 
+            customer: editForm.customer,
+            method: { name: editForm.method },
+            amount: editForm.amount,
+            status: editForm.status,
+            reason: editForm.reason
+          }
+        : txn
+    );
+    setTransactionsList(updatedTransactions);
+    setShowEditModal(false);
+    alert("Transaction updated successfully!");
+  };
+
   const handleConfirmDelete = () => {
     setTransactionsList(transactionsList.filter(txn => txn.id !== transactionToDelete.id));
     setShowDeleteModal(false);
     setTransactionToDelete(null);
+    alert("Transaction deleted successfully!");
   };
 
   const handleExportTransaction = (txn) => {
@@ -93,26 +142,84 @@ const Payments = () => {
     return matchesTab && matchesSearch;
   });
 
-  return (
-    <div className="container-fluid py-4">
+  // Action buttons component for consistency - First Screenshot Style
+  const ActionButtons1 = ({ txn }) => (
+    <div className="d-flex gap-2">
+      <button 
+        className="action-btn arrow-btn" 
+        onClick={() => alert("Forward action")}
+        title="Forward"
+      >
+        <FaArrowRight size={14} />
+      </button>
+      <button 
+        className="action-btn check-btn" 
+        onClick={() => alert("Approve action")}
+        title="Approve"
+      >
+        <FaCheck size={14} />
+      </button>
+      <button 
+        className="action-btn trash-btn" 
+        onClick={() => handleDeleteClick(txn)}
+        title="Delete"
+      >
+        <FaTrash size={14} />
+      </button>
+    </div>
+  );
 
-      <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
-        <div>
-          <h4 className="fw-bold">Payments</h4>
-          <p className="text-muted mb-0">Manage all your payment transactions</p>
+  // Action buttons component for consistency - Second Screenshot Style
+  const ActionButtons2 = ({ txn }) => (
+    <div className="d-flex gap-2">
+      <button 
+        className="action-btn eye-btn" 
+        onClick={() => handleViewDetails(txn)}
+        title="View Details"
+      >
+        <BsEye size={14} />
+      </button>
+      <button 
+        className="action-btn edit-btn" 
+        onClick={() => handleEditClick(txn)}
+        title="Edit Transaction"
+      >
+        <FaEdit size={14} />
+      </button>
+      <button 
+        className="action-btn trash-btn" 
+        onClick={() => handleDeleteClick(txn)}
+        title="Delete Transaction"
+      >
+        <FaTrash size={14} />
+      </button>
+    </div>
+  );
+
+  return (
+    <div className="container-fluid p-2 p-sm-3 p-md-4">
+
+      {/* HEADER */}
+      <div className="row mb-3 mb-md-4">
+        <div className="col-12 col-md-8 mb-3 mb-md-0">
+          <h4 className="fw-bold fs-4 fs-md-3">Payments</h4>
+          <p className="text-muted mb-0 fs-6">Manage all your payment transactions</p>
         </div>
-        <div className="d-flex gap-2 flex-wrap">
-          <button className="btn btn-custom d-flex align-items-center gap-2 px-3 py-2" onClick={handleExportAll}>
-            <FaFileExport /> Export CSV
-          </button>
-          <button className="btn btn-custom px-3 py-2" onClick={handlePDFDownload}>
-            <FaFilePdf size={18} className="text-white" />
-          </button>
+        <div className="col-12 col-md-4">
+          <div className="d-flex gap-2 flex-wrap justify-content-md-end">
+            <button className="btn btn-custom d-flex align-items-center gap-2 px-3 py-2 flex-fill flex-md-grow-0" onClick={handleExportAll}>
+              <FaFileExport /> <span className="d-none d-sm-inline">Export CSV</span>
+            </button>
+            <button className="btn btn-custom px-3 py-2" onClick={handlePDFDownload}>
+              <FaFilePdf size={18} className="text-white" />
+            </button>
+          </div>
         </div>
       </div>
 
+      {/* STATISTICS CARDS */}
       <div className="row g-3 mb-4">
-        <div className="col-12 col-md-4">
+        <div className="col-12 col-sm-6 col-lg-4">
           <div className="card shadow-sm h-100">
             <div className="card-body">
               <div className="d-flex align-items-center gap-3 mb-2">
@@ -125,7 +232,7 @@ const Payments = () => {
           </div>
         </div>
 
-        <div className="col-12 col-md-4">
+        <div className="col-12 col-sm-6 col-lg-4">
           <div className="card shadow-sm h-100">
             <div className="card-body">
               <div className="d-flex align-items-center gap-3 mb-2">
@@ -138,7 +245,7 @@ const Payments = () => {
           </div>
         </div>
 
-        <div className="col-12 col-md-4">
+        <div className="col-12 col-sm-6 col-lg-4">
           <div className="card shadow-sm h-100">
             <div className="card-body">
               <div className="d-flex align-items-center gap-3 mb-2">
@@ -152,16 +259,20 @@ const Payments = () => {
         </div>
       </div>
 
-      <ul className="nav nav-tabs mb-3">
-        {tabs.map(tab => (
-          <li className="nav-item" key={tab}>
-            <button className={`nav-link ${activeTab === tab ? "active" : ""}`} onClick={() => setActiveTab(tab)}>
-              {tab}
-            </button>
-          </li>
-        ))}
-      </ul>
+      {/* TABS */}
+      <div className="mb-3 overflow-auto">
+        <ul className="nav nav-tabs flex-nowrap" style={{ minWidth: "max-content" }}>
+          {tabs.map(tab => (
+            <li className="nav-item" key={tab}>
+              <button className={`nav-link ${activeTab === tab ? "active" : ""}`} onClick={() => setActiveTab(tab)}>
+                {tab}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
 
+      {/* SEARCH BAR */}
       {(activeTab === "All Payments" || activeTab === "Failed Transactions") && (
         <div className="mb-3">
           <input
@@ -174,8 +285,9 @@ const Payments = () => {
         </div>
       )}
 
+      {/* DESKTOP TABLE VIEW - SECOND SCREENSHOT STYLE (WITH FUNCTIONALITY) */}
       {(activeTab === "All Payments" || activeTab === "Failed Transactions") && (
-        <div className="table-responsive bg-white rounded shadow-sm p-3" id="transaction-table">
+        <div className="table-responsive bg-white rounded shadow-sm p-3 d-none d-md-block" id="transaction-table">
           <table className="table table-hover align-middle">
             <thead className="table-light">
               <tr>
@@ -211,21 +323,10 @@ const Payments = () => {
                     {txn.status === "Pending" && <span className="badge bg-warning text-dark">Pending</span>}
                   </td>
 
-                  {/* FINAL ACTION BUTTONS (Screenshot Style) */}
-                  <td className="d-flex gap-2">
-                    <button className="action-btn eye-btn" onClick={() => handleViewDetails(txn)}>
-                      <BsEye size={16} />
-                    </button>
-
-                    <button className="action-btn edit-btn" onClick={() => alert("Edit feature coming soon")}>
-                      ✏️
-                    </button>
-
-                    <button className="action-btn delete-btn" onClick={() => handleDeleteClick(txn)}>
-                      <FaTrash size={14} />
-                    </button>
+                  {/* FUNCTIONAL ACTION BUTTONS */}
+                  <td>
+                    <ActionButtons2 txn={txn} />
                   </td>
-
                 </tr>
               ))}
             </tbody>
@@ -233,57 +334,313 @@ const Payments = () => {
         </div>
       )}
 
-      {activeTab === "Payment Settings" && (
-        <div className="bg-white rounded shadow-sm p-4">
-          <h5 className="mb-4">Payment Settings</h5>
+      {/* MOBILE CARD VIEW */}
+      {(activeTab === "All Payments" || activeTab === "Failed Transactions") && (
+        <div className="d-md-none">
+          {filteredTransactions.length === 0 ? (
+            <div className="bg-white rounded shadow-sm p-4 text-center">
+              <p className="text-muted">No transactions found</p>
+            </div>
+          ) : (
+            filteredTransactions.map((txn, idx) => (
+              <div key={idx} className="card shadow-sm mb-3">
+                <div className="card-body">
+                  <div className="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                      <h6 className="card-title mb-1">{txn.id}</h6>
+                      <p className="text-muted small mb-0">{txn.date}</p>
+                    </div>
+                    <div>
+                      {txn.status === "Success" && <span className="badge bg-success">Success</span>}
+                      {txn.status === "Failed" && <span className="badge bg-danger">Failed</span>}
+                      {txn.status === "Pending" && <span className="badge bg-warning text-dark">Pending</span>}
+                    </div>
+                  </div>
+                  
+                  <div className="row g-2 mb-2">
+                    <div className="col-6">
+                      <small className="text-muted d-block">Customer</small>
+                      <span className="fw-semibold">{txn.customer}</span>
+                    </div>
+                    <div className="col-6">
+                      <small className="text-muted d-block">Amount</small>
+                      <span className="fw-semibold">{txn.amount}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="row g-2 mb-3">
+                    <div className="col-6">
+                      <small className="text-muted d-block">Method</small>
+                      <span>{txn.method.name}</span>
+                    </div>
+                    {txn.status === "Failed" && txn.reason && (
+                      <div className="col-12">
+                        <small className="text-muted d-block">Reason</small>
+                        <span className="text-danger small">{txn.reason}</span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* FUNCTIONAL ACTION BUTTONS FOR MOBILE */}
+                  <div className="d-flex justify-content-end gap-2">
+                    <ActionButtons2 txn={txn} />
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       )}
 
+      {/* PAYMENT SETTINGS */}
+      {activeTab === "Payment Settings" && (
+        <div className="bg-white rounded shadow-sm p-4">
+          <h5 className="mb-4">Payment Settings</h5>
+          
+          <div className="row g-3">
+            <div className="col-12 col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-semibold">Default Currency</label>
+                <select 
+                  className="form-select" 
+                  value={paymentSettings.currency}
+                  onChange={(e) => handleSettingChange('currency', e.target.value)}
+                >
+                  <option value="USD">USD - US Dollar</option>
+                  <option value="EUR">EUR - Euro</option>
+                  <option value="GBP">GBP - British Pound</option>
+                  <option value="JPY">JPY - Japanese Yen</option>
+                </select>
+              </div>
+            </div>
+            
+            <div className="col-12 col-md-6">
+              <div className="mb-3">
+                <label className="form-label fw-semibold">Payment Methods</label>
+                <div className="d-flex flex-wrap gap-2">
+                  {paymentSettings.paymentMethods.map((method, idx) => (
+                    <span key={idx} className="badge bg-light text-dark p-2">
+                      {method}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+            
+            <div className="col-12">
+              <div className="form-check form-switch mb-3">
+                <input 
+                  className="form-check-input" 
+                  type="checkbox" 
+                  id="autoRefund"
+                  checked={paymentSettings.autoRefund}
+                  onChange={(e) => handleSettingChange('autoRefund', e.target.checked)}
+                />
+                <label className="form-check-label" htmlFor="autoRefund">
+                  Enable automatic refunds for failed transactions
+                </label>
+              </div>
+              
+              <div className="form-check form-switch">
+                <input 
+                  className="form-check-input" 
+                  type="checkbox" 
+                  id="notifications"
+                  checked={paymentSettings.notifications}
+                  onChange={(e) => handleSettingChange('notifications', e.target.checked)}
+                />
+                <label className="form-check-label" htmlFor="notifications">
+                  Send email notifications for payment status changes
+                </label>
+              </div>
+            </div>
+          </div>
+          
+          <div className="mt-4">
+            <button className="btn btn-custom">Save Settings</button>
+          </div>
+        </div>
+      )}
+
+      {/* VIEW DETAILS MODAL */}
       {showModal && selectedTransaction && (
         <div className="modal fade show" style={{ display: "block", backgroundColor: "rgba(0,0,0,0.5)" }}>
-          <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: "90%" }}>
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title">Payment Details</h5>
+                <h5 className="modal-title">Transaction Details</h5>
                 <button className="btn-close" onClick={() => setShowModal(false)}></button>
               </div>
               <div className="modal-body">
-                <ul className="list-unstyled">
-                  <li><strong>ID:</strong> {selectedTransaction.id}</li>
-                  <li><strong>Customer:</strong> {selectedTransaction.customer}</li>
-                  <li><strong>Amount:</strong> {selectedTransaction.amount}</li>
-                  <li><strong>Status:</strong> {selectedTransaction.status}</li>
-                  <li><strong>Date:</strong> {selectedTransaction.date}</li>
-                  <li><strong>Method:</strong> {selectedTransaction.method.name}</li>
-                </ul>
+                <div className="card border-0 bg-light mb-3">
+                  <div className="card-body">
+                    <div className="row g-3">
+                      <div className="col-12 col-md-6">
+                        <label className="form-label text-muted">Transaction ID</label>
+                        <p className="fw-bold mb-0">{selectedTransaction.id}</p>
+                      </div>
+                      <div className="col-12 col-md-6">
+                        <label className="form-label text-muted">Date</label>
+                        <p className="fw-bold mb-0">{selectedTransaction.date}</p>
+                      </div>
+                      <div className="col-12 col-md-6">
+                        <label className="form-label text-muted">Customer Name</label>
+                        <p className="fw-bold mb-0">{selectedTransaction.customer}</p>
+                      </div>
+                      <div className="col-12 col-md-6">
+                        <label className="form-label text-muted">Payment Method</label>
+                        <p className="fw-bold mb-0">{selectedTransaction.method.name}</p>
+                      </div>
+                      <div className="col-12 col-md-6">
+                        <label className="form-label text-muted">Amount</label>
+                        <p className="fw-bold mb-0 text-success">{selectedTransaction.amount}</p>
+                      </div>
+                      <div className="col-12 col-md-6">
+                        <label className="form-label text-muted">Status</label>
+                        <div>
+                          {selectedTransaction.status === "Success" && <span className="badge bg-success">Success</span>}
+                          {selectedTransaction.status === "Failed" && <span className="badge bg-danger">Failed</span>}
+                          {selectedTransaction.status === "Pending" && <span className="badge bg-warning text-dark">Pending</span>}
+                        </div>
+                      </div>
+                      {selectedTransaction.reason && (
+                        <div className="col-12">
+                          <label className="form-label text-muted">Reason</label>
+                          <p className="fw-bold mb-0 text-danger">{selectedTransaction.reason}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div className="modal-footer">
-                <button className="btn btn-custom" onClick={() => setShowModal(false)}>Close</button>
+                <button className="btn btn-secondary" onClick={() => setShowModal(false)}>Close</button>
               </div>
             </div>
           </div>
         </div>
       )}
 
+      {/* EDIT TRANSACTION MODAL */}
+      {showEditModal && selectedTransaction && (
+        <div className="modal fade show" style={{ display: "block", backgroundColor: "rgba(0,0,0,0.5)" }}>
+          <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: "90%" }}>
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Edit Transaction</h5>
+                <button className="btn-close" onClick={() => setShowEditModal(false)}></button>
+              </div>
+              <form onSubmit={handleEditSubmit}>
+                <div className="modal-body">
+                  <div className="row g-3">
+                    <div className="col-12">
+                      <label className="form-label fw-semibold">Transaction ID</label>
+                      <input 
+                        type="text" 
+                        className="form-control" 
+                        value={editForm.id} 
+                        disabled
+                      />
+                    </div>
+                    <div className="col-12 col-md-6">
+                      <label className="form-label fw-semibold">Customer Name</label>
+                      <input 
+                        type="text" 
+                        className="form-control" 
+                        value={editForm.customer} 
+                        onChange={(e) => setEditForm({...editForm, customer: e.target.value})}
+                        required
+                      />
+                    </div>
+                    <div className="col-12 col-md-6">
+                      <label className="form-label fw-semibold">Payment Method</label>
+                      <select 
+                        className="form-select" 
+                        value={editForm.method} 
+                        onChange={(e) => setEditForm({...editForm, method: e.target.value})}
+                        required
+                      >
+                        <option value="Credit Card">Credit Card</option>
+                        <option value="PayPal">PayPal</option>
+                        <option value="Bank Transfer">Bank Transfer</option>
+                        <option value="Digital Wallet">Digital Wallet</option>
+                      </select>
+                    </div>
+                    <div className="col-12 col-md-6">
+                      <label className="form-label fw-semibold">Amount</label>
+                      <input 
+                        type="text" 
+                        className="form-control" 
+                        value={editForm.amount} 
+                        onChange={(e) => setEditForm({...editForm, amount: e.target.value})}
+                        required
+                      />
+                    </div>
+                    <div className="col-12 col-md-6">
+                      <label className="form-label fw-semibold">Status</label>
+                      <select 
+                        className="form-select" 
+                        value={editForm.status} 
+                        onChange={(e) => setEditForm({...editForm, status: e.target.value})}
+                        required
+                      >
+                        <option value="Success">Success</option>
+                        <option value="Failed">Failed</option>
+                        <option value="Pending">Pending</option>
+                      </select>
+                    </div>
+                    {editForm.status === "Failed" && (
+                      <div className="col-12">
+                        <label className="form-label fw-semibold">Reason</label>
+                        <input 
+                          type="text" 
+                          className="form-control" 
+                          value={editForm.reason} 
+                          onChange={(e) => setEditForm({...editForm, reason: e.target.value})}
+                          placeholder="Enter reason for failure"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="modal-footer">
+                  <button type="button" className="btn btn-secondary" onClick={() => setShowEditModal(false)}>Cancel</button>
+                  <button type="submit" className="btn btn-custom">Save Changes</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DELETE CONFIRMATION MODAL */}
       {showDeleteModal && transactionToDelete && (
         <div className="modal fade show" style={{ display: "block", backgroundColor: "rgba(0,0,0,0.5)" }}>
-          <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: "90%" }}>
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">Confirm Delete</h5>
                 <button className="btn-close" onClick={() => setShowDeleteModal(false)}></button>
               </div>
               <div className="modal-body">
-                <p>Are you sure you want to delete this transaction?</p>
-                <div className="alert alert-danger">
-                  <strong>ID:</strong> {transactionToDelete.id}<br />
-                  <strong>Customer:</strong> {transactionToDelete.customer}
+                <div className="text-center py-3">
+                  <div className="mb-3">
+                    <FaTrash size={48} className="text-danger" />
+                  </div>
+                  <h5>Are you sure?</h5>
+                  <p className="text-muted">This action cannot be undone. This will permanently delete the transaction.</p>
+                  <div className="alert alert-danger">
+                    <strong>Transaction ID:</strong> {transactionToDelete.id}<br />
+                    <strong>Customer:</strong> {transactionToDelete.customer}<br />
+                    <strong>Amount:</strong> {transactionToDelete.amount}
+                  </div>
                 </div>
               </div>
               <div className="modal-footer">
                 <button className="btn btn-secondary" onClick={() => setShowDeleteModal(false)}>Cancel</button>
-                <button className="btn btn-danger" onClick={handleConfirmDelete}>Delete</button>
+                <button className="btn btn-danger" onClick={handleConfirmDelete}>Delete Transaction</button>
               </div>
             </div>
           </div>
@@ -291,11 +648,36 @@ const Payments = () => {
       )}
 
       <style>{`
-        .search-bar { border-radius:10px; padding:0.6rem 1rem; }
-        .btn-custom { background-color:#6EB2CC; color:white; border:none; }
-        .icon-card { width:40px; height:40px; border-radius:8px; display:flex; align-items:center; justify-content:center; }
+        .search-bar { 
+          border-radius:10px; 
+          padding:0.6rem 1rem; 
+          border: 1px solid #e0e0e0;
+        }
+        
+        .btn-custom { 
+          background-color:#6EB2CC; 
+          color:white; 
+          border:none; 
+          border-radius: 8px;
+          transition: all 0.3s ease;
+        }
+        
+        .btn-custom:hover {
+          background-color:#5a9db5;
+          transform: translateY(-1px);
+        }
+        
+        .icon-card { 
+          width:40px; 
+          height:40px; 
+          border-radius:8px; 
+          display:flex; 
+          align-items:center; 
+          justify-content:center; 
+          font-size: 18px;
+        }
 
-        /* Screenshot Matching Action Buttons */
+        /* SECOND SCREENSHOT STYLE ACTION BUTTONS */
         .action-btn {
           width: 38px;
           height: 38px;
@@ -305,22 +687,97 @@ const Payments = () => {
           align-items: center;
           justify-content: center;
           cursor: pointer;
+          transition: all 0.2s ease;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
+        
+        .action-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+        }
+        
         .eye-btn {
           background: white;
           border-color: #c9c9c9;
           color: #333;
         }
+        
+        .eye-btn:hover {
+          background: #f8f9fa;
+          border-color: #a0a0a0;
+        }
+        
         .edit-btn {
           background: #e6f7ff;
           border-color: #86c9ef;
           color: #0077b6;
-          font-size: 15px;
         }
-        .delete-btn {
+        
+        .edit-btn:hover {
+          background: #d0ebff;
+          border-color: #5ca9d9;
+        }
+        
+        .trash-btn {
           background: #ffe5e5;
           border-color: #ff4d4d;
           color: #d90429;
+        }
+        
+        .trash-btn:hover {
+          background: #ffcccc;
+          border-color: #e63946;
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+          .action-btn {
+            width: 35px;
+            height: 35px;
+          }
+          
+          .action-btn svg {
+            font-size: 12px;
+          }
+        }
+
+        /* Tab responsiveness */
+        .nav-tabs .nav-link {
+          white-space: nowrap;
+          padding: 0.5rem 1rem;
+        }
+
+        /* Card hover effects */
+        .card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+          transition: all 0.3s ease;
+        }
+
+        /* Table hover effects */
+        .table-hover tbody tr:hover {
+          background-color: #f8f9fa;
+        }
+
+        /* Modal enhancements */
+        .modal-content {
+          border-radius: 12px;
+          border: none;
+          box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .modal-header {
+          border-bottom: 1px solid #e9ecef;
+          padding: 1.5rem;
+        }
+
+        .modal-body {
+          padding: 1.5rem;
+        }
+
+        .modal-footer {
+          border-top: 1px solid #e9ecef;
+          padding: 1.5rem;
         }
       `}</style>
 

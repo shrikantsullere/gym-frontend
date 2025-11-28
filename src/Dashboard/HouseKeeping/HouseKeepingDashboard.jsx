@@ -4,10 +4,7 @@ import {
   RiTaskLine, 
   RiToolsLine, 
   RiUserLine,
-  RiBarChartLine,
-  RiFilterLine,
-  RiArrowLeftLine,
-  RiArrowRightLine
+  RiBarChartLine
 } from 'react-icons/ri';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import * as echarts from 'echarts';
@@ -225,7 +222,6 @@ const HouseKeepingDashboard = () => {
     };
     window.addEventListener('resize', handleResize);
     
-    // Cleanup
     return () => {
       window.removeEventListener('resize', handleResize);
       barChart.dispose();
@@ -236,6 +232,8 @@ const HouseKeepingDashboard = () => {
   return (
     <div className="w-100 min-vh-100 bg-light p-0">
       <div className="p-2 p-md-4">
+        
+        {/* Header */}
         <div className="mb-4">
           <h1 className="h3 mb-1">Welcome, Priya!</h1>
           <p className="text-muted">Your schedule, tasks, and alerts for today</p>
@@ -243,6 +241,7 @@ const HouseKeepingDashboard = () => {
         
         {/* Summary Widgets */}
         <div className="row g-3 mb-4">
+          
           <div className="col-6 col-md-6 col-lg-3">
             <div className="card shadow-sm h-100">
               <div className="card-body d-flex justify-content-between align-items-start">
@@ -251,7 +250,7 @@ const HouseKeepingDashboard = () => {
                     <div className="bg-primary bg-opacity-10 p-2 rounded me-2">
                       <RiCalendarLine className="text-primary fs-4 fs-md-5" />
                     </div>
-                    <span className="h2 fw-bold text-gray-900">6</span>
+                    <span className="h2 fw-bold" style={{color: '#111827'}}>6</span>
                   </div>
                   <h3 className="h6 fw-semibold mb-1">Shifts This Week</h3>
                   <p className="text-muted small mb-0">Next: Today, 8:00 AM – 4:00 PM</p>
@@ -268,7 +267,7 @@ const HouseKeepingDashboard = () => {
                     <div className="bg-success bg-opacity-10 p-2 rounded me-2">
                       <RiTaskLine className="text-success fs-4 fs-md-5" />
                     </div>
-                    <span className="h2 fw-bold text-gray-900">18/25</span>
+                    <span className="h2 fw-bold" style={{color: '#111827'}}>18/25</span>
                   </div>
                   <h3 className="h6 fw-semibold mb-1">Tasks Completed</h3>
                   <div className="d-flex align-items-center">
@@ -290,7 +289,7 @@ const HouseKeepingDashboard = () => {
                     <div className="bg-warning bg-opacity-10 p-2 rounded me-2">
                       <RiToolsLine className="text-warning fs-4 fs-md-5" />
                     </div>
-                    <span className="h2 fw-bold text-gray-900">2</span>
+                    <span className="h2 fw-bold" style={{color: '#111827'}}>2</span>
                   </div>
                   <h3 className="h6 fw-semibold mb-1">Pending Maintenance</h3>
                   <p className="text-muted small mb-0">Requires attention</p>
@@ -307,7 +306,7 @@ const HouseKeepingDashboard = () => {
                     <div className="bg-info bg-opacity-10 p-2 rounded me-2">
                       <RiUserLine className="text-info fs-4 fs-md-5" />
                     </div>
-                    <span className="h2 fw-bold text-gray-900">6/7</span>
+                    <span className="h2 fw-bold" style={{color: '#111827'}}>6/7</span>
                   </div>
                   <h3 className="h6 fw-semibold mb-1">Attendance This Week</h3>
                   <div className="d-flex align-items-center">
@@ -318,189 +317,102 @@ const HouseKeepingDashboard = () => {
               </div>
             </div>
           </div>
+
         </div>
         
         {/* Weekly Duty Roster */}
-        <div className="card shadow-sm mb-4">
+        {/* <div className="card shadow-sm mb-4">
           <div className="card-body">
-            <div className="d-flex justify-content-between align-items-center mb-4">
-              <h2 className="h5 fw-semibold mb-0">Weekly Duty Roster</h2>
-              <div className="d-flex align-items-center">
-                <button 
-                  className="btn btn-sm btn-outline-secondary me-2 d-none d-md-block"
-                  onClick={() => setFilterStatus('all')}
-                >
-                  All
-                </button>
-                <button 
-                  className="btn btn-sm btn-outline-success me-2 d-none d-md-block"
-                  onClick={() => setFilterStatus('completed')}
-                >
-                  Completed
-                </button>
-                <button 
-                  className="btn btn-sm btn-outline-primary me-2 d-none d-md-block"
-                  onClick={() => setFilterStatus('in-progress')}
-                >
-                  In Progress
-                </button>
-                <button 
-                  className="btn btn-sm btn-outline-secondary d-none d-md-block"
-                  onClick={() => setFilterStatus('upcoming')}
-                >
-                  Upcoming
-                </button>
-                <button 
-                  className="btn btn-sm btn-outline-secondary d-md-none"
-                  onClick={() => setShowMobileMenu(!showMobileMenu)}
-                >
-                  <RiFilterLine />
-                </button>
-              </div>
-            </div>
-            
-            {/* Mobile Filter Menu */}
-            {showMobileMenu && (
-              <div className="d-md-none mb-3 p-3 bg-white rounded border">
-                <div className="d-flex flex-wrap gap-2">
-                  <button 
-                    className={`btn btn-sm ${filterStatus === 'all' ? 'btn-secondary' : 'btn-outline-secondary'}`}
-                    onClick={() => {
-                      setFilterStatus('all');
-                      setShowMobileMenu(false);
-                    }}
-                  >
-                    All
-                  </button>
-                  <button 
-                    className={`btn btn-sm ${filterStatus === 'completed' ? 'btn-success' : 'btn-outline-success'}`}
-                    onClick={() => {
-                      setFilterStatus('completed');
-                      setShowMobileMenu(false);
-                    }}
-                  >
-                    Completed
-                  </button>
-                  <button 
-                    className={`btn btn-sm ${filterStatus === 'in-progress' ? 'btn-primary' : 'btn-outline-primary'}`}
-                    onClick={() => {
-                      setFilterStatus('in-progress');
-                      setShowMobileMenu(false);
-                    }}
-                  >
-                    In Progress
-                  </button>
-                  <button 
-                    className={`btn btn-sm ${filterStatus === 'upcoming' ? 'btn-secondary' : 'btn-outline-secondary'}`}
-                    onClick={() => {
-                      setFilterStatus('upcoming');
-                      setShowMobileMenu(false);
-                    }}
-                  >
-                    Upcoming
-                  </button>
-                </div>
-              </div>
-            )}
-            
-            {/* Week Navigation */}
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <button 
-                className="btn btn-sm btn-outline-secondary"
-                onClick={() => navigateWeek('prev')}
-              >
-                <RiArrowLeftLine /> Previous Week
-              </button>
-              <span className="fw-medium">{formatDateRange()}</span>
-              <button 
-                className="btn btn-sm btn-outline-secondary"
-                onClick={() => navigateWeek('next')}
-              >
-                Next Week <RiArrowRightLine />
-              </button>
-            </div>
-            
-            {/* Desktop View - Horizontal Scroll */}
-            <div className="d-none d-lg-block overflow-auto">
+            <h2 className="h5 fw-semibold mb-4">Weekly Duty Roster</h2>
+            <div className="overflow-auto">
               <div className="d-flex gap-3 pb-3" style={{ minWidth: 'max-content' }}>
-                {filteredDays.map(day => {
-                  const styling = getStatusStyling(day.status);
-                  return (
-                    <div 
-                      key={day.id} 
-                      className="flex-shrink-0" 
-                      style={{ width: '128px' }}
-                      onClick={() => setSelectedDay(day.id)}
-                    >
-                      <div className="text-center mb-3">
-                        <div className="fw-medium">{day.dayName}</div>
-                        <div className="text-muted small">{day.date}</div>
-                      </div>
-                      <div 
-                        className={`${styling.bgClass} border-start ${styling.borderClass} border-4 p-3 rounded cursor-pointer ${selectedDay === day.id ? 'shadow' : ''}`}
-                      >
-                        <div className={`fw-medium ${styling.textClass} small`}>{day.time}</div>
-                        <div className={`${styling.textClass} small mt-1`}>{day.area}</div>
-                        <div className={`${styling.textClass} small mt-1`}>{styling.icon} {styling.label}</div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-            
-            {/* Tablet View - Grid */}
-            <div className="d-none d-md-block d-lg-none">
-              <div className="row g-3">
-                {filteredDays.map(day => {
-                  const styling = getStatusStyling(day.status);
-                  return (
-                    <div 
-                      key={day.id} 
-                      className="col-6 col-sm-4"
-                      onClick={() => setSelectedDay(day.id)}
-                    >
-                      <div className="text-center mb-2">
-                        <div className="fw-medium">{day.dayName}</div>
-                        <div className="text-muted small">{day.date}</div>
-                      </div>
-                      <div 
-                        className={`${styling.bgClass} border-start ${styling.borderClass} border-4 p-2 rounded cursor-pointer ${selectedDay === day.id ? 'shadow' : ''}`}
-                      >
-                        <div className={`fw-medium ${styling.textClass} small`}>{day.time}</div>
-                        <div className={`${styling.textClass} small mt-1`}>{day.area}</div>
-                        <div className={`${styling.textClass} small mt-1`}>{styling.icon} {styling.label}</div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-            
-            {/* Mobile View - List */}
-            <div className="d-md-none">
-              <div className="list-group">
-                {filteredDays.map(day => {
-                  const styling = getStatusStyling(day.status);
-                  return (
-                    <div 
-                      key={day.id} 
-                      className={`list-group-item ${selectedDay === day.id ? 'active' : ''}`}
-                      onClick={() => setSelectedDay(day.id)}
-                    >
-                      <div className="d-flex w-100 justify-content-between">
-                        <h6 className="mb-1">{day.dayName}, {day.date}</h6>
-                        <small>{styling.icon} {styling.label}</small>
-                      </div>
-                      <p className="mb-1">{day.area}</p>
-                      <small>{day.time}</small>
-                    </div>
-                  );
-                })}
+                <div className="flex-shrink-0" style={{ width: '128px' }}>
+                  <div className="text-center mb-3">
+                    <div className="fw-medium">Mon</div>
+                    <div className="text-muted small">Sep 2</div>
+                  </div>
+                  <div className="bg-success bg-opacity-10 border-start border-success border-4 p-3 rounded">
+                    <div className="fw-medium text-success small">8:00 AM - 4:00 PM</div>
+                    <div className="text-success small mt-1">Locker Area</div>
+                    <div className="text-success small mt-1">✅ Completed</div>
+                  </div>
+                </div>
+                
+                <div className="flex-shrink-0" style={{ width: '128px' }}>
+                  <div className="text-center mb-3">
+                    <div className="fw-medium">Tue</div>
+                    <div className="text-muted small">Sep 3</div>
+                  </div>
+                  <div className="bg-success bg-opacity-10 border-start border-success border-4 p-3 rounded">
+                    <div className="fw-medium text-success small">8:00 AM - 4:00 PM</div>
+                    <div className="text-success small mt-1">Cardio Zone</div>
+                    <div className="text-success small mt-1">✅ Completed</div>
+                  </div>
+                </div>
+                
+                <div className="flex-shrink-0" style={{ width: '128px' }}>
+                  <div className="text-center mb-3">
+                    <div className="fw-medium">Wed</div>
+                    <div className="text-muted small">Sep 4</div>
+                  </div>
+                  <div className="bg-primary bg-opacity-10 border-start border-primary border-4 p-3 rounded">
+                    <div className="fw-medium text-primary small">8:00 AM - 4:00 PM</div>
+                    <div className="text-primary small mt-1">Reception Area</div>
+                    <div className="text-primary small mt-1">🔄 In Progress</div>
+                  </div>
+                </div>
+                
+                <div className="flex-shrink-0" style={{ width: '128px' }}>
+                  <div className="text-center mb-3">
+                    <div className="fw-medium">Thu</div>
+                    <div className="text-muted small">Sep 5</div>
+                  </div>
+                  <div className="bg-light border-start border-secondary border-4 p-3 rounded">
+                    <div className="fw-medium text-secondary small">2:00 PM - 10:00 PM</div>
+                    <div className="text-muted small mt-1">Weight Room</div>
+                    <div className="text-muted small mt-1">⏳ Upcoming</div>
+                  </div>
+                </div>
+                
+                <div className="flex-shrink-0" style={{ width: '128px' }}>
+                  <div className="text-center mb-3">
+                    <div className="fw-medium">Fri</div>
+                    <div className="text-muted small">Sep 6</div>
+                  </div>
+                  <div className="bg-warning bg-opacity-10 border-start border-warning border-4 p-3 rounded">
+                    <div className="fw-medium text-warning small">6:00 AM - 2:00 PM</div>
+                    <div className="text-warning small mt-1">Pool Area</div>
+                    <div className="text-warning small mt-1">⚡ Overtime</div>
+                  </div>
+                </div>
+                
+                <div className="flex-shrink-0" style={{ width: '128px' }}>
+                  <div className="text-center mb-3">
+                    <div className="fw-medium">Sat</div>
+                    <div className="text-muted small">Sep 7</div>
+                  </div>
+                  <div className="bg-light border-start border-secondary border-4 p-3 rounded">
+                    <div className="fw-medium text-secondary small">8:00 AM - 4:00 PM</div>
+                    <div className="text-muted small mt-1">Full Facility</div>
+                    <div className="text-muted small mt-1">⏳ Upcoming</div>
+                  </div>
+                </div>
+                
+                <div className="flex-shrink-0" style={{ width: '128px' }}>
+                  <div className="text-center mb-3">
+                    <div className="fw-medium">Sun</div>
+                    <div className="text-muted small">Sep 8</div>
+                  </div>
+                  <div className="bg-white border-start border-light border-4 p-3 rounded">
+                    <div className="fw-medium text-muted small">Day Off</div>
+                    <div className="text-muted small mt-1">Rest Day</div>
+                    <div className="text-muted small mt-1">🏠 Off</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
         
         {/* Charts Section */}
         <div className="row g-3">
@@ -522,6 +434,7 @@ const HouseKeepingDashboard = () => {
             </div>
           </div>
         </div>
+
       </div>
     </div>
   );
