@@ -111,16 +111,16 @@ const SuperAdminBranches = () => {
   });
 
   return (
-    <div className="container mt-4">
+    <div className="container-fluid mt-4 px-3 px-md-4">
       {/* TOP SECTION */}
-      <div className="d-flex flex-wrap justify-content-between align-items-center mb-4">
-        <div className="mb-2 mb-md-0">
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+        <div className="mb-3 mb-md-0">
           <h4 className="mb-1">Branches</h4>
           <small className="text-muted">Manage your gym branches</small>
         </div>
 
         {/* SEARCH + ADD BUTTON */}
-        <div className="d-flex align-items-center gap-3" style={{ minWidth: "450px" }}>
+        <div className="d-flex flex-column flex-sm-row gap-2 w-100 w-md-auto">
           <div className="input-group flex-grow-1">
             <input
               className="form-control"
@@ -130,7 +130,7 @@ const SuperAdminBranches = () => {
             />
           </div>
           <button
-            className="btn text-white d-inline-flex align-items-center gap-2 px-4 py-2 shadow-sm"
+            className="btn text-white d-inline-flex align-items-center justify-content-center gap-2 px-4 py-2 shadow-sm"
             style={{ 
               background: BUTTON_COLOR,
               borderRadius: "6px",
@@ -151,47 +151,49 @@ const SuperAdminBranches = () => {
       {/* DESKTOP TABLE */}
       <div className="card shadow-sm d-none d-md-block">
         <div className="card-body p-0">
-          <table className="table table-hover mb-0">
-            <thead className="table-light">
-              <tr>
-                <th>Name</th>
-                <th>Address</th>
-                <th>Phone</th>
-                <th>Status</th>
-                <th className="text-end">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((b) => (
-                <tr key={b.id}>
-                  <td>{b.name}</td>
-                  <td>{b.address}</td>
-                  <td>{b.phone}</td>
-                  <td>
-                    <span className={`badge ${b.status === "Active" ? "bg-success" : "bg-secondary"}`}>
-                      {b.status}
-                    </span>
-                  </td>
-                  <td className="text-end">
-                    <div className="btn-group" role="group">
-                      <button className="btn btn-sm btn-outline-secondary" onClick={() => openView(b)}>
-                        <FaEye />
-                      </button>
-                      <button className="btn btn-sm btn-outline-primary" onClick={() => openEdit(b)}>
-                        <FaEdit />
-                      </button>
-                      <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(b.id)}>
-                        <FaTrash />
-                      </button>
-                    </div>
-                  </td>
+          <div className="table-responsive">
+            <table className="table table-hover mb-0">
+              <thead className="table-light">
+                <tr>
+                  <th>Name</th>
+                  <th>Address</th>
+                  <th>Phone</th>
+                  <th>Status</th>
+                  <th className="text-end">Actions</th>
                 </tr>
-              ))}
-              {filtered.length === 0 && (
-                <tr><td colSpan={5} className="text-center py-4">No branches found</td></tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filtered.map((b) => (
+                  <tr key={b.id}>
+                    <td>{b.name}</td>
+                    <td>{b.address}</td>
+                    <td>{b.phone}</td>
+                    <td>
+                      <span className={`badge ${b.status === "Active" ? "bg-success" : "bg-secondary"}`}>
+                        {b.status}
+                      </span>
+                    </td>
+                    <td className="text-end">
+                      <div className="btn-group" role="group">
+                        <button className="btn btn-sm btn-outline-secondary" onClick={() => openView(b)}>
+                          <FaEye />
+                        </button>
+                        <button className="btn btn-sm btn-outline-primary" onClick={() => openEdit(b)}>
+                          <FaEdit />
+                        </button>
+                        <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(b.id)}>
+                          <FaTrash />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {filtered.length === 0 && (
+                  <tr><td colSpan={5} className="text-center py-4">No branches found</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -229,7 +231,7 @@ const SuperAdminBranches = () => {
       {/* MODAL */}
       {isModalOpen && (
         <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
-          <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable">
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">
