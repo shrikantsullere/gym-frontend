@@ -129,9 +129,9 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
     housekeeping: [
       { name: "Dashboard", icon: faChartBar, path: "/housekeeping/dashboard" },
       { name: "QR Check-in", icon: faGear, path: "/housekeeping/qrcheckin" },
-      // { name: "Duty Roster", icon: faUsers, path: "/housekeeping/members" },
+      { name: "Duty Roster", icon: faUsers, path: "/housekeeping/members" },
       { name: "Attendance Marking", icon: faUserTag, path: "/housekeeping/membership-plan" },
-      // { name: "Task Checklist", icon: faCalendarAlt, path: "/housekeeping/duty-roster" },
+      { name: "Task Checklist", icon: faCalendarAlt, path: "/housekeeping/duty-roster" },
       { name: "Notifications", icon: faCalendarDays, path: "/housekeeping/class-schedule" }
     ],
 
