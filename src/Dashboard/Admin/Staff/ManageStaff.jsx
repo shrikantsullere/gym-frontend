@@ -16,10 +16,7 @@ const ManageStaff = () => {
   const [branchFilter, setBranchFilter] = useState('All');
   const fileInputRef = useRef(null);
   
-  // State for salary type and status
-  const [salaryType, setSalaryType] = useState('Fixed');
-  const [fixedSalary, setFixedSalary] = useState('');
-  const [hourlyRate, setHourlyRate] = useState('');
+  // State for status
   const [staffStatus, setStaffStatus] = useState('Active');
 
   // Custom color for all blue elements
@@ -121,9 +118,6 @@ const ManageStaff = () => {
     setModalType('add');
     setSelectedStaff(null);
     // Reset form states
-    setSalaryType('Fixed');
-    setFixedSalary('');
-    setHourlyRate('');
     setStaffStatus('Active');
     setIsModalOpen(true);
   };
@@ -132,9 +126,6 @@ const ManageStaff = () => {
     setModalType('view');
     setSelectedStaff(staffMember);
     // Set form states from selected staff
-    setSalaryType(staffMember.salary_type || 'Fixed');
-    setFixedSalary(staffMember.fixed_salary || '');
-    setHourlyRate(staffMember.hourly_rate || '');
     setStaffStatus(staffMember.status || 'Active');
     setIsModalOpen(true);
   };
@@ -143,9 +134,6 @@ const ManageStaff = () => {
     setModalType('edit');
     setSelectedStaff(staffMember);
     // Set form states from selected staff
-    setSalaryType(staffMember.salary_type || 'Fixed');
-    setFixedSalary(staffMember.fixed_salary || '');
-    setHourlyRate(staffMember.hourly_rate || '');
     setStaffStatus(staffMember.status || 'Active');
     setIsModalOpen(true);
   };
@@ -175,45 +163,6 @@ const ManageStaff = () => {
   const closeDeleteModal = () => {
     setIsDeleteModalOpen(false);
     setSelectedStaff(null);
-  };
-
-  // Handle salary type change
-  const handleSalaryTypeChange = (e) => {
-    const newSalaryType = e.target.value;
-    setSalaryType(newSalaryType);
-    
-    // Update status based on salary type
-    if (newSalaryType === 'Fixed' || newSalaryType === 'Hourly') {
-      setStaffStatus('Active');
-    }
-    
-    // Clear both salary fields when switching types
-    setFixedSalary('');
-    setHourlyRate('');
-  };
-
-  // Handle fixed salary change
-  const handleFixedSalaryChange = (e) => {
-    setFixedSalary(e.target.value);
-    
-    // Update status based on salary amount
-    if (e.target.value === '' || e.target.value === '0') {
-      setStaffStatus('Inactive');
-    } else {
-      setStaffStatus('Active');
-    }
-  };
-
-  // Handle hourly rate change
-  const handleHourlyRateChange = (e) => {
-    setHourlyRate(e.target.value);
-    
-    // Update status based on hourly rate
-    if (e.target.value === '' || e.target.value === '0') {
-      setStaffStatus('Inactive');
-    } else {
-      setStaffStatus('Active');
-    }
   };
 
   // Prevent background scroll
@@ -372,9 +321,8 @@ const ManageStaff = () => {
         branch_id: parseInt(document.getElementById('branch').value),
         join_date: document.getElementById('joinDate').value,
         exit_date: document.getElementById('exitDate').value || null,
-        salary_type: salaryType, // Use the salary type from state
-        fixed_salary: salaryType === 'Fixed' ? parseFloat(fixedSalary) : 0,
-        hourly_rate: salaryType === 'Hourly' ? parseFloat(hourlyRate) : 0,
+        salary_type: "Fixed", // Default salary type
+        fixed_salary: 0, // Default salary
         login_enabled: document.getElementById('loginEnabled').checked,
         username: document.getElementById('username').value,
         password: document.getElementById('passwordField').value || 'auto-generated'
@@ -400,9 +348,6 @@ const ManageStaff = () => {
             branch_id: parseInt(document.getElementById('branch').value),
             join_date: document.getElementById('joinDate').value,
             exit_date: document.getElementById('exitDate').value || null,
-            salary_type: salaryType, // Use the salary type from state
-            fixed_salary: salaryType === 'Fixed' ? parseFloat(fixedSalary) : 0,
-            hourly_rate: salaryType === 'Hourly' ? parseFloat(hourlyRate) : 0,
             login_enabled: document.getElementById('loginEnabled').checked,
             username: document.getElementById('username').value,
             password: document.getElementById('passwordField').value || member.password
@@ -830,15 +775,6 @@ const ManageStaff = () => {
                   <h6 className="fw-bold mb-3">Basic Information</h6>
                   <div className="row mb-3 g-3">
                     <div className="col-12 col-md-6">
-                      <label className="form-label">Staff ID</label>
-                      <input
-                        type="text"
-                        className="form-control rounded-3"
-                        defaultValue={selectedStaff?.staff_id || (modalType === 'add' ? getNextStaffId() : '')}
-                        readOnly
-                      />
-                    </div>
-                    <div className="col-12 col-md-6">
                       <label className="form-label">Profile Photo</label>
                       <input
                         type="file"
@@ -991,71 +927,7 @@ const ManageStaff = () => {
                     </div>
                   </div>
 
-                  {/* SECTION 3: Compensation */}
-                  <h6 className="fw-bold mb-3">Compensation</h6>
-                  <div className="row mb-3 g-3">
-                    <div className="col-12 col-md-6">
-                      <label className="form-label">Salary Type <span className="text-danger">*</span></label>
-                      <select
-                        className="form-select rounded-3"
-                        id="salaryType"
-                        value={salaryType}
-                        onChange={handleSalaryTypeChange}
-                        disabled={modalType === 'view'}
-                        required
-                      >
-                        <option value="Fixed">Fixed Salary</option>
-                        <option value="Hourly">Hourly Salary</option>
-                      </select>
-                    </div>
-                    
-                    {/* Fixed Salary Input */}
-                    {salaryType === 'Fixed' && (
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">Fixed Salary ($)</label>
-                        <input
-                          type="number"
-                          className="form-control rounded-3"
-                          placeholder="e.g., 50000"
-                          id="fixedSalary"
-                          value={fixedSalary}
-                          onChange={handleFixedSalaryChange}
-                          readOnly={modalType === 'view'}
-                          min="0"
-                        />
-                        {fixedSalary === '' && (
-                          <small className="text-danger">
-                            Please enter a fixed salary amount
-                          </small>
-                        )}
-                      </div>
-                    )}
-                    
-                    {/* Hourly Rate Input */}
-                    {salaryType === 'Hourly' && (
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">Hourly Rate ($)</label>
-                        <input
-                          type="number"
-                          className="form-control rounded-3"
-                          placeholder="e.g., 25"
-                          id="hourlyRate"
-                          value={hourlyRate}
-                          onChange={handleHourlyRateChange}
-                          readOnly={modalType === 'view'}
-                          min="0"
-                          step="0.01"
-                        />
-                        {hourlyRate === '' && (
-                          <small className="text-danger">
-                            Please enter an hourly rate
-                          </small>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* SECTION 4: System Access */}
+                  {/* SECTION 3: System Access */}
                   <h6 className="fw-bold mb-3">System Access</h6>
                   <div className="row mb-3 g-3">
                     <div className="col-12">
