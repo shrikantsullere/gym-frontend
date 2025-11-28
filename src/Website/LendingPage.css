@@ -315,6 +315,12 @@ body {
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
+.btn-primary{
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  border: none;
+  color: white;
+}
+
 .hero-btn-outline {
   border: 2px solid var(--secondary-color);
   color: var(--secondary-color);
