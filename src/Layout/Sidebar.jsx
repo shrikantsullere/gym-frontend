@@ -141,7 +141,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
       { name: "Dashboard", icon: faChartBar, path: "/generaltrainer/dashboard" },
       { name: "Qr Check-in", icon: faGear, path: "/generaltrainer/qrcheckin" },
       { name: "GroupPlans & Bookings", icon: faUserGroup, path: "/generaltrainer/groupplansbookings" },
-      { name: "Daily Schedule", icon: faChartArea, path: "/generaltrainer/DailyScedule" },
+      // { name: "Daily Schedule", icon: faChartArea, path: "/generaltrainer/DailyScedule" },
       { name: "Attendance", icon: faClipboardCheck, path: "/generaltrainer/attendance" },
       { name: "Reports Classes", icon: faFileAlt, path: "/generaltrainer/Reports" }
     ],
