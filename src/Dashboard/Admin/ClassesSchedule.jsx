@@ -19,6 +19,7 @@ const ClassesSchedule = () => {
       time: "10:00 - 11:00",
       schedule_day: "Tuesday",
       status: "Active",
+      branch: "Downtown",
       members: ["Alice", "Bob"]  // यहाँ 2 मेंबर हैं - काउंट = 2
     },
     {
@@ -29,13 +30,14 @@ const ClassesSchedule = () => {
       time: "14:00 - 15:00",
       schedule_day: "Thursday",
       status: "Active",
+      branch: "North Branch",
       members: ["Charlie"]  // यहाँ 1 मेंबर है - काउंट = 1
     }
   ]);
 
   const handleAddNew = () => {
     setModalType('add');
-    setSelectedClass({ members: [] });  // नई क्लास में 0 मेंबर
+    setSelectedClass({ members: [], branch: "Downtown" });  // नई क्लास में 0 मेंबर और डिफ़ॉल्ट ब्रांच
     setMemberSearch('');
     setIsModalOpen(true);
   };
@@ -91,6 +93,14 @@ const ClassesSchedule = () => {
     );
   };
 
+  const getBranchBadge = (branch) => {
+    return (
+      <span className="badge bg-primary-subtle text-primary-emphasis px-3 py-1">
+        {branch}
+      </span>
+    );
+  };
+
   const getNextClassId = () => {
     const maxId = classes.length > 0 ? Math.max(...classes.map(c => parseInt(c.id))) : 0;
     return `CLASS${String(maxId + 1).padStart(3, '0')}`;
@@ -137,6 +147,7 @@ const ClassesSchedule = () => {
         schedule_day: selectedClass.schedule_day || new Date().toLocaleDateString('en-US', { weekday: 'long' }),
         time: selectedClass.time || "10:00 - 11:00",
         status: selectedClass.status || "Active",
+        branch: selectedClass.branch || "Downtown",
         members: selectedClass.members || []  // मेंबर्स सेव हो रहे हैं
       };
       setClasses(prev => [...prev, newClass]);
@@ -182,6 +193,7 @@ const ClassesSchedule = () => {
               <tr>
                 <th className="fw-semibold">CLASS NAME</th>
                 <th className="fw-semibold">TRAINER</th>
+                <th className="fw-semibold">BRANCH</th>
                 <th className="fw-semibold">DATE</th>
                 <th className="fw-semibold">TIME</th>
                 <th className="fw-semibold">DAY</th>
@@ -195,6 +207,7 @@ const ClassesSchedule = () => {
                 <tr key={c.id}>
                   <td>{c.class_name}</td>
                   <td>{c.trainer_name}</td>
+                  <td>{getBranchBadge(c.branch)}</td>
                   <td>{c.date}</td>
                   <td>{c.time}</td>
                   <td>{c.schedule_day}</td>
@@ -292,6 +305,20 @@ const ClassesSchedule = () => {
                 </div>
                 <div className="row mb-3">
                   <div className="col-md-6 mb-3">
+                    <label className="form-label fw-semibold">Branch <span className="text-danger">*</span></label>
+                    <select 
+                      className="form-select rounded-3" 
+                      defaultValue={selectedClass?.branch || 'Downtown'} 
+                      disabled={modalType==='view'} 
+                      onChange={e=>setSelectedClass({...selectedClass,branch:e.target.value})}
+                    >
+                      <option value="Downtown">Downtown</option>
+                      <option value="North Branch">North Branch</option>
+                      <option value="South Branch">South Branch</option>
+                      <option value="East Branch">East Branch</option>
+                    </select>
+                  </div>
+                  <div className="col-md-6 mb-3">
                     <label className="form-label fw-semibold">Date</label>
                     <input 
                       type="date"
@@ -301,6 +328,8 @@ const ClassesSchedule = () => {
                       onChange={e=>setSelectedClass({...selectedClass,date:e.target.value})}
                     />
                   </div>
+                </div>
+                <div className="row mb-3">
                   <div className="col-md-6 mb-3">
                     <label className="form-label fw-semibold">Time</label>
                     <input 
@@ -311,8 +340,6 @@ const ClassesSchedule = () => {
                       placeholder="e.g., 10:00 - 11:00"
                     />
                   </div>
-                </div>
-                <div className="row mb-3">
                   <div className="col-md-6 mb-3">
                     <label className="form-label fw-semibold">Day</label>
                     <select 
@@ -330,6 +357,8 @@ const ClassesSchedule = () => {
                       <option value="Sunday">Sunday</option>
                     </select>
                   </div>
+                </div>
+                <div className="row mb-3">
                   <div className="col-md-6 mb-3">
                     <label className="form-label fw-semibold">Status</label>
                     <select 
