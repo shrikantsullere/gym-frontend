@@ -8,7 +8,8 @@ import {
   FaTrash,
   FaEdit,
   FaSearch,
-  FaFilter
+  FaFilter,
+  FaTimes
 } from 'react-icons/fa';
 import { 
   Button, 
@@ -22,7 +23,8 @@ import {
   FormControl,
   Modal,
   Tab,
-  Tabs
+  Tabs,
+  Collapse
 } from 'react-bootstrap';
 
 // Mock data for tasks
@@ -55,6 +57,7 @@ const HouseKeepingTaskChecklist = () => {
     description: '', 
     completed: false 
   });
+  const [filterMenuOpen, setFilterMenuOpen] = useState(false);
 
   // Filter tasks based on selected filters and search term
   const filteredTasks = tasks.filter(task => {
@@ -134,7 +137,7 @@ const HouseKeepingTaskChecklist = () => {
   const stats = getTaskStats();
 
   return (
-    <div className="duty-roster-container">
+    <div className="duty-roster-container p-2 p-md-4" style={{ overflow: 'hidden' }}>
       {/* Custom styles for blue color replacement */}
       <style>
         {`
@@ -159,12 +162,78 @@ const HouseKeepingTaskChecklist = () => {
           .duty-roster-container .fa-broom {
             color: #6EB2CC !important;
           }
+          .task-item {
+            transition: all 0.2s ease;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+          }
+          .task-item:hover {
+            background-color: #f8f9fa;
+          }
+          .mobile-action-buttons {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 0.5rem;
+          }
+          .filter-badge {
+            cursor: pointer;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+          }
+          .task-title {
+            word-break: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
+          }
+          .task-description {
+            word-break: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+          }
+          @media (max-width: 768px) {
+            .mobile-filter-toggle {
+              display: flex !important;
+            }
+            .desktop-filter {
+              display: none !important;
+            }
+            .task-item .badge {
+              font-size: 0.7rem;
+            }
+            .task-item h6 {
+              font-size: 0.9rem;
+            }
+            .task-item p {
+              font-size: 0.8rem;
+            }
+            .stats-card h5 {
+              font-size: 0.9rem !important;
+            }
+            .stats-card h3 {
+              font-size: 1.2rem !important;
+            }
+          }
+          @media (min-width: 769px) {
+            .mobile-filter-toggle {
+              display: none !important;
+            }
+            .desktop-filter {
+              display: block !important;
+            }
+            .mobile-action-buttons {
+              display: none !important;
+            }
+          }
         `}
       </style>
 
       {/* Header */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <div>
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4">
+        <div className="text-center text-md-start mb-3 mb-md-0">
           <h2 className="mb-0">Task Checklist</h2>
           <p className="text-muted">Manage cleaning and maintenance tasks</p>
         </div>
@@ -175,65 +244,65 @@ const HouseKeepingTaskChecklist = () => {
 
       {/* Stats Cards */}
       <Row className="mb-4">
-        <Col md={3} sm={6}>
-          <Card className="mb-3">
-            <Card.Body className="d-flex align-items-center">
-              <div className="me-3">
-                <FaBroom size={30} style={{ color: '#6EB2CC' }} />
+        <Col xs={6} md={3} className="mb-3">
+          <Card className="h-100 stats-card">
+            <Card.Body className="d-flex align-items-center p-2 p-md-3">
+              <div className="me-2 me-md-3">
+                <FaBroom size={20} style={{ color: '#6EB2CC' }} />
               </div>
-              <div>
-                <h5>Cleaning Tasks</h5>
-                <h3>{stats.cleaning}</h3>
-              </div>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={3} sm={6}>
-          <Card className="mb-3">
-            <Card.Body className="d-flex align-items-center">
-              <div className="me-3">
-                <FaTools size={30} className="text-warning" />
-              </div>
-              <div>
-                <h5>Maintenance Tasks</h5>
-                <h3>{stats.maintenance}</h3>
+              <div className="flex-grow-1 min-w-0">
+                <h5 className="mb-0 text-truncate">Cleaning</h5>
+                <h3 className="mb-0">{stats.cleaning}</h3>
               </div>
             </Card.Body>
           </Card>
         </Col>
-        <Col md={3} sm={6}>
-          <Card className="mb-3">
-            <Card.Body className="d-flex align-items-center">
-              <div className="me-3">
-                <FaCheckCircle size={30} className="text-success" />
+        <Col xs={6} md={3} className="mb-3">
+          <Card className="h-100 stats-card">
+            <Card.Body className="d-flex align-items-center p-2 p-md-3">
+              <div className="me-2 me-md-3">
+                <FaTools size={20} className="text-warning" />
               </div>
-              <div>
-                <h5>Completed</h5>
-                <h3>{stats.completed}</h3>
+              <div className="flex-grow-1 min-w-0">
+                <h5 className="mb-0 text-truncate">Maintenance</h5>
+                <h3 className="mb-0">{stats.maintenance}</h3>
               </div>
             </Card.Body>
           </Card>
         </Col>
-        <Col md={3} sm={6}>
-          <Card className="mb-3">
-            <Card.Body className="d-flex align-items-center">
-              <div className="me-3">
-                <FaCircle size={30} className="text-danger" />
+        <Col xs={6} md={3} className="mb-3">
+          <Card className="h-100 stats-card">
+            <Card.Body className="d-flex align-items-center p-2 p-md-3">
+              <div className="me-2 me-md-3">
+                <FaCheckCircle size={20} className="text-success" />
               </div>
-              <div>
-                <h5>Pending</h5>
-                <h3>{stats.pending}</h3>
+              <div className="flex-grow-1 min-w-0">
+                <h5 className="mb-0 text-truncate">Completed</h5>
+                <h3 className="mb-0">{stats.completed}</h3>
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col xs={6} md={3} className="mb-3">
+          <Card className="h-100 stats-card">
+            <Card.Body className="d-flex align-items-center p-2 p-md-3">
+              <div className="me-2 me-md-3">
+                <FaCircle size={20} className="text-danger" />
+              </div>
+              <div className="flex-grow-1 min-w-0">
+                <h5 className="mb-0 text-truncate">Pending</h5>
+                <h3 className="mb-0">{stats.pending}</h3>
               </div>
             </Card.Body>
           </Card>
         </Col>
       </Row>
 
-      {/* Search and Filters */}
+      {/* Search and Filters - Desktop View */}
       <Card className="mb-4">
         <Card.Body>
-          <Row>
-            <Col md={6}>
+          <Row className="align-items-center">
+            <Col xs={12} md={6} className="mb-3 mb-md-0">
               <InputGroup>
                 <FormControl 
                   placeholder="Search tasks..." 
@@ -245,27 +314,101 @@ const HouseKeepingTaskChecklist = () => {
                 </Button>
               </InputGroup>
             </Col>
-            <Col md={3}>
-              <Form.Select 
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-              >
-                <option value="all">All Categories</option>
-                <option value="cleaning">Cleaning Tasks</option>
-                <option value="maintenance">Maintenance Tasks</option>
-              </Form.Select>
-            </Col>
-            <Col md={3}>
-              <Form.Select 
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-              >
-                <option value="all">All Status</option>
-                <option value="pending">Pending</option>
-                <option value="completed">Completed</option>
-              </Form.Select>
+            <Col xs={12} md={6}>
+              <div className="d-flex flex-column flex-md-row">
+                <div className="desktop-filter">
+                  <Form.Select 
+                    value={filter}
+                    onChange={(e) => setFilter(e.target.value)}
+                    className="me-md-2 mb-2 mb-md-0"
+                  >
+                    <option value="all">All Categories</option>
+                    <option value="cleaning">Cleaning Tasks</option>
+                    <option value="maintenance">Maintenance Tasks</option>
+                  </Form.Select>
+                </div>
+                <div className="desktop-filter">
+                  <Form.Select 
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                  >
+                    <option value="all">All Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="completed">Completed</option>
+                  </Form.Select>
+                </div>
+                <div className="mobile-filter-toggle">
+                  <Button 
+                    variant="outline-secondary" 
+                    onClick={() => setFilterMenuOpen(!filterMenuOpen)}
+                    className="w-100"
+                  >
+                    <FaFilter className="me-2" /> Filters
+                  </Button>
+                </div>
+              </div>
             </Col>
           </Row>
+          
+          {/* Mobile Filter Menu */}
+          <Collapse in={filterMenuOpen}>
+            <div className="mt-3">
+              <Row>
+                <Col xs={12} className="mb-2">
+                  <Form.Label>Category</Form.Label>
+                  <div>
+                    <Badge 
+                      bg={filter === 'all' ? 'primary' : 'secondary'} 
+                      className="filter-badge"
+                      onClick={() => setFilter('all')}
+                    >
+                      All
+                    </Badge>
+                    <Badge 
+                      bg={filter === 'cleaning' ? 'primary' : 'secondary'} 
+                      className="filter-badge"
+                      onClick={() => setFilter('cleaning')}
+                    >
+                      Cleaning
+                    </Badge>
+                    <Badge 
+                      bg={filter === 'maintenance' ? 'primary' : 'secondary'} 
+                      className="filter-badge"
+                      onClick={() => setFilter('maintenance')}
+                    >
+                      Maintenance
+                    </Badge>
+                  </div>
+                </Col>
+                <Col xs={12}>
+                  <Form.Label>Status</Form.Label>
+                  <div>
+                    <Badge 
+                      bg={statusFilter === 'all' ? 'primary' : 'secondary'} 
+                      className="filter-badge"
+                      onClick={() => setStatusFilter('all')}
+                    >
+                      All
+                    </Badge>
+                    <Badge 
+                      bg={statusFilter === 'pending' ? 'primary' : 'secondary'} 
+                      className="filter-badge"
+                      onClick={() => setStatusFilter('pending')}
+                    >
+                      Pending
+                    </Badge>
+                    <Badge 
+                      bg={statusFilter === 'completed' ? 'primary' : 'secondary'} 
+                      className="filter-badge"
+                      onClick={() => setStatusFilter('completed')}
+                    >
+                      Completed
+                    </Badge>
+                  </div>
+                </Col>
+              </Row>
+            </div>
+          </Collapse>
         </Card.Body>
       </Card>
 
@@ -281,47 +424,48 @@ const HouseKeepingTaskChecklist = () => {
                   </div>
                 ) : (
                   filteredTasks.map(task => (
-                    <ListGroup.Item key={task.id} className="d-flex align-items-start">
-                      <div className="me-3 mt-1">
-                        <Form.Check 
-                          type="checkbox" 
-                          checked={task.completed}
-                          onChange={() => toggleTaskStatus(task.id)}
-                        />
-                      </div>
-                      <div className="flex-grow-1">
-                        <div className="d-flex justify-content-between">
-                          <h6 className={task.completed ? "text-decoration-line-through text-muted" : ""}>
+                    <ListGroup.Item key={task.id} className="task-item px-2 px-md-3">
+                      <Row className="align-items-center">
+                        <Col xs="auto" className="pe-0">
+                          <Form.Check 
+                            type="checkbox" 
+                            checked={task.completed}
+                            onChange={() => toggleTaskStatus(task.id)}
+                          />
+                        </Col>
+                        <Col className="min-w-0">
+                          <h6 className={`task-title ${task.completed ? "text-decoration-line-through text-muted mb-1" : "mb-1"}`}>
                             {task.title}
                           </h6>
-                          <div>
-                            <Badge bg={task.category === 'cleaning' ? 'primary' : 'warning'} className="me-2">
+                          <p className="task-description mb-1 text-muted">{task.description}</p>
+                          <div className="d-flex flex-wrap gap-1">
+                            <Badge bg={task.category === 'cleaning' ? 'primary' : 'warning'}>
                               {task.category === 'cleaning' ? 'Cleaning' : 'Maintenance'}
                             </Badge>
                             <Badge bg={task.completed ? 'success' : 'danger'}>
                               {task.completed ? 'Completed' : 'Pending'}
                             </Badge>
                           </div>
-                        </div>
-                        <p className="mb-1 text-muted">{task.description}</p>
-                      </div>
-                      <div className="ms-2">
-                        <Button 
-                          variant="outline-primary" 
-                          size="sm" 
-                          className="me-1"
-                          onClick={() => prepareEditTask(task)}
-                        >
-                          <FaEdit />
-                        </Button>
-                        <Button 
-                          variant="outline-danger" 
-                          size="sm"
-                          onClick={() => handleDeleteTask(task.id)}
-                        >
-                          <FaTrash />
-                        </Button>
-                      </div>
+                        </Col>
+                        <Col xs="auto">
+                          <div className="d-flex gap-1">
+                            <Button 
+                              variant="outline-primary" 
+                              size="sm"
+                              onClick={() => prepareEditTask(task)}
+                            >
+                              <FaEdit />
+                            </Button>
+                            <Button 
+                              variant="outline-danger" 
+                              size="sm"
+                              onClick={() => handleDeleteTask(task.id)}
+                            >
+                              <FaTrash />
+                            </Button>
+                          </div>
+                        </Col>
+                      </Row>
                     </ListGroup.Item>
                   ))
                 )}
@@ -338,42 +482,43 @@ const HouseKeepingTaskChecklist = () => {
                   filteredTasks
                     .filter(t => t.category === 'cleaning')
                     .map(task => (
-                      <ListGroup.Item key={task.id} className="d-flex align-items-start">
-                        <div className="me-3 mt-1">
-                          <Form.Check 
-                            type="checkbox" 
-                            checked={task.completed}
-                            onChange={() => toggleTaskStatus(task.id)}
-                          />
-                        </div>
-                        <div className="flex-grow-1">
-                          <div className="d-flex justify-content-between">
-                            <h6 className={task.completed ? "text-decoration-line-through text-muted" : ""}>
+                      <ListGroup.Item key={task.id} className="task-item px-2 px-md-3">
+                        <Row className="align-items-center">
+                          <Col xs="auto" className="pe-0">
+                            <Form.Check 
+                              type="checkbox" 
+                              checked={task.completed}
+                              onChange={() => toggleTaskStatus(task.id)}
+                            />
+                          </Col>
+                          <Col className="min-w-0">
+                            <h6 className={`task-title ${task.completed ? "text-decoration-line-through text-muted mb-1" : "mb-1"}`}>
                               {task.title}
                             </h6>
+                            <p className="task-description mb-1 text-muted">{task.description}</p>
                             <Badge bg={task.completed ? 'success' : 'danger'}>
                               {task.completed ? 'Completed' : 'Pending'}
                             </Badge>
-                          </div>
-                          <p className="mb-1 text-muted">{task.description}</p>
-                        </div>
-                        <div className="ms-2">
-                          <Button 
-                            variant="outline-primary" 
-                            size="sm" 
-                            className="me-1"
-                            onClick={() => prepareEditTask(task)}
-                          >
-                            <FaEdit />
-                          </Button>
-                          <Button 
-                            variant="outline-danger" 
-                            size="sm"
-                            onClick={() => handleDeleteTask(task.id)}
-                          >
-                            <FaTrash />
-                          </Button>
-                        </div>
+                          </Col>
+                          <Col xs="auto">
+                            <div className="d-flex gap-1">
+                              <Button 
+                                variant="outline-primary" 
+                                size="sm"
+                                onClick={() => prepareEditTask(task)}
+                              >
+                                <FaEdit />
+                              </Button>
+                              <Button 
+                                variant="outline-danger" 
+                                size="sm"
+                                onClick={() => handleDeleteTask(task.id)}
+                              >
+                                <FaTrash />
+                              </Button>
+                            </div>
+                          </Col>
+                        </Row>
                       </ListGroup.Item>
                     ))
                 )}
@@ -390,42 +535,43 @@ const HouseKeepingTaskChecklist = () => {
                   filteredTasks
                     .filter(t => t.category === 'maintenance')
                     .map(task => (
-                      <ListGroup.Item key={task.id} className="d-flex align-items-start">
-                        <div className="me-3 mt-1">
-                          <Form.Check 
-                            type="checkbox" 
-                            checked={task.completed}
-                            onChange={() => toggleTaskStatus(task.id)}
-                          />
-                        </div>
-                        <div className="flex-grow-1">
-                          <div className="d-flex justify-content-between">
-                            <h6 className={task.completed ? "text-decoration-line-through text-muted" : ""}>
+                      <ListGroup.Item key={task.id} className="task-item px-2 px-md-3">
+                        <Row className="align-items-center">
+                          <Col xs="auto" className="pe-0">
+                            <Form.Check 
+                              type="checkbox" 
+                              checked={task.completed}
+                              onChange={() => toggleTaskStatus(task.id)}
+                            />
+                          </Col>
+                          <Col className="min-w-0">
+                            <h6 className={`task-title ${task.completed ? "text-decoration-line-through text-muted mb-1" : "mb-1"}`}>
                               {task.title}
                             </h6>
+                            <p className="task-description mb-1 text-muted">{task.description}</p>
                             <Badge bg={task.completed ? 'success' : 'danger'}>
                               {task.completed ? 'Completed' : 'Pending'}
                             </Badge>
-                          </div>
-                          <p className="mb-1 text-muted">{task.description}</p>
-                        </div>
-                        <div className="ms-2">
-                          <Button 
-                            variant="outline-primary" 
-                            size="sm" 
-                            className="me-1"
-                            onClick={() => prepareEditTask(task)}
-                          >
-                            <FaEdit />
-                          </Button>
-                          <Button 
-                            variant="outline-danger" 
-                            size="sm"
-                            onClick={() => handleDeleteTask(task.id)}
-                          >
-                            <FaTrash />
-                          </Button>
-                        </div>
+                          </Col>
+                          <Col xs="auto">
+                            <div className="d-flex gap-1">
+                              <Button 
+                                variant="outline-primary" 
+                                size="sm"
+                                onClick={() => prepareEditTask(task)}
+                              >
+                                <FaEdit />
+                              </Button>
+                              <Button 
+                                variant="outline-danger" 
+                                size="sm"
+                                onClick={() => handleDeleteTask(task.id)}
+                              >
+                                <FaTrash />
+                              </Button>
+                            </div>
+                          </Col>
+                        </Row>
                       </ListGroup.Item>
                     ))
                 )}
@@ -436,7 +582,7 @@ const HouseKeepingTaskChecklist = () => {
       </Card>
 
       {/* Add Task Modal */}
-      <Modal show={showAddModal} onHide={() => setShowAddModal(false)}>
+      <Modal show={showAddModal} onHide={() => setShowAddModal(false)} size="lg" centered>
         <Modal.Header closeButton>
           <Modal.Title>Add New Task</Modal.Title>
         </Modal.Header>
@@ -484,7 +630,7 @@ const HouseKeepingTaskChecklist = () => {
       </Modal>
 
       {/* Edit Task Modal */}
-      <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
+      <Modal show={showEditModal} onHide={() => setShowEditModal(false)} size="lg" centered>
         <Modal.Header closeButton>
           <Modal.Title>Edit Task</Modal.Title>
         </Modal.Header>

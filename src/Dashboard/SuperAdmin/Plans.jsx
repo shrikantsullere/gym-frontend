@@ -344,16 +344,16 @@ const MembershipPlans = () => {
         </div>
       </div>
 
-      {/* ---------------- COMPACT MODAL ---------------- */}
+      {/* ---------------- FULLY RESPONSIVE MODAL ---------------- */}
       {isModalOpen && (
         <div
-          className="modal fade show"
-          style={{ display: "block", background: "rgba(0,0,0,0.45)" }}
+          className="modal fade show d-block"
+          tabIndex="-1"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
           onClick={() => setIsModalOpen(false)}
         >
-          <div
-            className="modal-dialog modal-md modal-dialog-centered"
-            style={{ maxWidth: "60%" }}
+          <div 
+            className="modal-dialog modal-dialog-centered modal-dialog-scrollable" 
             onClick={(e) => e.stopPropagation()}
           >
             <div className="modal-content" style={{ borderRadius: "14px" }}>
@@ -367,6 +367,7 @@ const MembershipPlans = () => {
                     : "Plan Details"}
                 </h5>
                 <button
+                  type="button"
                   className="btn-close"
                   onClick={() => setIsModalOpen(false)}
                 ></button>
@@ -388,108 +389,91 @@ const MembershipPlans = () => {
                   {modalType === "add" ? "Add New Plan (INR)" : "Edit Plan"}
                 </div>
 
-                {/* Compact Form with Tabs */}
-                <ul className="nav nav-tabs mb-3" id="planFormTabs" role="tablist">
-                  <li className="nav-item" role="presentation">
-                    <button className="nav-link active" id="basic-tab" data-bs-toggle="tab" data-bs-target="#basic" type="button" role="tab" aria-controls="basic" aria-selected="true">Basic</button>
-                  </li>
-                  <li className="nav-item" role="presentation">
-                    <button className="nav-link" id="details-tab" data-bs-toggle="tab" data-bs-target="#details" type="button" role="tab" aria-controls="details" aria-selected="false">Details</button>
-                  </li>
-                </ul>
-
-                <div className="tab-content" id="planFormTabsContent">
-                  {/* Basic Information Tab */}
-                  <div className="tab-pane fade show active" id="basic" role="tabpanel" aria-labelledby="basic-tab">
-                    <div className="row g-2">
-                      <div className="col-12 col-md-6">
-                        <label className="form-label fs-6 mb-1">Plan Name</label>
-                        <input
-                          className="form-control form-control-sm"
-                          placeholder="Enter plan name"
-                          value={planName}
-                          onChange={(e) => setPlanName(e.target.value)}
-                          disabled={modalType === "view"}
-                        />
-                      </div>
-
-                      <div className="col-12 col-md-6">
-                        <label className="form-label fs-6 mb-1">
-                          Base Price (₹)
-                        </label>
-                        <input
-                          className="form-control form-control-sm"
-                          type="number"
-                          placeholder="0"
-                          value={basePrice}
-                          onChange={(e) => setBasePrice(e.target.value)}
-                          disabled={modalType === "view"}
-                        />
-                      </div>
-
-                      <div className="col-12 col-md-6">
-                        <label className="form-label fs-6 mb-1">Billing Cycle</label>
-                        <select
-                          className="form-select form-select-sm"
-                          value={billingCycle}
-                          onChange={(e) => setBillingCycle(e.target.value)}
-                          disabled={modalType === "view"}
-                        >
-                          <option>Monthly</option>
-                          <option>Yearly</option>
-                        </select>
-                      </div>
-
-                      <div className="col-12 col-md-6">
-                        <label className="form-label fs-6 mb-1">Status</label>
-                        <select
-                          className="form-select form-select-sm"
-                          value={status}
-                          onChange={(e) => setStatus(e.target.value)}
-                          disabled={modalType === "view"}
-                        >
-                          <option>Active</option>
-                          <option>Inactive</option>
-                        </select>
-                      </div>
-                    </div>
+                {/* Simple Form (No Tabs) */}
+                <div className="row g-2 g-md-3">
+                  <div className="col-12">
+                    <label className="form-label fs-6 mb-1">Plan Name</label>
+                    <input
+                      className="form-control form-control-sm"
+                      placeholder="Enter plan name"
+                      value={planName}
+                      onChange={(e) => setPlanName(e.target.value)}
+                      disabled={modalType === "view"}
+                    />
                   </div>
 
-                  {/* Details Information Tab */}
-                  <div className="tab-pane fade" id="details" role="tabpanel" aria-labelledby="details-tab">
-                    <div className="mb-2">
-                      <label className="form-label fs-6 mb-1">Descriptions</label>
-                      <div className="d-flex gap-2 flex-column">
-                        {descriptions.map((desc, i) => (
-                          <input
-                            key={i}
-                            className="form-control form-control-sm mb-1"
-                            placeholder={`Description ${i + 1}`}
-                            value={desc}
-                            onChange={(e) => updateDescription(i, e.target.value)}
-                            disabled={modalType === "view"}
-                          />
-                        ))}
+                  <div className="col-12 col-md-6">
+                    <label className="form-label fs-6 mb-1">
+                      Base Price (₹)
+                    </label>
+                    <input
+                      className="form-control form-control-sm"
+                      type="number"
+                      placeholder="0"
+                      value={basePrice}
+                      onChange={(e) => setBasePrice(e.target.value)}
+                      disabled={modalType === "view"}
+                    />
+                  </div>
 
-                        {modalType !== "view" && (
-                          <button
-                            className="btn btn-sm"
-                            style={{
-                              backgroundColor: "#6EB2CC",
-                              color: "white",
-                              borderRadius: "4px",
-                              border: "none",
-                              width: "32px",
-                              height: "32px",
-                              fontWeight: "600",
-                              padding: "0"
-                            }}
-                            onClick={addDescription}
-                          >
-                            +
-                          </button>
-                        )}
-                      </div>
+                  <div className="col-12 col-md-6">
+                    <label className="form-label fs-6 mb-1">Billing Cycle</label>
+                    <select
+                      className="form-select form-select-sm"
+                      value={billingCycle}
+                      onChange={(e) => setBillingCycle(e.target.value)}
+                      disabled={modalType === "view"}
+                    >
+                      <option>Monthly</option>
+                      <option>Yearly</option>
+                    </select>
+                  </div>
+
+                  <div className="col-12 col-md-6">
+                    <label className="form-label fs-6 mb-1">Status</label>
+                    <select
+                      className="form-select form-select-sm"
+                      value={status}
+                      onChange={(e) => setStatus(e.target.value)}
+                      disabled={modalType === "view"}
+                    >
+                      <option>Active</option>
+                      <option>Inactive</option>
+                    </select>
+                  </div>
+
+                  <div className="col-12">
+                    <label className="form-label fs-6 mb-1">Descriptions</label>
+                    <div className="d-flex gap-2 flex-column">
+                      {descriptions.map((desc, i) => (
+                        <input
+                          key={i}
+                          className="form-control form-control-sm mb-1"
+                          placeholder={`Description ${i + 1}`}
+                          value={desc}
+                          onChange={(e) => updateDescription(i, e.target.value)}
+                          disabled={modalType === "view"}
+                        />
+                      ))}
+
+                      {modalType !== "view" && (
+                        <button
+                          className="btn btn-sm"
+                          style={{
+                            backgroundColor: "#6EB2CC",
+                            color: "white",
+                            borderRadius: "4px",
+                            border: "none",
+                            width: "32px",
+                            height: "32px",
+                            fontWeight: "600",
+                            padding: "0"
+                          }}
+                          onClick={addDescription}
+                        >
+                          +
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -498,6 +482,7 @@ const MembershipPlans = () => {
               {/* FOOTER */}
               <div className="modal-footer border-0 py-2 px-3">
                 <button
+                  type="button"
                   className="btn btn-sm btn-secondary"
                   onClick={() => setIsModalOpen(false)}
                 >
@@ -506,6 +491,7 @@ const MembershipPlans = () => {
 
                 {modalType !== "view" && (
                   <button
+                    type="button"
                     className="btn btn-sm"
                     style={{
                       backgroundColor: "#6EB2CC",
@@ -527,13 +513,13 @@ const MembershipPlans = () => {
       {/* DELETE MODAL */}
       {isDeleteModalOpen && (
         <div
-          className="modal fade show"
-          style={{ display: "block", background: "rgba(0,0,0,0.45)" }}
+          className="modal fade show d-block"
+          tabIndex="-1"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
           onClick={() => setIsDeleteModalOpen(false)}
         >
-          <div
-            className="modal-dialog modal-dialog-centered"
-            style={{ maxWidth: "90%" }}
+          <div 
+            className="modal-dialog modal-dialog-centered" 
             onClick={(e) => e.stopPropagation()}
           >
             <div className="modal-content" style={{ borderRadius: "12px" }}>
@@ -542,12 +528,17 @@ const MembershipPlans = () => {
                 <p className="text-muted">This action cannot be undone.</p>
                 <div className="d-flex justify-content-center gap-3 mt-3">
                   <button
+                    type="button"
                     className="btn btn-secondary"
                     onClick={() => setIsDeleteModalOpen(false)}
                   >
                     Cancel
                   </button>
-                  <button className="btn btn-danger" onClick={deletePlan}>
+                  <button 
+                    type="button"
+                    className="btn btn-danger" 
+                    onClick={deletePlan}
+                  >
                     Delete
                   </button>
                 </div>

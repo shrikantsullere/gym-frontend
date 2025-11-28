@@ -312,51 +312,76 @@ const ModalWrapper = ({ title, children, onClose }) => (
 const AdminForm = ({ mode, admin, onCancel, onSubmit }) => {
   const isView = mode === "view";
   const isAdd = mode === "add";
-
+  
   const planOptions = {
     Gold: { price: "1200", duration: "12 Months", description: "Full access plan" },
     Silver: { price: "800", duration: "6 Months", description: "Mid-tier plan" },
     Basic: { price: "500", duration: "3 Months", description: "Starter plan" }
   };
 
-  const [selectedPlan, setSelectedPlan] = useState(admin?.plans?.[0]?.planName || "");
-  const [planPrice, setPlanPrice] = useState(admin?.plans?.[0]?.price || "");
-  const [planDuration, setPlanDuration] = useState(admin?.plans?.[0]?.duration || "");
-  const [planDescription, setPlanDescription] = useState(admin?.plans?.[0]?.description || "");
+  const [formData, setFormData] = useState({
+    name: admin?.name || "",
+    gymName: "",
+    adminId: admin?.adminId || "",
+    address: admin?.address || "",
+    phone: admin?.phone || "",
+    email: admin?.email || "",
+    username: admin?.username || "",
+    password: "",
+    status: admin?.status || "Inactive",
+    planName: admin?.plans?.[0]?.planName || "",
+    planPrice: admin?.plans?.[0]?.price || "",
+    planDuration: admin?.plans?.[0]?.duration || "",
+    planDescription: admin?.plans?.[0]?.description || ""
+  });
 
-  const handlePlanChange = (e) => {
-    const plan = e.target.value;
-    setSelectedPlan(plan);
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
-    if (planOptions[plan]) {
-      setPlanPrice(planOptions[plan].price);
-      setPlanDuration(planOptions[plan].duration);
-      setPlanDescription(planOptions[plan].description);
+  const handlePlanChange = (planName) => {
+    if (planOptions[planName]) {
+      setFormData(prev => ({
+        ...prev,
+        planName,
+        planPrice: planOptions[planName].price,
+        planDuration: planOptions[planName].duration,
+        planDescription: planOptions[planName].description
+      }));
     } else {
-      setPlanPrice("");
-      setPlanDuration("");
-      setPlanDescription("");
+      setFormData(prev => ({
+        ...prev,
+        planName,
+        planPrice: "",
+        planDuration: "",
+        planDescription: ""
+      }));
     }
+  };
+
+  const handleStatusToggle = () => {
+    setFormData(prev => ({
+      ...prev,
+      status: prev.status === "Active" ? "Inactive" : "Active"
+    }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (isView) return onCancel();
 
-    const fd = new FormData(e.target);
-    const data = Object.fromEntries(fd.entries());
-
     const payload = {
-      name: data.name,
-      gymName: data.gymName,
-      adminId: data.adminId,
-      address: data.address,
-      phone: data.phone,
-      email: data.email,
-      username: data.username,
-      password: data.password,
-      status: data.statusToggle ? "Active" : "Inactive",
-      plans: [{ planName: selectedPlan, price: planPrice, duration: planDuration, description: planDescription }]
+      ...formData,
+      plans: [{ 
+        planName: formData.planName, 
+        price: formData.planPrice, 
+        duration: formData.planDuration, 
+        description: formData.planDescription 
+      }]
     };
 
     onSubmit(payload);
@@ -364,113 +389,159 @@ const AdminForm = ({ mode, admin, onCancel, onSubmit }) => {
 
   return (
     <form onSubmit={handleSubmit}>
-      {/* Compact Form with Tabs */}
-      <ul className="nav nav-tabs mb-3" id="adminFormTabs" role="tablist">
-        <li className="nav-item" role="presentation">
-          <button className="nav-link active" id="personal-tab" data-bs-toggle="tab" data-bs-target="#personal" type="button" role="tab" aria-controls="personal" aria-selected="true">Personal</button>
-        </li>
-        <li className="nav-item" role="presentation">
-          <button className="nav-link" id="login-tab" data-bs-toggle="tab" data-bs-target="#login" type="button" role="tab" aria-controls="login" aria-selected="false">Login</button>
-        </li>
-        <li className="nav-item" role="presentation">
-          <button className="nav-link" id="plans-tab" data-bs-toggle="tab" data-bs-target="#plans" type="button" role="tab" aria-controls="plans" aria-selected="false">Plans</button>
-        </li>
-      </ul>
+      {/* Personal Information Section */}
+      <div className="mb-4">
+        <h6 className="fw-bold mb-3 text-primary">Personal Information</h6>
+        <div className="row g-2 mb-3">
+          <div className="col-12 col-md-6">
+            <label className="form-label fs-6">Admin Name *</label>
+            <input 
+              name="name" 
+              className="form-control form-control-sm" 
+              value={formData.name} 
+              onChange={handleInputChange} 
+              readOnly={isView} 
+            />
+          </div>
 
-      <div className="tab-content" id="adminFormTabsContent">
-        {/* Personal Information Tab */}
-        <div className="tab-pane fade show active" id="personal" role="tabpanel" aria-labelledby="personal-tab">
-          <div className="row g-2 mb-3">
+          {isAdd ? (
             <div className="col-12 col-md-6">
-              <label className="form-label fs-6">Admin Name *</label>
-              <input name="name" className="form-control form-control-sm" defaultValue={admin?.name || ""} readOnly={isView} />
+              <label className="form-label fs-6">Gym Name *</label>
+              <input 
+                name="gymName" 
+                className="form-control form-control-sm" 
+                value={formData.gymName}
+                onChange={handleInputChange}
+                placeholder="Enter Gym Name" 
+                readOnly={isView} 
+              />
             </div>
-
-            {isAdd ? (
-              <div className="col-12 col-md-6">
-                <label className="form-label fs-6">Gym Name *</label>
-                <input name="gymName" className="form-control form-control-sm" placeholder="Enter Gym Name" readOnly={isView} />
-              </div>
-            ) : (
-              <div className="col-12 col-md-6">
-                <label className="form-label fs-6">Admin ID *</label>
-                <input name="adminId" className="form-control form-control-sm" defaultValue={admin?.adminId || ""} readOnly={isView} />
-              </div>
-            )}
-
-            <div className="col-12">
-              <label className="form-label fs-6">Address *</label>
-              <input name="address" className="form-control form-control-sm" defaultValue={admin?.address || ""} readOnly={isView} />
-            </div>
-            
+          ) : (
             <div className="col-12 col-md-6">
-              <label className="form-label fs-6">Phone *</label>
-              <input name="phone" className="form-control form-control-sm" defaultValue={admin?.phone || ""} readOnly={isView} />
+              <label className="form-label fs-6">Admin ID *</label>
+              <input 
+                name="adminId" 
+                className="form-control form-control-sm" 
+                value={formData.adminId} 
+                onChange={handleInputChange}
+                readOnly={isView} 
+              />
             </div>
+          )}
 
-            <div className="col-12 col-md-6">
-              <label className="form-label fs-6">Email *</label>
-              <input name="email" className="form-control form-control-sm" defaultValue={admin?.email || ""} readOnly={isView} />
-            </div>
+          <div className="col-12">
+            <label className="form-label fs-6">Address *</label>
+            <input 
+              name="address" 
+              className="form-control form-control-sm" 
+              value={formData.address} 
+              onChange={handleInputChange}
+              readOnly={isView} 
+            />
+          </div>
+          
+          <div className="col-12 col-md-6">
+            <label className="form-label fs-6">Phone *</label>
+            <input 
+              name="phone" 
+              className="form-control form-control-sm" 
+              value={formData.phone} 
+              onChange={handleInputChange}
+              readOnly={isView} 
+            />
+          </div>
+
+          <div className="col-12 col-md-6">
+            <label className="form-label fs-6">Email *</label>
+            <input 
+              name="email" 
+              className="form-control form-control-sm" 
+              value={formData.email} 
+              onChange={handleInputChange}
+              readOnly={isView} 
+            />
           </div>
         </div>
+      </div>
 
-        {/* Login Information Tab */}
-        <div className="tab-pane fade" id="login" role="tabpanel" aria-labelledby="login-tab">
-          <div className="row g-2 mb-3">
-            <div className="col-12 col-md-6">
-              <label className="form-label fs-6">Username *</label>
-              <input name="username" className="form-control form-control-sm" defaultValue={admin?.username || ""} readOnly={isView} />
-            </div>
-
-            {!isView && (
-              <div className="col-12 col-md-6">
-                <label className="form-label fs-6">Password *</label>
-                <input name="password" type="password" className="form-control form-control-sm" />
-              </div>
-            )}
+      {/* Login Information Section */}
+      <div className="mb-4">
+        <h6 className="fw-bold mb-3 text-primary">Login Information</h6>
+        <div className="row g-2 mb-3">
+          <div className="col-12 col-md-6">
+            <label className="form-label fs-6">Username *</label>
+            <input 
+              name="username" 
+              className="form-control form-control-sm" 
+              value={formData.username} 
+              onChange={handleInputChange}
+              readOnly={isView} 
+            />
           </div>
+
+          {!isView && (
+            <div className="col-12 col-md-6">
+              <label className="form-label fs-6">Password *</label>
+              <input 
+                name="password" 
+                type="password" 
+                className="form-control form-control-sm" 
+                value={formData.password}
+                onChange={handleInputChange}
+              />
+            </div>
+          )}
         </div>
+      </div>
 
-        {/* Plans Information Tab */}
-        <div className="tab-pane fade" id="plans" role="tabpanel" aria-labelledby="plans-tab">
-          <div className="row g-2 mb-3">
-            <div className="col-12 col-md-6">
-              <label className="form-label fs-6">Plan Name *</label>
-              <select
-                name="planName"
-                className="form-select form-select-sm"
-                value={selectedPlan}
-                onChange={handlePlanChange}
-                disabled={isView}
-              >
-                <option value="">Select Plan</option>
-                <option value="Gold">Gold</option>
-                <option value="Silver">Silver</option>
-                <option value="Basic">Basic</option>
-              </select>
-            </div>
+      {/* Plan Information Section */}
+      <div className="mb-4">
+        <h6 className="fw-bold mb-3 text-primary">Plan Information</h6>
+        <div className="row g-2 mb-3">
+          <div className="col-12 col-md-6">
+            <label className="form-label fs-6">Plan Name *</label>
+            <select
+              name="planName"
+              className="form-select form-select-sm"
+              value={formData.planName}
+              onChange={(e) => handlePlanChange(e.target.value)}
+              disabled={isView}
+            >
+              <option value="">Select Plan</option>
+              <option value="Gold">Gold</option>
+              <option value="Silver">Silver</option>
+              <option value="Basic">Basic</option>
+            </select>
+          </div>
 
-            <div className="col-12 col-md-6">
-              <label className="form-label fs-6">Price *</label>
-              <input className="form-control form-control-sm" value={planPrice} readOnly />
-            </div>
+          <div className="col-12 col-md-6">
+            <label className="form-label fs-6">Price *</label>
+            <input 
+              className="form-control form-control-sm" 
+              value={formData.planPrice} 
+              readOnly 
+            />
+          </div>
 
-            <div className="col-12 col-md-6">
-              <label className="form-label fs-6">Duration *</label>
-              <input className="form-control form-control-sm" value={planDuration} readOnly />
-            </div>
+          <div className="col-12 col-md-6">
+            <label className="form-label fs-6">Duration *</label>
+            <input 
+              className="form-control form-control-sm" 
+              value={formData.planDuration} 
+              readOnly 
+            />
+          </div>
 
-            <div className="col-12">
-              <label className="form-label fs-6">Description *</label>
-              <textarea
-                className="form-control form-control-sm"
-                rows="2"
-                value={planDescription}
-                readOnly={isView}
-                onChange={(e) => setPlanDescription(e.target.value)}
-              ></textarea>
-            </div>
+          <div className="col-12">
+            <label className="form-label fs-6">Description *</label>
+            <textarea
+              name="planDescription"
+              className="form-control form-control-sm"
+              rows="2"
+              value={formData.planDescription}
+              onChange={handleInputChange}
+              readOnly={isView}
+            ></textarea>
           </div>
         </div>
       </div>
@@ -480,10 +551,10 @@ const AdminForm = ({ mode, admin, onCancel, onSubmit }) => {
         <label className="form-label me-3 mb-0 fs-6">Status</label>
         <div className="form-check form-switch">
           <input
-            name="statusToggle"
             type="checkbox"
             className="form-check-input"
-            defaultChecked={(admin?.status || "Inactive") === "Active"}
+            checked={formData.status === "Active"}
+            onChange={handleStatusToggle}
             disabled={isView}
           />
         </div>
