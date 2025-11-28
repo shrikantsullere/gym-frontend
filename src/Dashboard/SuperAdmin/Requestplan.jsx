@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FaCheck, FaTimes } from "react-icons/fa";
+import { FaCheck, FaTimes, FaChevronDown, FaChevronUp } from "react-icons/fa";
 
 const RequestedPlans = () => {
   const [rows, setRows] = useState([
@@ -37,228 +37,320 @@ const RequestedPlans = () => {
     },
   ]);
 
+  const [hoverIndex, setHoverIndex] = useState(null);
+  const [expandedRows, setExpandedRows] = useState([]);
+
   const updateStatus = (index, newStatus) => {
     const updated = [...rows];
     updated[index].status = newStatus;
     setRows(updated);
   };
 
-  const styles = {
-    container: {
-      padding: "30px",
-      background: "#f7f8fa",
-      fontFamily: "Inter, sans-serif",
-    },
-
-    titleBox: {
-      display: "flex",
-      alignItems: "center",
-      gap: "12px",
-      marginBottom: "20px",
-    },
-
-    titleCircle: {
-      width: "40px",
-      height: "40px",
-      borderRadius: "50%",
-      background: "#1e1e1e",
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      color: "white",
-      fontSize: "18px",
-      fontWeight: 600,
-    },
-
-    title: {
-      fontSize: "24px",
-      fontWeight: 600,
-    },
-
-    tableBox: {
-      background: "white",
-      padding: "20px",
-      borderRadius: "18px",
-      boxShadow: "0 4px 15px rgba(0,0,0,0.08)",
-      overflowX: "auto", // Added to handle overflow
-    },
-
-    headerRow: {
-      display: "grid",
-      gridTemplateColumns: "1.5fr 2fr 1fr 1fr 1fr 1fr 1.5fr", // Adjusted column widths
-      padding: "16px 10px",
-      fontWeight: 600,
-      borderBottom: "2px solid #eee",
-      color: "#333",
-      fontSize: "15px",
-    },
-
-    row: {
-      display: "grid",
-      gridTemplateColumns: "1.5fr 2fr 1fr 1fr 1fr 1fr 1.5fr", // Adjusted column widths to match header
-      padding: "16px 10px",
-      fontSize: "14px",
-      alignItems: "center",
-      borderBottom: "1px solid #f1f1f1",
-      transition: "0.25s",
-      cursor: "pointer",
-    },
-
-    rowHover: {
-      background: "#f5faff",
-      boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-      transform: "scale(1.002)",
-    },
-
-    pill: {
-      padding: "7px 14px",
-      borderRadius: "20px",
-      fontWeight: 600,
-      fontSize: "13px",
-      display: "inline-block", // Ensures proper sizing
-      textAlign: "center",
-    },
-
-    gold: { background: "#ffd200", color: "#111" },
-    basic: { background: "#b6e6ef", color: "#083d44" },
-
-    statusBase: {
-      padding: "7px 14px",
-      borderRadius: "20px",
-      fontWeight: 600,
-      fontSize: "13px",
-      textAlign: "center",
-      display: "inline-block", // Ensures proper sizing
-    },
-
-    pending: { background: "#ffe9b3", color: "#8a5d00" },
-    approved: { background: "#2ecc71", color: "white" },
-    rejected: { background: "#ff6e6e", color: "white" },
-
-    actions: {
-      display: "flex",
-      gap: "8px", // Reduced gap for better fit
-      justifyContent: "flex-start", // Align to start
-    },
-
-    button: {
-      padding: "6px 12px", // Adjusted padding
-      borderRadius: "20px",
-      fontSize: "12px", // Slightly smaller font
-      cursor: "pointer",
-      border: "none",
-      display: "flex",
-      alignItems: "center",
-      gap: "4px", // Reduced gap
-      transition: "0.25s",
-      fontWeight: 600,
-    },
-
-    approveBtn: {
-      background: "#28c76f",
-      color: "white",
-    },
-
-    rejectBtn: {
-      background: "#ff4d4d",
-      color: "white",
-    },
-
-    btnHover: {
-      transform: "translateY(-2px)",
-      boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
-    },
+  const toggleRowExpansion = (index) => {
+    setExpandedRows(prev => 
+      prev.includes(index) 
+        ? prev.filter(i => i !== index)
+        : [...prev, index]
+    );
   };
 
-  // TRACK WHICH ROW IS HOVERED
-  const [hoverIndex, setHoverIndex] = useState(null);
+  const getStatusColor = (status) => {
+    switch(status) {
+      case "Pending": return { bg: "#ffe9b3", color: "#8a5d00" };
+      case "Approved": return { bg: "#2ecc71", color: "white" };
+      case "Rejected": return { bg: "#ff6e6e", color: "white" };
+      default: return { bg: "#f0f0f0", color: "#333" };
+    }
+  };
+
+  const getPlanColor = (plan) => {
+    return plan === "Gold" 
+      ? { bg: "#ffd200", color: "#111" }
+      : { bg: "#b6e6ef", color: "#083d44" };
+  };
 
   return (
-    <div style={styles.container}>
-      {/* HEADER WITH BLACK CIRCLE */}
-      <div style={styles.titleBox}>
-        <div style={styles.titleCircle}>📘</div>
-        <h2 style={styles.title}>Requested Plans</h2>
-      </div>
-
-      <div style={styles.tableBox}>
-        <div style={styles.headerRow}>
-          <span>Admin</span>
-          <span>Email</span>
-          <span>Plan</span>
-          <span>Billing</span>
-          <span>Date</span>
-          <span>Status</span>
-          <span>Actions</span>
+    <div className="min-vh-100 bg-light" style={{ fontFamily: "Inter, sans-serif" }}>
+      {/* HEADER */}
+      <div className="container-fluid p-3 p-md-4">
+        <div className="row align-items-center mb-4">
+          <div className="col-12 col-md-8">
+            <div className="d-flex align-items-center gap-3">
+              <div className="rounded-circle bg-dark d-flex align-items-center justify-content-center text-white" 
+                   style={{ width: "40px", height: "40px", fontSize: "18px", fontWeight: "600" }}>
+                📘
+              </div>
+              <h2 className="mb-0 fw-bold fs-4 fs-md-3">Requested Plans</h2>
+            </div>
+          </div>
         </div>
 
-        {rows.map((item, index) => (
-          <div
-            key={index}
-            style={{
-              ...styles.row,
-              ...(hoverIndex === index ? styles.rowHover : {}),
-            }}
-            onMouseEnter={() => setHoverIndex(index)}
-            onMouseLeave={() => setHoverIndex(null)}
-          >
-            <span>{item.admin}</span>
-            <span>{item.email}</span>
-
-            <span>
-              <span
-                style={{
-                  ...styles.pill,
-                  ...(item.plan === "Gold" ? styles.gold : styles.basic),
-                }}
-              >
-                {item.plan}
-              </span>
-            </span>
-
-            <span>{item.billing}</span>
-            <span>{item.date}</span>
-
-            <span>
-              <span
-                style={{
-                  ...styles.statusBase,
-                  ...(item.status === "Pending"
-                    ? styles.pending
-                    : item.status === "Approved"
-                    ? styles.approved
-                    : styles.rejected),
-                }}
-              >
-                {item.status}
-              </span>
-            </span>
-
-            <span style={styles.actions}>
-              <button
-                style={{
-                  ...styles.button,
-                  ...styles.approveBtn,
-                  ...(hoverIndex === index ? styles.btnHover : {}),
-                }}
-                onClick={() => updateStatus(index, "Approved")}
-              >
-                <FaCheck /> Approve
-              </button>
-
-              <button
-                style={{
-                  ...styles.button,
-                  ...styles.rejectBtn,
-                  ...(hoverIndex === index ? styles.btnHover : {}),
-                }}
-                onClick={() => updateStatus(index, "Rejected")}
-              >
-                <FaTimes /> Reject
-              </button>
-            </span>
+        {/* DESKTOP TABLE VIEW */}
+        <div className="d-none d-lg-block">
+          <div className="card border-0 shadow-sm">
+            <div className="table-responsive">
+              <table className="table table-hover mb-0">
+                <thead className="bg-light">
+                  <tr>
+                    <th className="py-3 px-3 border-0">Admin</th>
+                    <th className="py-3 px-3 border-0">Email</th>
+                    <th className="py-3 px-3 border-0">Plan</th>
+                    <th className="py-3 px-3 border-0">Billing</th>
+                    <th className="py-3 px-3 border-0">Date</th>
+                    <th className="py-3 px-3 border-0">Status</th>
+                    <th className="py-3 px-3 border-0 text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((item, index) => (
+                    <tr 
+                      key={index} 
+                      className="border-bottom"
+                      onMouseEnter={() => setHoverIndex(index)}
+                      onMouseLeave={() => setHoverIndex(null)}
+                      style={{ 
+                        backgroundColor: hoverIndex === index ? "#f5faff" : "transparent",
+                        transition: "all 0.3s ease"
+                      }}
+                    >
+                      <td className="py-3 px-3">
+                        <div className="fw-semibold">{item.admin}</div>
+                      </td>
+                      <td className="py-3 px-3">
+                        <div className="text-muted small">{item.email}</div>
+                      </td>
+                      <td className="py-3 px-3">
+                        <span 
+                          className="badge rounded-pill px-3 py-2"
+                          style={{ 
+                            backgroundColor: getPlanColor(item.plan).bg,
+                            color: getPlanColor(item.plan).color,
+                            fontSize: "13px",
+                            fontWeight: "600"
+                          }}
+                        >
+                          {item.plan}
+                        </span>
+                      </td>
+                      <td className="py-3 px-3">
+                        <span className="text-muted">{item.billing}</span>
+                      </td>
+                      <td className="py-3 px-3">
+                        <span className="text-muted small">{item.date}</span>
+                      </td>
+                      <td className="py-3 px-3">
+                        <span 
+                          className="badge rounded-pill px-3 py-2"
+                          style={{ 
+                            backgroundColor: getStatusColor(item.status).bg,
+                            color: getStatusColor(item.status).color,
+                            fontSize: "13px",
+                            fontWeight: "600"
+                          }}
+                        >
+                          {item.status}
+                        </span>
+                      </td>
+                      <td className="py-3 px-3">
+                        <div className="d-flex gap-2 justify-content-center">
+                          <button
+                            className="btn btn-sm btn-success rounded-pill px-3 d-flex align-items-center gap-1"
+                            style={{ 
+                              fontSize: "12px",
+                              transition: "all 0.3s ease",
+                              transform: hoverIndex === index ? "translateY(-2px)" : "translateY(0)"
+                            }}
+                            onClick={() => updateStatus(index, "Approved")}
+                          >
+                            <FaCheck size={12} /> Approve
+                          </button>
+                          <button
+                            className="btn btn-sm btn-danger rounded-pill px-3 d-flex align-items-center gap-1"
+                            style={{ 
+                              fontSize: "12px",
+                              transition: "all 0.3s ease",
+                              transform: hoverIndex === index ? "translateY(-2px)" : "translateY(0)"
+                            }}
+                            onClick={() => updateStatus(index, "Rejected")}
+                          >
+                            <FaTimes size={12} /> Reject
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        ))}
+        </div>
+
+        {/* TABLET VIEW */}
+        <div className="d-none d-md-block d-lg-none">
+          <div className="card border-0 shadow-sm">
+            <div className="table-responsive">
+              <table className="table table-hover mb-0">
+                <thead className="bg-light">
+                  <tr>
+                    <th className="py-3 px-2 border-0">Admin</th>
+                    <th className="py-3 px-2 border-0">Plan</th>
+                    <th className="py-3 px-2 border-0">Status</th>
+                    <th className="py-3 px-2 border-0 text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((item, index) => (
+                    <tr 
+                      key={index} 
+                      className="border-bottom"
+                      onMouseEnter={() => setHoverIndex(index)}
+                      onMouseLeave={() => setHoverIndex(null)}
+                      style={{ 
+                        backgroundColor: hoverIndex === index ? "#f5faff" : "transparent",
+                        transition: "all 0.3s ease"
+                      }}
+                    >
+                      <td className="py-3 px-2">
+                        <div className="fw-semibold">{item.admin}</div>
+                        <div className="text-muted small">{item.email}</div>
+                      </td>
+                      <td className="py-3 px-2">
+                        <span 
+                          className="badge rounded-pill px-2 py-1"
+                          style={{ 
+                            backgroundColor: getPlanColor(item.plan).bg,
+                            color: getPlanColor(item.plan).color,
+                            fontSize: "12px",
+                            fontWeight: "600"
+                          }}
+                        >
+                          {item.plan}
+                        </span>
+                      </td>
+                      <td className="py-3 px-2">
+                        <span 
+                          className="badge rounded-pill px-2 py-1"
+                          style={{ 
+                            backgroundColor: getStatusColor(item.status).bg,
+                            color: getStatusColor(item.status).color,
+                            fontSize: "12px",
+                            fontWeight: "600"
+                          }}
+                        >
+                          {item.status}
+                        </span>
+                      </td>
+                      <td className="py-3 px-2">
+                        <div className="d-flex gap-1 justify-content-center flex-wrap">
+                          <button
+                            className="btn btn-sm btn-success rounded-pill px-2 py-1"
+                            style={{ fontSize: "11px" }}
+                            onClick={() => updateStatus(index, "Approved")}
+                          >
+                            <FaCheck size={10} />
+                          </button>
+                          <button
+                            className="btn btn-sm btn-danger rounded-pill px-2 py-1"
+                            style={{ fontSize: "11px" }}
+                            onClick={() => updateStatus(index, "Rejected")}
+                          >
+                            <FaTimes size={10} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        {/* MOBILE CARD VIEW */}
+        <div className="d-lg-none">
+          {rows.map((item, index) => (
+            <div key={index} className="card border-0 shadow-sm mb-3">
+              <div className="card-body p-3">
+                <div className="d-flex justify-content-between align-items-start mb-3">
+                  <div>
+                    <h6 className="mb-1 fw-bold">{item.admin}</h6>
+                    <p className="text-muted small mb-0">{item.email}</p>
+                  </div>
+                  <button
+                    className="btn btn-sm btn-light rounded-circle p-2"
+                    onClick={() => toggleRowExpansion(index)}
+                    style={{ border: "none" }}
+                  >
+                    {expandedRows.includes(index) ? <FaChevronUp size={12} /> : <FaChevronDown size={12} />}
+                  </button>
+                </div>
+
+                <div className="row g-2 mb-3">
+                  <div className="col-6">
+                    <small className="text-muted d-block">Plan</small>
+                    <span 
+                      className="badge rounded-pill px-2 py-1 mt-1 d-inline-block"
+                      style={{ 
+                        backgroundColor: getPlanColor(item.plan).bg,
+                        color: getPlanColor(item.plan).color,
+                        fontSize: "12px",
+                        fontWeight: "600"
+                      }}
+                    >
+                      {item.plan}
+                    </span>
+                  </div>
+                  <div className="col-6">
+                    <small className="text-muted d-block">Status</small>
+                    <span 
+                      className="badge rounded-pill px-2 py-1 mt-1 d-inline-block"
+                      style={{ 
+                        backgroundColor: getStatusColor(item.status).bg,
+                        color: getStatusColor(item.status).color,
+                        fontSize: "12px",
+                        fontWeight: "600"
+                      }}
+                    >
+                      {item.status}
+                    </span>
+                  </div>
+                </div>
+
+                {expandedRows.includes(index) && (
+                  <div className="border-top pt-3">
+                    <div className="row g-2 mb-3">
+                      <div className="col-6">
+                        <small className="text-muted d-block">Billing</small>
+                        <span className="fw-semibold">{item.billing}</span>
+                      </div>
+                      <div className="col-6">
+                        <small className="text-muted d-block">Date</small>
+                        <span className="fw-semibold">{item.date}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="d-flex gap-2 mt-3">
+                  <button
+                    className="btn btn-success rounded-pill flex-fill py-2 d-flex align-items-center justify-content-center gap-1"
+                    style={{ fontSize: "13px" }}
+                    onClick={() => updateStatus(index, "Approved")}
+                  >
+                    <FaCheck size={12} /> Approve
+                  </button>
+                  <button
+                    className="btn btn-danger rounded-pill flex-fill py-2 d-flex align-items-center justify-content-center gap-1"
+                    style={{ fontSize: "13px" }}
+                    onClick={() => updateStatus(index, "Rejected")}
+                  >
+                    <FaTimes size={12} /> Reject
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
