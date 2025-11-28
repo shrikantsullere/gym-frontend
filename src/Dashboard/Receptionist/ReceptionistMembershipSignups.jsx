@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { FaBell, FaCalendarAlt, FaUserCheck, FaExclamationTriangle, FaRedo, FaEnvelope, FaPlus } from 'react-icons/fa';
+import { FaBell, FaCalendarAlt, FaUserCheck, FaExclamationTriangle, FaRedo, FaEnvelope, FaPlus, FaFilter, FaFileExport, FaSearch } from 'react-icons/fa';
 
 const ReceptionistMembershipSignups = () => {
   const [isReminderModalOpen, setIsReminderModalOpen] = useState(false);
   const [isRenewalModalOpen, setIsRenewalModalOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
   
   // Pagination state
   const [entriesPerPage, setEntriesPerPage] = useState(10);
@@ -88,11 +89,22 @@ const ReceptionistMembershipSignups = () => {
     "Corporate Package"
   ];
   
+  // Filter members based on search query
+  const filteredMembers = members.filter(member => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      member.member_name.toLowerCase().includes(query) ||
+      member.member_id.toLowerCase().includes(query) ||
+      member.membership_plan.toLowerCase().includes(query)
+    );
+  });
+  
   // Pagination logic
   const indexOfLastEntry = currentPage * entriesPerPage;
   const indexOfFirstEntry = indexOfLastEntry - entriesPerPage;
-  const currentEntries = members.slice(indexOfFirstEntry, indexOfLastEntry);
-  const totalPages = Math.ceil(members.length / entriesPerPage);
+  const currentEntries = filteredMembers.slice(indexOfFirstEntry, indexOfLastEntry);
+  const totalPages = Math.ceil(filteredMembers.length / entriesPerPage);
   
   // Handle entries per page change
   const handleEntriesChange = (e) => {
@@ -147,7 +159,7 @@ const ReceptionistMembershipSignups = () => {
   const confirmCreateRenewal = () => {
     if (selectedMember) {
       // In a real app, this would create a new membership record
-      // For demo purposes, we'll just extend the current membership
+      // For demo purposes, we'll just extend current membership
       const updatedMembers = members.map(m => 
         m.id === selectedMember.id 
           ? { 
@@ -217,8 +229,112 @@ const ReceptionistMembershipSignups = () => {
     return new Date(dateString).toLocaleDateString('en-US', options);
   };
   
+  // Mobile Card Component
+  const MemberCard = ({ member }) => {
+    const daysUntilExpiration = getDaysUntilExpiration(member.plan_end_date);
+    
+    return (
+      <div className="card mb-3 shadow-sm border-0">
+        <div className="card-body p-3">
+          {/* Header with name and actions */}
+          <div className="d-flex justify-content-between align-items-start mb-3">
+            <div className="flex-grow-1">
+              <h5 className="card-title mb-1 fw-bold">{member.member_name}</h5>
+              <div className="small text-muted">{member.member_id}</div>
+            </div>
+            <div className="d-flex gap-1">
+              <button
+                className="btn btn-sm btn-outline-primary"
+                title="Send Reminder"
+                onClick={() => handleSendReminder(member)}
+                disabled={member.reminder_sent}
+              >
+                <FaEnvelope size={14} />
+              </button>
+              <button
+                className="btn btn-sm"
+                title="Create Renewal Record"
+                onClick={() => handleCreateRenewal(member)}
+                style={{
+                  backgroundColor: '#6EB2CC',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                }}
+              >
+                <FaRedo size={14} />
+              </button>
+            </div>
+          </div>
+          
+          {/* Membership Details */}
+          <div className="row g-2 mb-3">
+            <div className="col-12">
+              <div className="d-flex align-items-center p-2 bg-light rounded">
+                <span className="text-muted me-2">Plan:</span>
+                <span className="fw-medium">{member.membership_plan}</span>
+              </div>
+            </div>
+            <div className="col-12">
+              <div className="d-flex align-items-center p-2 bg-light rounded">
+                <span className="text-muted me-2">End Date:</span>
+                <span className="fw-medium">{formatDate(member.plan_end_date)}</span>
+                <div className="ms-auto">
+                  {getExpirationBadge(daysUntilExpiration)}
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Status Indicators */}
+          <div className="row g-2">
+            <div className="col-6">
+              <div className="p-2 bg-light rounded">
+                <div className="small text-muted">Reminder</div>
+                <div>
+                  {member.reminder_sent ? (
+                    <span className="badge rounded-pill bg-success-subtle text-success-emphasis px-2 py-1">
+                      Sent
+                    </span>
+                  ) : (
+                    <span className="badge rounded-pill bg-secondary-subtle text-secondary-emphasis px-2 py-1">
+                      Not Sent
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="col-6">
+              <div className="p-2 bg-light rounded">
+                <div className="small text-muted">Follow Up</div>
+                <div>
+                  {member.follow_up_needed ? (
+                    <span className="badge rounded-pill bg-danger-subtle text-danger-emphasis px-2 py-1">
+                      Needed
+                    </span>
+                  ) : (
+                    <span className="badge rounded-pill bg-success-subtle text-success-emphasis px-2 py-1">
+                      Not Needed
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Reminder Date */}
+          {member.reminder_date && (
+            <div className="mt-2">
+              <div className="small text-muted">Reminder Date: {formatDate(member.reminder_date)}</div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+  
   return (
-    <div className="">
+    <div className="container-fluid p-3 p-md-4">
       {/* Header */}
       <div className="row mb-4 align-items-center">
         <div className="col-12 col-lg-8">
@@ -227,7 +343,7 @@ const ReceptionistMembershipSignups = () => {
         </div>
         <div className="col-12 col-lg-4 text-lg-end mt-3 mt-lg-0">
           <button
-            className="btn d-flex align-items-center ms-auto"
+            className="btn d-flex align-items-center ms-auto w-100 w-lg-auto"
             style={{
               backgroundColor: '#6EB2CC',
               color: 'white',
@@ -317,21 +433,26 @@ const ReceptionistMembershipSignups = () => {
       <div className="row mb-4 g-3">
         <div className="col-12 col-md-6 col-lg-5">
           <div className="input-group">
+            <span className="input-group-text bg-light border">
+              <FaSearch className="text-muted" />
+            </span>
             <input
               type="text"
               className="form-control border"
               placeholder="Search by member name or ID..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
         </div>
         <div className="col-6 col-md-3 col-lg-2">
           <button className="btn btn-outline-secondary w-100">
-            <i className="fas fa-filter me-1"></i> Filter
+            <FaFilter className="me-1" /> <span className="d-none d-sm-inline">Filter</span>
           </button>
         </div>
         <div className="col-6 col-md-3 col-lg-2">
           <button className="btn btn-outline-secondary w-100">
-            <i className="fas fa-file-export me-1"></i> Export
+            <FaFileExport className="me-1" /> <span className="d-none d-sm-inline">Export</span>
           </button>
         </div>
       </div>
@@ -357,8 +478,8 @@ const ReceptionistMembershipSignups = () => {
         </div>
       </div>
       
-      {/* Table */}
-      <div className="card shadow-sm border-0">
+      {/* Desktop Table View */}
+      <div className="card shadow-sm border-0 d-none d-md-block">
         <div className="table-responsive">
           <table className="table table-hover align-middle mb-0">
             <thead className="bg-light">
@@ -444,12 +565,25 @@ const ReceptionistMembershipSignups = () => {
         </div>
       </div>
       
+      {/* Mobile Card View */}
+      <div className="d-md-none">
+        {currentEntries.length > 0 ? (
+          currentEntries.map(member => (
+            <MemberCard key={member.id} member={member} />
+          ))
+        ) : (
+          <div className="text-center py-4">
+            <p className="text-muted">No members found.</p>
+          </div>
+        )}
+      </div>
+      
       {/* Pagination */}
       <div className="row mt-3">
         <div className="col-12 col-md-5">
           <div className="d-flex align-items-center">
             <span>
-              Showing {indexOfFirstEntry + 1} to {Math.min(indexOfLastEntry, members.length)} of {members.length} entries
+              Showing {indexOfFirstEntry + 1} to {Math.min(indexOfLastEntry, filteredMembers.length)} of {filteredMembers.length} entries
             </span>
           </div>
         </div>
@@ -526,14 +660,14 @@ const ReceptionistMembershipSignups = () => {
               <div className="modal-footer border-0 justify-content-center pb-4">
                 <button
                   type="button"
-                  className="btn btn-outline-secondary px-4"
+                  className="btn btn-outline-secondary px-4 w-100 w-sm-auto"
                   onClick={closeReminderModal}
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
-                  className="btn btn-primary px-4"
+                  className="btn btn-primary px-4 w-100 w-sm-auto"
                   onClick={confirmSendReminder}
                 >
                   Send Reminder
@@ -553,7 +687,7 @@ const ReceptionistMembershipSignups = () => {
           onClick={closeRenewalModal}
         >
           <div
-            className="modal-dialog modal-lg modal-dialog-centered"
+            className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="modal-content">
@@ -611,7 +745,7 @@ const ReceptionistMembershipSignups = () => {
                   {/* Duration */}
                   <div className="mb-4">
                     <label className="form-label">Membership Duration <span className="text-danger">*</span></label>
-                    <div className="d-flex gap-3">
+                    <div className="d-flex flex-wrap gap-3">
                       <div className="form-check">
                         <input
                           className="form-check-input"
@@ -668,14 +802,14 @@ const ReceptionistMembershipSignups = () => {
                   <div className="d-flex flex-column flex-sm-row justify-content-end gap-2 mt-4">
                     <button
                       type="button"
-                      className="btn btn-outline-secondary px-4 py-2"
+                      className="btn btn-outline-secondary px-4 py-2 w-100 w-sm-auto"
                       onClick={closeRenewalModal}
                     >
                       Cancel
                     </button>
                     <button
                       type="button"
-                      className="btn"
+                      className="btn w-100 w-sm-auto"
                       style={{
                         backgroundColor: '#6EB2CC',
                         color: 'white',
@@ -699,4 +833,4 @@ const ReceptionistMembershipSignups = () => {
   );
 };
 
-export default ReceptionistMembershipSignups; 
+export default ReceptionistMembershipSignups;
