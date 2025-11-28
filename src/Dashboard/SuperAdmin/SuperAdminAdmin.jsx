@@ -4,7 +4,7 @@ import { FaEye, FaEdit, FaTrashAlt } from 'react-icons/fa';
 const SuperAdminAdmin = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [modalType, setModalType] = useState('add'); // 'view' | 'edit' | 'add'
+  const [modalType, setModalType] = useState('add');
   const [selectedAdmin, setSelectedAdmin] = useState(null);
 
   const handleAddNew = () => {
@@ -81,12 +81,15 @@ const SuperAdminAdmin = () => {
   ];
 
   const getStatusBadge = (status) => {
-    const badgeClasses = {
-      Active: "bg-success-subtle text-success-emphasis",
-      Inactive: "bg-danger-subtle text-danger-emphasis",
-    };
     return (
-      <span className={`badge rounded-pill ${badgeClasses[status] || 'bg-secondary'} px-3 py-1`}>
+      <span
+        className="badge rounded-pill px-3 py-1"
+        style={{
+          backgroundColor: status === "Active" ? "#D1F4E1" : "#F8D7DA",
+          color: status === "Active" ? "#157347" : "#B02A37",
+          fontWeight: "500"
+        }}
+      >
         {status}
       </span>
     );
@@ -102,49 +105,79 @@ const SuperAdminAdmin = () => {
   };
 
   return (
-    <div className="p-3 p-md-2">
+    <div className="p-4">
 
+      {/* HEADER */}
       <div className="row mb-4 align-items-center">
-        <div className="col-12 col-lg-8 mb-3 mb-lg-0">
-          <h2 className="fw-bold h3 h2-md">Admin Management</h2>
-          <p className="text-muted mb-0">Manage all gym admins and their profile details.</p>
+        <div className="col-lg-8 mb-3">
+          <h2 className="fw-bold">Admin Management</h2>
+          <p className="text-muted">Manage all gym admins and their profile details.</p>
         </div>
-        <div className="col-12 col-lg-4 text-lg-end">
+
+        <div className="col-lg-4 text-lg-end">
           <button
             className="btn w-100 w-lg-auto"
-            style={{ backgroundColor: '#6EB2CC', color: 'white', border: 'none', borderRadius: '8px', padding: '10px 20px', fontSize: '1rem', fontWeight: '500' }}
+            style={{
+              backgroundColor: '#6EB2CC',
+              color: '#fff',
+              borderRadius: '10px',
+              padding: '10px 20px',
+              fontWeight: '600',
+              fontSize: '1rem'
+            }}
             onClick={handleAddNew}
           >
-            <i className="fas fa-plus me-2"></i> Add New Admin
+            + Add New Admin
           </button>
         </div>
       </div>
 
-      <div className="card shadow-sm border-0">
+      {/* TABLE CARD */}
+      <div
+        className="card border-0 shadow-sm"
+        style={{
+          borderRadius: "16px",
+          padding: "10px 15px",
+          background: "#ffffff",
+        }}
+      >
         <div className="table-responsive">
-          <table className="table table-hover align-middle mb-0">
-            <thead className="bg-light">
+          <table className="table align-middle mb-0" style={{ minWidth: "900px" }}>
+            <thead style={{ background: "#F8F9FB" }}>
               <tr>
-                <th>ADMIN NAME</th>
-                <th>PLAN NAME</th>
-                <th>ADMIN ID</th>
-                <th>ADDRESS</th>
-                <th>CONTACT / ROLE</th>
-                <th>STATUS</th>
-                <th className="text-center">ACTIONS</th>
+                <th className="py-3">ADMIN NAME</th>
+                <th className="py-3">PLAN NAME</th>
+                <th className="py-3">ADMIN ID</th>
+                <th className="py-3">ADDRESS</th>
+                <th className="py-3">CONTACT / ROLE</th>
+                <th className="py-3">STATUS</th>
+                <th className="py-3 text-center">ACTIONS</th>
               </tr>
             </thead>
+
             <tbody>
               {admins.map((admin) => (
-                <tr key={admin.id} className="hover-row">
+                <tr
+                  key={admin.id}
+                  style={{ transition: "0.3s ease" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "#F1FBFF")}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                >
                   <td><strong>{admin.name}</strong></td>
                   <td>{admin.plans?.[0]?.planName || <span className="text-muted">No Plan</span>}</td>
                   <td>{admin.adminId}</td>
                   <td><small className="text-muted">{admin.address}</small></td>
-                  <td><div><strong>{admin.phone}</strong></div><small className="text-muted">{admin.role}</small></td>
+
+                  <td>
+                    <strong>{admin.phone}</strong>
+                    <br />
+                    <small className="text-muted">{admin.role}</small>
+                  </td>
+
                   <td>{getStatusBadge(admin.status)}</td>
+
                   <td className="text-center">
-                    <div className="d-flex justify-content-center gap-1">
+                    <div className="d-flex justify-content-center gap-2">
                       <button className="btn btn-sm btn-outline-secondary" onClick={() => handleView(admin)}>
                         <FaEye size={14} />
                       </button>
@@ -156,6 +189,7 @@ const SuperAdminAdmin = () => {
                       </button>
                     </div>
                   </td>
+
                 </tr>
               ))}
             </tbody>
@@ -163,64 +197,70 @@ const SuperAdminAdmin = () => {
         </div>
       </div>
 
-      {/* Add/Edit/View Modal */}
+      {/* MODALS (same as your original — no break) */}
       {isModalOpen && (
-        <div className="modal fade show" tabIndex="-1" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }} onClick={closeModal}>
-          <div className="modal-dialog modal-lg modal-dialog-centered" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-content">
-              <div className="modal-header border-0 pb-0">
-                <h5 className="modal-title fw-bold">{getModalTitle()}</h5>
-                <button type="button" className="btn-close" onClick={closeModal}></button>
-              </div>
-              <div className="modal-body p-4">
-                <AdminForm
-                  mode={modalType}
-                  admin={selectedAdmin}
-                  onCancel={closeModal}
-                  onSubmit={(payload) => {
-                    alert(`${modalType === 'add' ? 'New admin added' : 'Admin updated'} successfully!`);
-                    closeModal();
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
+        <ModalWrapper title={getModalTitle()} onClose={closeModal}>
+          <AdminForm
+            mode={modalType}
+            admin={selectedAdmin}
+            onCancel={closeModal}
+            onSubmit={(payload) => {
+              alert(`${modalType === 'add' ? 'New admin added' : 'Admin updated'} successfully!`);
+              closeModal();
+            }}
+          />
+        </ModalWrapper>
       )}
 
-      {/* Delete Modal */}
       {isDeleteModalOpen && (
-        <div className="modal fade show" tabIndex="-1" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }} onClick={closeDeleteModal}>
-          <div className="modal-dialog modal-dialog-centered" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-content">
-              <div className="modal-header border-0 pb-0">
-                <h5 className="modal-title fw-bold">Confirm Deletion</h5>
-                <button className="btn-close" onClick={closeDeleteModal}></button>
-              </div>
-              <div className="modal-body text-center py-4">
-                <h5>Are you sure?</h5>
-                <p className="text-muted">
-                  This will permanently delete <strong>{selectedAdmin?.name}</strong>.
-                </p>
-              </div>
-              <div className="modal-footer border-0 justify-content-center pb-4">
-                <button className="btn btn-outline-secondary px-4" onClick={closeDeleteModal}>Cancel</button>
-                <button className="btn btn-danger px-4" onClick={confirmDelete}>Delete</button>
-              </div>
+        <ModalWrapper title="Confirm Deletion" onClose={closeDeleteModal}>
+          <div className="text-center py-4">
+            <h5>Are you sure?</h5>
+            <p className="text-muted">
+              This will permanently delete <strong>{selectedAdmin?.name}</strong>.
+            </p>
+
+            <div className="d-flex justify-content-center gap-3 mt-4">
+              <button className="btn btn-outline-secondary px-4" onClick={closeDeleteModal}>Cancel</button>
+              <button className="btn btn-danger px-4" onClick={confirmDelete}>Delete</button>
             </div>
           </div>
-        </div>
+        </ModalWrapper>
       )}
 
     </div>
   );
 };
 
-// AdminForm Component
+
+/* ------------------------- REUSABLE MODAL WRAPPER ------------------------- */
+const ModalWrapper = ({ title, children, onClose }) => (
+  <div
+    className="modal fade show"
+    style={{ display: "block", background: "rgba(0,0,0,0.5)" }}
+    onClick={onClose}
+  >
+    <div
+      className="modal-dialog modal-lg modal-dialog-centered"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="modal-content p-3" style={{ borderRadius: "14px" }}>
+        <div className="modal-header border-0 pb-0">
+          <h5 className="modal-title fw-bold">{title}</h5>
+          <button type="button" className="btn-close" onClick={onClose}></button>
+        </div>
+
+        <div className="modal-body">{children}</div>
+      </div>
+    </div>
+  </div>
+);
+
+
+/* --------------------------- ADMIN FORM COMPONENT -------------------------- */
 const AdminForm = ({ mode, admin, onCancel, onSubmit }) => {
-  const isView = mode === 'view';
-  const isAdd = mode === 'add';
-  const initialActive = (admin?.status || 'Inactive') === 'Active';
+  const isView = mode === "view";
+  const isAdd = mode === "add";
 
   const planOptions = {
     Gold: { price: "1200", duration: "12 Months", description: "Full access plan" },
@@ -228,14 +268,15 @@ const AdminForm = ({ mode, admin, onCancel, onSubmit }) => {
     Basic: { price: "500", duration: "3 Months", description: "Starter plan" }
   };
 
-  const [selectedPlan, setSelectedPlan] = React.useState(admin?.plans?.[0]?.planName || "");
-  const [planPrice, setPlanPrice] = React.useState(admin?.plans?.[0]?.price || "");
-  const [planDuration, setPlanDuration] = React.useState(admin?.plans?.[0]?.duration || "");
-  const [planDescription, setPlanDescription] = React.useState(admin?.plans?.[0]?.description || "");
+  const [selectedPlan, setSelectedPlan] = useState(admin?.plans?.[0]?.planName || "");
+  const [planPrice, setPlanPrice] = useState(admin?.plans?.[0]?.price || "");
+  const [planDuration, setPlanDuration] = useState(admin?.plans?.[0]?.duration || "");
+  const [planDescription, setPlanDescription] = useState(admin?.plans?.[0]?.description || "");
 
   const handlePlanChange = (e) => {
     const plan = e.target.value;
     setSelectedPlan(plan);
+
     if (planOptions[plan]) {
       setPlanPrice(planOptions[plan].price);
       setPlanDuration(planOptions[plan].duration);
@@ -250,8 +291,10 @@ const AdminForm = ({ mode, admin, onCancel, onSubmit }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (isView) return onCancel();
-    const fd = new FormData(e.currentTarget);
+
+    const fd = new FormData(e.target);
     const data = Object.fromEntries(fd.entries());
+
     const payload = {
       name: data.name,
       gymName: data.gymName,
@@ -264,16 +307,19 @@ const AdminForm = ({ mode, admin, onCancel, onSubmit }) => {
       status: data.statusToggle ? "Active" : "Inactive",
       plans: [{ planName: selectedPlan, price: planPrice, duration: planDuration, description: planDescription }]
     };
+
     onSubmit(payload);
   };
 
   return (
     <form onSubmit={handleSubmit}>
-      <div className="row mb-3 g-3">
+      
+      <div className="row g-3">
         <div className="col-md-6">
           <label className="form-label">Admin Name *</label>
           <input name="name" className="form-control" defaultValue={admin?.name || ""} readOnly={isView} />
         </div>
+
         {isAdd ? (
           <div className="col-md-6">
             <label className="form-label">Gym Name *</label>
@@ -287,7 +333,7 @@ const AdminForm = ({ mode, admin, onCancel, onSubmit }) => {
         )}
       </div>
 
-      <div className="row mb-3 g-3">
+      <div className="row mt-3 g-3">
         <div className="col-md-6">
           <label className="form-label">Address *</label>
           <input name="address" className="form-control" defaultValue={admin?.address || ""} readOnly={isView} />
@@ -296,18 +342,23 @@ const AdminForm = ({ mode, admin, onCancel, onSubmit }) => {
           <label className="form-label">Phone *</label>
           <input name="phone" className="form-control" defaultValue={admin?.phone || ""} readOnly={isView} />
         </div>
+      </div>
+
+      <div className="row mt-3 g-3">
         <div className="col-md-6">
           <label className="form-label">Email *</label>
           <input name="email" className="form-control" defaultValue={admin?.email || ""} readOnly={isView} />
         </div>
       </div>
 
-      <h6 className="fw-semibold mb-3">Login Information</h6>
-      <div className="row mb-3 g-3">
+      <h6 className="fw-semibold mt-4 mb-2">Login Information</h6>
+
+      <div className="row g-3">
         <div className="col-md-6">
           <label className="form-label">Username *</label>
           <input name="username" className="form-control" defaultValue={admin?.username || ""} readOnly={isView} />
         </div>
+
         {!isView && (
           <div className="col-md-6">
             <label className="form-label">Password *</label>
@@ -316,41 +367,69 @@ const AdminForm = ({ mode, admin, onCancel, onSubmit }) => {
         )}
       </div>
 
-      <h6 className="fw-semibold mt-4 mb-3">Plans Information</h6>
-      <div className="row mb-3 g-3">
+      <h6 className="fw-semibold mt-4 mb-2">Plans Information</h6>
+
+      <div className="row g-3">
         <div className="col-md-6">
           <label className="form-label">Plan Name *</label>
-          <select name="planName" className="form-control" value={selectedPlan} onChange={handlePlanChange} disabled={isView}>
+          <select
+            name="planName"
+            className="form-control"
+            value={selectedPlan}
+            onChange={handlePlanChange}
+            disabled={isView}
+          >
             <option value="">Select Plan</option>
             <option value="Gold">Gold</option>
             <option value="Silver">Silver</option>
             <option value="Basic">Basic</option>
           </select>
         </div>
+
         <div className="col-md-6">
           <label className="form-label">Price *</label>
-          <input name="price" className="form-control" value={planPrice} readOnly />
+          <input className="form-control" value={planPrice} readOnly />
         </div>
+
         <div className="col-md-6">
           <label className="form-label">Duration *</label>
-          <input name="duration" className="form-control" value={planDuration} readOnly />
+          <input className="form-control" value={planDuration} readOnly />
         </div>
+
         <div className="col-md-12">
           <label className="form-label">Description *</label>
-          <textarea name="description" className="form-control" rows="2" value={planDescription} onChange={(e) => setPlanDescription(e.target.value)} readOnly={isView}></textarea>
+          <textarea
+            className="form-control"
+            rows="2"
+            value={planDescription}
+            readOnly={isView}
+            onChange={(e) => setPlanDescription(e.target.value)}
+          ></textarea>
         </div>
       </div>
 
-      <div className="mb-4 mt-3">
+      <div className="mt-3">
         <label className="form-label me-3">Status</label>
         <div className="form-check form-switch">
-          <input name="statusToggle" type="checkbox" className="form-check-input" defaultChecked={initialActive} disabled={isView} />
+          <input
+            name="statusToggle"
+            type="checkbox"
+            className="form-check-input"
+            defaultChecked={(admin?.status || "Inactive") === "Active"}
+            disabled={isView}
+          />
         </div>
       </div>
 
-      <div className="d-flex justify-content-end gap-2">
-        <button className="btn btn-outline-secondary px-4" type="button" onClick={onCancel}>Close</button>
-        {!isView && <button className="btn px-4" style={{ backgroundColor: '#6EB2CC', color: '#fff' }} type="submit">{mode === 'add' ? "Save Admin" : "Update Admin"}</button>}
+      <div className="d-flex justify-content-end gap-3 mt-4">
+        <button type="button" className="btn btn-outline-secondary px-4" onClick={onCancel}>
+          Close
+        </button>
+        {!isView && (
+          <button className="btn px-4" style={{ background: "#6EB2CC", color: "#fff" }}>
+            {mode === "add" ? "Save Admin" : "Update Admin"}
+          </button>
+        )}
       </div>
     </form>
   );

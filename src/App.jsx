@@ -80,13 +80,13 @@ import RoleManagement from "./Dashboard/Admin/Settings/RoleManagement";
 
 
 
-import SuperAdminOwner from "./Dashboard/SuperAdmin/SuperAdminOwner";
+import SuperAdminOwner from "./Dashboard/SuperAdmin/SuperAdminAdmin";
 import Plans from "./Dashboard/SuperAdmin/Plans";
-import Marketing from "./Dashboard/SuperAdmin/Marketing";
-import Staff from "./Dashboard/SuperAdmin/People/Staff";
-import Members from "./Dashboard/SuperAdmin/People/Members";
-import Invoices from "./Dashboard/SuperAdmin/Payments/Invoices";
-import Payments from "./Dashboard/SuperAdmin/Payments/Payments";
+// import Marketing from "./Dashboard/SuperAdmin/Marketing";
+// import Staff from "./Dashboard/SuperAdmin/People/Staff";
+// import Members from "./Dashboard/SuperAdmin/People/Members";
+// import Invoices from "./Dashboard/SuperAdmin/Payments/Invoices";
+import Payments from "./Dashboard/SuperAdmin/Payments";
 // import Request from "./Dashboard/SuperAdmin/Request";
 import Request from "./Dashboard/SuperAdmin/Requestplan";
 
@@ -95,10 +95,10 @@ import Request from "./Dashboard/SuperAdmin/Requestplan";
 
 
 
-import RazorpayReports from "./Dashboard/SuperAdmin/Payments/RazorpayReports";
-import SalesReports from "./Dashboard/SuperAdmin/Reports/SalesReports";
-import MembershipReports from "./Dashboard/SuperAdmin/Reports/Membershipreports";
-import AttendanceReports from "./Dashboard/SuperAdmin/Reports/AttendanceReports";
+// import RazorpayReports from "./Dashboard/SuperAdmin/Payments/RazorpayReports";
+// import SalesReports from "./Dashboard/SuperAdmin/Reports/SalesReports";
+// import MembershipReports from "./Dashboard/SuperAdmin/Reports/Membershipreports";
+// import AttendanceReports from "./Dashboard/SuperAdmin/Reports/AttendanceReports";
 import Groups from "./Dashboard/Admin/Groups";
 import ClassesSchedule from "./Dashboard/Admin/ClassesSchedule";
 import AttendanceReport from "./Dashboard/Admin/Reports/AttendanceReport";
@@ -183,14 +183,14 @@ function App() {
                 <Route path="/superadmin/Admin" element={<SuperAdminOwner />} />
 
                 <Route path="/superadmin/Plans&Pricing" element={<Plans />} />
-                <Route path="/superadmin/marketing" element={<Marketing />} />
+                {/* <Route path="/superadmin/marketing" element={<Marketing />} /> */}
 
 
 
 
 
-                <Route path="superadmin/people/staff" element={<Staff />} />
-                <Route path="superadmin/people/members" element={<Members />} />
+                {/* <Route path="superadmin/people/staff" element={<Staff />} />
+                <Route path="superadmin/people/members" element={<Members />} /> */}
 
 
 
@@ -211,12 +211,12 @@ function App() {
 
 
 
-                <Route path="/superadmin/reports/attendance" element={<AttendanceReports />} />
+                {/* <Route path="/superadmin/reports/attendance" element={<AttendanceReports />} />
 
 
                 <Route path="/superadmin/reports/membership" element={<MembershipReports />} />
                 <Route path="/superadmin/reports/sales" element={<SalesReports />} />
-                <Route path="/superadmin/reports/members" element={<MembershipReports />} />
+                <Route path="/superadmin/reports/members" element={<MembershipReports />} /> */}
 
 
 
