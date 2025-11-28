@@ -195,7 +195,7 @@ const HouseKeepingDashboard = () => {
         </div>
         
         {/* Weekly Duty Roster */}
-        <div className="card shadow-sm mb-4">
+        {/* <div className="card shadow-sm mb-4">
           <div className="card-body">
             <h2 className="h5 fw-semibold mb-4">Weekly Duty Roster</h2>
             <div className="overflow-auto">
@@ -286,7 +286,7 @@ const HouseKeepingDashboard = () => {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
         
         {/* Charts Section */}
         <div className="row g-3">

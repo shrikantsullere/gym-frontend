@@ -161,13 +161,13 @@ const GeneralTrainerDashboard = () => {
   };
 
   return (
-    <div className=" bg-light p-0">
-      <div className=" p-md-2">
+    <div className="bg-light p-0">
+      <div className="p-2 p-sm-3 p-md-4">
         {/* Header */}
-        <header className="bg-white border-bottom border-gray-200  p-md-4 mb-4 rounded shadow-sm">
+        <header className="bg-white border-bottom border-gray-200 p-3 p-sm-4 mb-4 rounded shadow-sm">
           <div className="d-flex flex-column flex-md-row justify-content-between align-items-center">
             <div className="mb-3 mb-md-0 text-center text-md-start">
-              <h1 className="h2 h4-md fw-bold text-dark">Welcome, Rahul!</h1>
+              <h1 className="h3 h2-md fw-bold text-dark">Welcome, Rahul!</h1>
               <p className="text-secondary">Your schedule and tasks for today</p>
             </div>
           </div>
@@ -175,10 +175,10 @@ const GeneralTrainerDashboard = () => {
 
         {/* Statistics Section */}
         <div className="row mb-4">
-          <div className="col-lg-6 mb-4 mb-lg-0">
+          <div className="col-12 mb-4 mb-lg-0">
             <div className="bg-white rounded shadow-sm p-3 p-md-4 border">
               <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4">
-                <h3 className="h5 h6-md fw-semibold text-dark mb-2 mb-md-0">Weekly Attendance Trend</h3>
+                <h3 className="h5 h4-md fw-semibold text-dark mb-2 mb-md-0">Weekly Attendance Trend</h3>
                 <select className="form-select form-select-sm w-auto">
                   <option>Last 7 Days</option>
                   <option>Last 30 Days</option>
@@ -186,14 +186,14 @@ const GeneralTrainerDashboard = () => {
                 </select>
               </div>
               <div className="overflow-x-auto">
-                <div ref={attendanceChartRef} style={{ height: '300px', minWidth: '400px' }}></div>
+                <div ref={attendanceChartRef} style={{ height: '250px', width: '100%' }}></div>
               </div>
             </div>
           </div>
-          <div className="col-lg-6">
+          <div className="col-12 mt-4">
             <div className="bg-white rounded shadow-sm p-3 p-md-4 border">
               <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4">
-                <h3 className="h5 h6-md fw-semibold text-dark mb-2 mb-md-0">Class Distribution</h3>
+                <h3 className="h5 h4-md fw-semibold text-dark mb-2 mb-md-0">Class Distribution</h3>
                 <select className="form-select form-select-sm w-auto">
                   <option>This Week</option>
                   <option>This Month</option>
@@ -201,7 +201,7 @@ const GeneralTrainerDashboard = () => {
                 </select>
               </div>
               <div className="overflow-x-auto">
-                <div ref={engagementChartRef} style={{ height: '300px', minWidth: '400px' }}></div>
+                <div ref={engagementChartRef} style={{ height: '250px', width: '100%' }}></div>
               </div>
             </div>
           </div>
@@ -209,7 +209,7 @@ const GeneralTrainerDashboard = () => {
 
         {/* Summary Cards */}
         <div className="row mb-4">
-          <div className="col-md-6 col-lg-3 mb-3 mb-lg-0">
+          <div className="col-6 col-md-3 mb-3">
             <div className="bg-white rounded shadow-sm p-3 p-md-4 border h-100">
               <div className="d-flex justify-content-between align-items-start">
                 <div>
@@ -223,7 +223,7 @@ const GeneralTrainerDashboard = () => {
               </div>
             </div>
           </div>
-          <div className="col-md-6 col-lg-3 mb-3 mb-lg-0">
+          <div className="col-6 col-md-3 mb-3">
             <div className="bg-white rounded shadow-sm p-3 p-md-4 border h-100">
               <div className="d-flex justify-content-between align-items-start">
                 <div>
@@ -237,7 +237,7 @@ const GeneralTrainerDashboard = () => {
               </div>
             </div>
           </div>
-          <div className="col-md-6 col-lg-3 mb-3 mb-lg-0">
+          <div className="col-6 col-md-3 mb-3">
             <div className="bg-white rounded shadow-sm p-3 p-md-4 border h-100">
               <div className="d-flex justify-content-between align-items-start">
                 <div>
@@ -251,7 +251,7 @@ const GeneralTrainerDashboard = () => {
               </div>
             </div>
           </div>
-          <div className="col-md-6 col-lg-3">
+          <div className="col-6 col-md-3 mb-3">
             <div className="bg-white rounded shadow-sm p-3 p-md-4 border h-100">
               <div className="d-flex justify-content-between align-items-start">
                 <div>
@@ -270,215 +270,406 @@ const GeneralTrainerDashboard = () => {
         {/* Daily Class Schedule */}
         <div className="bg-white rounded shadow-sm border overflow-hidden">
           <div className="p-3 p-md-4 border-bottom">
-            <h2 className="h4 h5-md fw-semibold text-dark">Daily Class Schedule</h2>
+            <h2 className="h4 h3-md fw-semibold text-dark">Daily Class Schedule</h2>
             <p className="text-secondary small">Weekly view - January 15-21, 2025</p>
           </div>
           <div className="p-3 p-md-4">
             <div className="overflow-x-auto">
-              {/* Calendar Header */}
-              <div className="d-grid border border-gray-200" style={{ gridTemplateColumns: '80px repeat(7, 1fr)', gap: '1px', minWidth: '800px' }}>
-                <div className="bg-light p-2 text-center fw-medium text-secondary">Time</div>
-                <div className="bg-light p-2 text-center fw-medium text-secondary">Mon<br/><span className="text-muted small">15</span></div>
-                <div className="bg-light p-2 text-center fw-medium text-secondary">Tue<br/><span className="text-muted small">16</span></div>
-                <div className="bg-light p-2 text-center fw-medium text-secondary">Wed<br/><span className="text-muted small">17</span></div>
-                <div className="bg-light p-2 text-center fw-medium text-secondary">Thu<br/><span className="text-muted small">18</span></div>
-                <div className="bg-light p-2 text-center fw-medium text-secondary">Fri<br/><span className="text-muted small">19</span></div>
-                <div className="bg-light p-2 text-center fw-medium text-secondary">Sat<br/><span className="text-muted small">20</span></div>
-                <div className="bg-light p-2 text-center fw-medium text-secondary">Sun<br/><span className="text-muted small">21</span></div>
+              {/* Mobile View - List Format */}
+              <div className="d-block d-lg-none">
+                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, dayIndex) => (
+                  <div key={day} className="mb-4">
+                    <h5 className="fw-semibold text-dark mb-3">{day} (15 + {dayIndex})</h5>
+                    <div className="list-group">
+                      {/* 6:00 AM Classes */}
+                      {dayIndex === 1 && (
+                        <div 
+                          className="list-group-item p-2 mb-2 rounded cursor-pointer"
+                          style={{backgroundColor: "#2f6a87", color: "white"}}
+                          onClick={() => handleClassClick('Morning Cardio', '6:00-7:00 AM')}
+                        >
+                          <div className="d-flex justify-content-between align-items-center">
+                            <div>
+                              <div className="small fw-semibold">Morning Cardio</div>
+                              <div className="small opacity-90">6:00-7:00 AM</div>
+                              <div className="small opacity-90">Studio A • 12/15</div>
+                            </div>
+                            <div className="small">
+                              <RiCheckLine />
+                              Completed
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      {dayIndex === 3 && (
+                        <div 
+                          className="list-group-item p-2 mb-2 rounded cursor-pointer"
+                          style={{backgroundColor: "#2f6a87", color: "white"}}
+                          onClick={() => handleClassClick('HIIT Training', '6:00-7:00 AM')}
+                        >
+                          <div className="d-flex justify-content-between align-items-center">
+                            <div>
+                              <div className="small fw-semibold">HIIT Training</div>
+                              <div className="small opacity-90">6:00-7:00 AM</div>
+                              <div className="small opacity-90">Studio B • 8/12</div>
+                            </div>
+                            <div className="small">
+                              <RiCheckLine />
+                              Completed
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      {dayIndex === 5 && (
+                        <div 
+                          className="list-group-item p-2 mb-2 rounded cursor-pointer"
+                          style={{backgroundColor: "#2f6a87", color: "white"}}
+                          onClick={() => handleClassClick('Yoga Flow', '6:00-7:00 AM')}
+                        >
+                          <div className="d-flex justify-content-between align-items-center">
+                            <div>
+                              <div className="small fw-semibold">Yoga Flow</div>
+                              <div className="small opacity-90">6:00-7:00 AM</div>
+                              <div className="small opacity-90">Studio C • 15/20</div>
+                            </div>
+                            <div className="small">
+                              <RiCheckLine />
+                              Completed
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* 7:00 AM Classes */}
+                      {dayIndex === 0 && (
+                        <div 
+                          className="list-group-item p-2 mb-2 rounded cursor-pointer"
+                          style={{backgroundColor: "#2f6a87", color: "white"}}
+                          onClick={() => handleClassClick('Strength Training', '7:00-8:00 AM')}
+                        >
+                          <div className="d-flex justify-content-between align-items-center">
+                            <div>
+                              <div className="small fw-semibold">Strength Training</div>
+                              <div className="small opacity-90">7:00-8:00 AM</div>
+                              <div className="small opacity-90">Gym Floor • 10/12</div>
+                            </div>
+                            <div className="small">
+                              <RiCheckLine />
+                              Completed
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      {dayIndex === 2 && (
+                        <div 
+                          className="list-group-item p-2 mb-2 rounded cursor-pointer"
+                          style={{backgroundColor: "#2f6a87", color: "white"}}
+                          onClick={() => handleClassClick('Pilates', '7:00-8:00 AM')}
+                        >
+                          <div className="d-flex justify-content-between align-items-center">
+                            <div>
+                              <div className="small fw-semibold">Pilates</div>
+                              <div className="small opacity-90">7:00-8:00 AM</div>
+                              <div className="small opacity-90">Studio A • 14/16</div>
+                            </div>
+                            <div className="small">
+                              <RiCheckLine />
+                              Completed
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* 8:00 AM Classes */}
+                      {dayIndex === 4 && (
+                        <div 
+                          className="list-group-item p-2 mb-2 rounded cursor-pointer"
+                          style={{backgroundColor: "#2f6a87", color: "white"}}
+                          onClick={() => handleClassClick('CrossFit', '8:00-9:00 AM')}
+                        >
+                          <div className="d-flex justify-content-between align-items-center">
+                            <div>
+                              <div className="small fw-semibold">CrossFit</div>
+                              <div className="small opacity-90">8:00-9:00 AM</div>
+                              <div className="small opacity-90">Studio B • 6/10</div>
+                            </div>
+                            <div className="small">
+                              <RiCheckLine />
+                              Completed
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* 6:00 PM Classes */}
+                      {dayIndex === 3 && (
+                        <div 
+                          className="list-group-item p-2 mb-2 rounded cursor-pointer bg-warning text-white"
+                          onClick={() => handleClassClick('Zumba', '6:00-7:00 PM')}
+                        >
+                          <div className="d-flex justify-content-between align-items-center">
+                            <div>
+                              <div className="small fw-semibold">Zumba</div>
+                              <div className="small opacity-90">6:00-7:00 PM</div>
+                              <div className="small opacity-90">Studio A • 18/25</div>
+                            </div>
+                            <div className="small">
+                              <RiTimeLine />
+                              Upcoming
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* 7:00 PM Classes */}
+                      {dayIndex === 2 && (
+                        <div 
+                          className="list-group-item p-2 mb-2 rounded cursor-pointer bg-warning text-white"
+                          onClick={() => handleClassClick('Boxing', '7:00-8:00 PM')}
+                        >
+                          <div className="d-flex justify-content-between align-items-center">
+                            <div>
+                              <div className="small fw-semibold">Boxing</div>
+                              <div className="small opacity-90">7:00-8:00 PM</div>
+                              <div className="small opacity-90">Studio B • 8/12</div>
+                            </div>
+                            <div className="small">
+                              <RiTimeLine />
+                              Upcoming
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      {dayIndex === 4 && (
+                        <div 
+                          className="list-group-item p-2 mb-2 rounded cursor-pointer bg-warning text-white"
+                          onClick={() => handleClassClick('Evening Yoga', '7:00-8:00 PM')}
+                        >
+                          <div className="d-flex justify-content-between align-items-center">
+                            <div>
+                              <div className="small fw-semibold">Evening Yoga</div>
+                              <div className="small opacity-90">7:00-8:00 PM</div>
+                              <div className="small opacity-90">Studio C • 12/20</div>
+                            </div>
+                            <div className="small">
+                              <RiTimeLine />
+                              Upcoming
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
               
-              {/* Calendar Body */}
-              <div className="d-grid border border-gray-200 mt-1" style={{ gridTemplateColumns: '80px repeat(7, 1fr)', gap: '1px', minWidth: '800px' }}>
-                {/* 6:00 AM Row */}
-                <div className="bg-light p-2 d-flex align-items-center justify-content-center small fw-medium text-secondary">6:00</div>
-                <div className="bg-white"></div>
-                <div className="bg-white p-2">
-                  <div 
-                    className=" text-light p-2 rounded cursor-pointer"
-                    style={{backgroundColor: "#2f6a87"}}
-                    onClick={() => handleClassClick('Morning Cardio', '6:00-7:00 AM')}
-                  >
-                    <div className="small fw-semibold">Morning Cardio</div>
-                    <div className="small opacity-90">6:00-7:00 AM</div>
-                    <div className="small opacity-90">Studio A • 12/15</div>
-                    <div className="small mt-1">
-                      <span className="d-flex align-items-center">
-                        <RiCheckLine className="me-1" />
-                        Completed
-                      </span>
-                    </div>
-                  </div>
+              {/* Desktop View - Grid Format */}
+              <div className="d-none d-lg-block">
+                {/* Calendar Header */}
+                <div className="d-grid border border-gray-200" style={{ gridTemplateColumns: '80px repeat(7, 1fr)', gap: '1px' }}>
+                  <div className="bg-light p-2 text-center fw-medium text-secondary">Time</div>
+                  <div className="bg-light p-2 text-center fw-medium text-secondary">Mon<br/><span className="text-muted small">15</span></div>
+                  <div className="bg-light p-2 text-center fw-medium text-secondary">Tue<br/><span className="text-muted small">16</span></div>
+                  <div className="bg-light p-2 text-center fw-medium text-secondary">Wed<br/><span className="text-muted small">17</span></div>
+                  <div className="bg-light p-2 text-center fw-medium text-secondary">Thu<br/><span className="text-muted small">18</span></div>
+                  <div className="bg-light p-2 text-center fw-medium text-secondary">Fri<br/><span className="text-muted small">19</span></div>
+                  <div className="bg-light p-2 text-center fw-medium text-secondary">Sat<br/><span className="text-muted small">20</span></div>
+                  <div className="bg-light p-2 text-center fw-medium text-secondary">Sun<br/><span className="text-muted small">21</span></div>
                 </div>
-                <div className="bg-white"></div>
-                <div className="bg-white p-2">
-                  <div 
-                    className=" text-white p-2 rounded cursor-pointer"
-                    style={{backgroundColor: "#2f6a87"}}
-                    onClick={() => handleClassClick('HIIT Training', '6:00-7:00 AM')}
-                  >
-                    <div className="small fw-semibold">HIIT Training</div>
-                    <div className="small opacity-90">6:00-7:00 AM</div>
-                    <div className="small opacity-90">Studio B • 8/12</div>
-                    <div className="small mt-1">
-                      <span className="d-flex align-items-center">
-                        <RiCheckLine className="me-1" />
-                        Completed
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-white"></div>
-                <div className="bg-white p-2">
-                  <div 
-                    className=" text-white p-2 rounded cursor-pointer"
-                    style={{backgroundColor: "#2f6a87"}}
-                    onClick={() => handleClassClick('Yoga Flow', '6:00-7:00 AM')}
-                  >
-                    <div className="small fw-semibold">Yoga Flow</div>
-                    <div className="small opacity-90">6:00-7:00 AM</div>
-                    <div className="small opacity-90">Studio C • 15/20</div>
-                    <div className="small mt-1">
-                      <span className="d-flex align-items-center">
-                        <RiCheckLine className="me-1" />
-                        Completed
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-white"></div>
                 
-                {/* 7:00 AM Row */}
-                <div className="bg-light p-2 d-flex align-items-center justify-content-center small fw-medium text-secondary">7:00</div>
-                <div className="bg-white p-2">
-                  <div 
-                    className=" text-white p-2 rounded cursor-pointer"
-                    style={{backgroundColor: "#2f6a87"}}
-                    onClick={() => handleClassClick('Strength Training', '7:00-8:00 AM')}
-                  >
-                    <div className="small fw-semibold">Strength Training</div>
-                    <div className="small opacity-90">7:00-8:00 AM</div>
-                    <div className="small opacity-90">Gym Floor • 10/12</div>
-                    <div className="small mt-1">
-                      <span className="d-flex align-items-center">
-                        <RiCheckLine className="me-1" />
-                        Completed
-                      </span>
+                {/* Calendar Body */}
+                <div className="d-grid border border-gray-200 mt-1" style={{ gridTemplateColumns: '80px repeat(7, 1fr)', gap: '1px' }}>
+                  {/* 6:00 AM Row */}
+                  <div className="bg-light p-2 d-flex align-items-center justify-content-center small fw-medium text-secondary">6:00</div>
+                  <div className="bg-white"></div>
+                  <div className="bg-white p-2">
+                    <div 
+                      className=" text-light p-2 rounded cursor-pointer"
+                      style={{backgroundColor: "#2f6a87"}}
+                      onClick={() => handleClassClick('Morning Cardio', '6:00-7:00 AM')}
+                    >
+                      <div className="small fw-semibold">Morning Cardio</div>
+                      <div className="small opacity-90">6:00-7:00 AM</div>
+                      <div className="small opacity-90">Studio A • 12/15</div>
+                      <div className="small mt-1">
+                        <span className="d-flex align-items-center">
+                          <RiCheckLine className="me-1" />
+                          Completed
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="bg-white"></div>
-                <div className="bg-white p-2">
-                  <div 
-                    className=" text-white p-2 rounded cursor-pointer"
-                    style={{backgroundColor: "#2f6a87"}}
-                    onClick={() => handleClassClick('Pilates', '7:00-8:00 AM')}
-                  >
-                    <div className="small fw-semibold">Pilates</div>
-                    <div className="small opacity-90">7:00-8:00 AM</div>
-                    <div className="small opacity-90">Studio A • 14/16</div>
-                    <div className="small mt-1">
-                      <span className="d-flex align-items-center">
-                        <RiCheckLine className="me-1" />
-                        Completed
-                      </span>
+                  <div className="bg-white"></div>
+                  <div className="bg-white p-2">
+                    <div 
+                      className=" text-white p-2 rounded cursor-pointer"
+                      style={{backgroundColor: "#2f6a87"}}
+                      onClick={() => handleClassClick('HIIT Training', '6:00-7:00 AM')}
+                    >
+                      <div className="small fw-semibold">HIIT Training</div>
+                      <div className="small opacity-90">6:00-7:00 AM</div>
+                      <div className="small opacity-90">Studio B • 8/12</div>
+                      <div className="small mt-1">
+                        <span className="d-flex align-items-center">
+                          <RiCheckLine className="me-1" />
+                          Completed
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="bg-white"></div>
-                <div className="bg-white"></div>
-                <div className="bg-white"></div>
-                <div className="bg-white"></div>
-                
-                {/* 8:00 AM Row */}
-                <div className="bg-light p-2 d-flex align-items-center justify-content-center small fw-medium text-secondary">8:00</div>
-                <div className="bg-white"></div>
-                <div className="bg-white"></div>
-                <div className="bg-white"></div>
-                <div className="bg-white"></div>
-                <div className="bg-white p-2">
-                  <div 
-                    className=" text-white p-2 rounded cursor-pointer"
-                    style={{backgroundColor: "#2f6a87"}}
-                    onClick={() => handleClassClick('CrossFit', '8:00-9:00 AM')}
-                  >
-                    <div className="small fw-semibold">CrossFit</div>
-                    <div className="small opacity-90">8:00-9:00 AM</div>
-                    <div className="small opacity-90">Studio B • 6/10</div>
-                    <div className="small mt-1">
-                      <span className="d-flex align-items-center">
-                        <RiCheckLine className="me-1" />
-                        Completed
-                      </span>
+                  <div className="bg-white"></div>
+                  <div className="bg-white p-2">
+                    <div 
+                      className=" text-white p-2 rounded cursor-pointer"
+                      style={{backgroundColor: "#2f6a87"}}
+                      onClick={() => handleClassClick('Yoga Flow', '6:00-7:00 AM')}
+                    >
+                      <div className="small fw-semibold">Yoga Flow</div>
+                      <div className="small opacity-90">6:00-7:00 AM</div>
+                      <div className="small opacity-90">Studio C • 15/20</div>
+                      <div className="small mt-1">
+                        <span className="d-flex align-items-center">
+                          <RiCheckLine className="me-1" />
+                          Completed
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="bg-white"></div>
-                <div className="bg-white"></div>
-                
-                {/* 6:00 PM Row */}
-                <div className="bg-light p-2 d-flex align-items-center justify-content-center small fw-medium text-secondary">18:00</div>
-                <div className="bg-white"></div>
-                <div className="bg-white"></div>
-                <div className="bg-white"></div>
-                <div className="bg-white p-2">
-                  <div 
-                    className="bg-warning text-white p-2 rounded cursor-pointer"
-                    onClick={() => handleClassClick('Zumba', '6:00-7:00 PM')}
-                  >
-                    <div className="small fw-semibold">Zumba</div>
-                    <div className="small opacity-90">6:00-7:00 PM</div>
-                    <div className="small opacity-90">Studio A • 18/25</div>
-                    <div className="small mt-1">
-                      <span className="d-flex align-items-center">
-                        <RiTimeLine className="me-1" />
-                        Upcoming
-                      </span>
+                  <div className="bg-white"></div>
+                  
+                  {/* 7:00 AM Row */}
+                  <div className="bg-light p-2 d-flex align-items-center justify-content-center small fw-medium text-secondary">7:00</div>
+                  <div className="bg-white p-2">
+                    <div 
+                      className=" text-white p-2 rounded cursor-pointer"
+                      style={{backgroundColor: "#2f6a87"}}
+                      onClick={() => handleClassClick('Strength Training', '7:00-8:00 AM')}
+                    >
+                      <div className="small fw-semibold">Strength Training</div>
+                      <div className="small opacity-90">7:00-8:00 AM</div>
+                      <div className="small opacity-90">Gym Floor • 10/12</div>
+                      <div className="small mt-1">
+                        <span className="d-flex align-items-center">
+                          <RiCheckLine className="me-1" />
+                          Completed
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="bg-white"></div>
-                <div className="bg-white"></div>
-                <div className="bg-white"></div>
-                
-                {/* 7:00 PM Row */}
-                <div className="bg-light p-2 d-flex align-items-center justify-content-center small fw-medium text-secondary">19:00</div>
-                <div className="bg-white"></div>
-                <div className="bg-white"></div>
-                <div className="bg-white p-2">
-                  <div 
-                    className="bg-warning text-white p-2 rounded cursor-pointer"
-                    onClick={() => handleClassClick('Boxing', '7:00-8:00 PM')}
-                  >
-                    <div className="small fw-semibold">Boxing</div>
-                    <div className="small opacity-90">7:00-8:00 PM</div>
-                    <div className="small opacity-90">Studio B • 8/12</div>
-                    <div className="small mt-1">
-                      <span className="d-flex align-items-center">
-                        <RiTimeLine className="me-1" />
-                        Upcoming
-                      </span>
+                  <div className="bg-white"></div>
+                  <div className="bg-white p-2">
+                    <div 
+                      className=" text-white p-2 rounded cursor-pointer"
+                      style={{backgroundColor: "#2f6a87"}}
+                      onClick={() => handleClassClick('Pilates', '7:00-8:00 AM')}
+                    >
+                      <div className="small fw-semibold">Pilates</div>
+                      <div className="small opacity-90">7:00-8:00 AM</div>
+                      <div className="small opacity-90">Studio A • 14/16</div>
+                      <div className="small mt-1">
+                        <span className="d-flex align-items-center">
+                          <RiCheckLine className="me-1" />
+                          Completed
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="bg-white"></div>
-                <div className="bg-white p-2">
-                  <div 
-                    className="bg-warning text-white p-2 rounded cursor-pointer"
-                    onClick={() => handleClassClick('Evening Yoga', '7:00-8:00 PM')}
-                  >
-                    <div className="small fw-semibold">Evening Yoga</div>
-                    <div className="small opacity-90">7:00-8:00 PM</div>
-                    <div className="small opacity-90">Studio C • 12/20</div>
-                    <div className="small mt-1">
-                      <span className="d-flex align-items-center">
-                        <RiTimeLine className="me-1" />
-                        Upcoming
-                      </span>
+                  <div className="bg-white"></div>
+                  <div className="bg-white"></div>
+                  <div className="bg-white"></div>
+                  <div className="bg-white"></div>
+                  
+                  {/* 8:00 AM Row */}
+                  <div className="bg-light p-2 d-flex align-items-center justify-content-center small fw-medium text-secondary">8:00</div>
+                  <div className="bg-white"></div>
+                  <div className="bg-white"></div>
+                  <div className="bg-white"></div>
+                  <div className="bg-white"></div>
+                  <div className="bg-white p-2">
+                    <div 
+                      className=" text-white p-2 rounded cursor-pointer"
+                      style={{backgroundColor: "#2f6a87"}}
+                      onClick={() => handleClassClick('CrossFit', '8:00-9:00 AM')}
+                    >
+                      <div className="small fw-semibold">CrossFit</div>
+                      <div className="small opacity-90">8:00-9:00 AM</div>
+                      <div className="small opacity-90">Studio B • 6/10</div>
+                      <div className="small mt-1">
+                        <span className="d-flex align-items-center">
+                          <RiCheckLine className="me-1" />
+                          Completed
+                        </span>
+                      </div>
                     </div>
                   </div>
+                  <div className="bg-white"></div>
+                  <div className="bg-white"></div>
+                  
+                  {/* 6:00 PM Row */}
+                  <div className="bg-light p-2 d-flex align-items-center justify-content-center small fw-medium text-secondary">18:00</div>
+                  <div className="bg-white"></div>
+                  <div className="bg-white"></div>
+                  <div className="bg-white"></div>
+                  <div className="bg-white p-2">
+                    <div 
+                      className="bg-warning text-white p-2 rounded cursor-pointer"
+                      onClick={() => handleClassClick('Zumba', '6:00-7:00 PM')}
+                    >
+                      <div className="small fw-semibold">Zumba</div>
+                      <div className="small opacity-90">6:00-7:00 PM</div>
+                      <div className="small opacity-90">Studio A • 18/25</div>
+                      <div className="small mt-1">
+                        <span className="d-flex align-items-center">
+                          <RiTimeLine className="me-1" />
+                          Upcoming
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-white"></div>
+                  <div className="bg-white"></div>
+                  <div className="bg-white"></div>
+                  
+                  {/* 7:00 PM Row */}
+                  <div className="bg-light p-2 d-flex align-items-center justify-content-center small fw-medium text-secondary">19:00</div>
+                  <div className="bg-white"></div>
+                  <div className="bg-white"></div>
+                  <div className="bg-white p-2">
+                    <div 
+                      className="bg-warning text-white p-2 rounded cursor-pointer"
+                      onClick={() => handleClassClick('Boxing', '7:00-8:00 PM')}
+                    >
+                      <div className="small fw-semibold">Boxing</div>
+                      <div className="small opacity-90">7:00-8:00 PM</div>
+                      <div className="small opacity-90">Studio B • 8/12</div>
+                      <div className="small mt-1">
+                        <span className="d-flex align-items-center">
+                          <RiTimeLine className="me-1" />
+                          Upcoming
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-white"></div>
+                  <div className="bg-white p-2">
+                    <div 
+                      className="bg-warning text-white p-2 rounded cursor-pointer"
+                      onClick={() => handleClassClick('Evening Yoga', '7:00-8:00 PM')}
+                    >
+                      <div className="small fw-semibold">Evening Yoga</div>
+                      <div className="small opacity-90">7:00-8:00 PM</div>
+                      <div className="small opacity-90">Studio C • 12/20</div>
+                      <div className="small mt-1">
+                        <span className="d-flex align-items-center">
+                          <RiTimeLine className="me-1" />
+                          Upcoming
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-white"></div>
+                  <div className="bg-white"></div>
                 </div>
-                <div className="bg-white"></div>
-                <div className="bg-white"></div>
               </div>
             </div>
           </div>
