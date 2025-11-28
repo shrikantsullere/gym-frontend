@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { FaEye, FaEdit, FaTrashAlt, FaUserPlus } from 'react-icons/fa';
+
 const ReceptionistWalkinMember = () => {
   // Modal States
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -88,7 +89,7 @@ const ReceptionistWalkinMember = () => {
       status: "Expired"
     }
   ]);
-  // ✅ FIXED: MOVED FILTERED DATA LOGIC HERE ✅
+
   // Filtered data must be declared BEFORE it's used in pagination
   const filteredStaffData = staffData.filter(staff =>
     staff.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -100,19 +101,23 @@ const ReceptionistWalkinMember = () => {
     member.phone.includes(searchTerm) ||
     member.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
   // Pagination States
   const [entriesPerPage, setEntriesPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
+
   // Pagination logic
   const indexOfLastEntry = currentPage * entriesPerPage;
   const indexOfFirstEntry = indexOfLastEntry - entriesPerPage;
   const totalPages = Math.ceil(
     (viewMode === 'staff' ? filteredStaffData.length : filteredMembersData.length) / entriesPerPage
   );
+
   // Current data to display based on pagination
   const currentData = viewMode === 'staff' 
     ? filteredStaffData.slice(indexOfFirstEntry, indexOfLastEntry)
     : filteredMembersData.slice(indexOfFirstEntry, indexOfLastEntry);
+
   // Mock plans for dropdown (only used in Add/Edit modal)
   const membershipPlans = [
     "Basic Monthly",
@@ -121,44 +126,53 @@ const ReceptionistWalkinMember = () => {
     "Weekend Warrior",
     "Corporate Package"
   ];
+
   // Handle entries per page change
   const handleEntriesChange = (e) => {
     setEntriesPerPage(parseInt(e.target.value));
     setCurrentPage(1); // Reset to first page when entries per page changes
   };
+
   // Handle page change
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
   // Navigation functions
   const nextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
     }
   };
+
   const prevPage = () => {
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1);
     }
   };
+
   // Handlers
   const handleAddNew = () => {
     setModalType('add');
     setSelectedItem(null);
     setIsModalOpen(true);
   };
+
   const handleView = (item) => {
     setModalType('view');
     setSelectedItem(item);
     setIsModalOpen(true);
   };
+
   const handleEdit = (item) => {
     setModalType('edit');
     setSelectedItem(item);
     setIsModalOpen(true);
   };
+
   const handleDeleteClick = (item) => {
     setSelectedItem(item);
     setIsDeleteModalOpen(true);
   };
+
   const confirmDelete = () => {
     if (selectedItem) {
       if (viewMode === 'staff') {
@@ -172,14 +186,17 @@ const ReceptionistWalkinMember = () => {
     setIsDeleteModalOpen(false);
     setSelectedItem(null);
   };
+
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedItem(null);
   };
+
   const closeDeleteModal = () => {
     setIsDeleteModalOpen(false);
     setSelectedItem(null);
   };
+
   // Prevent background scroll
   React.useEffect(() => {
     if (isModalOpen || isDeleteModalOpen) {
@@ -191,6 +208,7 @@ const ReceptionistWalkinMember = () => {
       document.body.style.overflow = 'unset';
     };
   }, [isModalOpen, isDeleteModalOpen]);
+
   const getModalTitle = () => {
     switch (modalType) {
       case 'add': return `New ${viewMode === 'staff' ? 'Staff' : 'Member'} Registration`;
@@ -199,6 +217,7 @@ const ReceptionistWalkinMember = () => {
       default: return `${viewMode === 'staff' ? 'Staff' : 'Member'} Record`;
     }
   };
+
   const formatDateTime = (dateTimeString) => {
     if (!dateTimeString) return "—";
     const date = new Date(dateTimeString);
@@ -211,23 +230,38 @@ const ReceptionistWalkinMember = () => {
     };
     return date.toLocaleDateString('en-US', options);
   };
+
   const getNextId = () => {
     const allItems = [...staffData, ...membersData];
     return allItems.length > 0 ? Math.max(...allItems.map(i => i.id)) + 1 : 1;
   };
+
   const handleSubmit = (actionType) => {
-    // ✅ CORRECTED: Use actual placeholder values from the modal
-    const formData = {
-      name: document.querySelector('input[placeholder="Enter first name"]')?.value || '',
-      phone: document.querySelector('input[placeholder="+1 555-123-4567"]')?.value || '',
-      email: document.querySelector('input[placeholder="example@email.com"]')?.value || '',
-      preferred_membership_plan: document.querySelector('select')?.value || '',
-      interested_in: document.querySelector('input[name="interested_in"]:checked')?.value || '',
-      preferred_time: document.querySelector('input[type="datetime-local"]')?.value || '',
-      notes: document.querySelector('textarea')?.value || '',
-      registered_at: new Date().toISOString()
-    };
-    // Staff-specific fields — NO CHANGE NEEDED
+    // Different data collection for staff and member
+    let formData = {};
+    
+    if (viewMode === 'staff') {
+      // Staff form data collection
+      formData = {
+        name: document.querySelector('input[placeholder="Enter first name"]')?.value || '',
+        phone: document.querySelector('input[placeholder="+1 555-123-4567"]')?.value || '',
+        email: document.querySelector('input[placeholder="example@email.com"]')?.value || '',
+      };
+    } else {
+      // Member form data collection - FIXED
+      formData = {
+        name: document.querySelector('input[placeholder="Enter full name"]')?.value || '',
+        phone: document.querySelector('input[placeholder="+91 98765 43210"]')?.value || '',
+        email: document.querySelector('input[placeholder="example@email.com"]')?.value || '',
+        membership_plan: document.querySelector('select')?.value || '',
+        interested_in: document.querySelector('input[name="interested_in"]:checked')?.value || '',
+        preferred_time: document.querySelector('input[type="datetime-local"]')?.value || '',
+        notes: document.querySelector('textarea')?.value || '',
+        registered_at: new Date().toISOString()
+      };
+    }
+
+    // Staff-specific fields
     const staffFields = {
       id: selectedItem?.id || getNextId(),
       dob: document.querySelector('input[type="date"][aria-label="Date of Birth"]')?.value || '',
@@ -243,20 +277,22 @@ const ReceptionistWalkinMember = () => {
       exit_date: document.querySelector('input[type="date"][aria-label="Exit Date"]')?.value || '',
       profile_photo: ''
     };
-    // For Member-specific fields — NO CHANGE
+
+    // For Member-specific fields
     const memberFields = {
-      membership_plan: formData.preferred_membership_plan,
+      membership_plan: formData.membership_plan,
       start_date: formData.registered_at.split('T')[0],
       expiry_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       status: "Active"
     };
+
     if (modalType === 'add') {
       let newItem;
       if (viewMode === 'staff') {
         newItem = {
           ...staffFields,
-          name: formData.name,         // ✅ Now correctly populated!
-          phone: formData.phone,       // ✅ Now correctly populated!
+          name: formData.name,
+          phone: formData.phone,
           email: formData.email,
           role: document.querySelector('select[aria-label="Role"]')?.value || 'Receptionist',
           department: document.querySelector('select[aria-label="Department"]')?.value || 'Fitness',
@@ -269,8 +305,16 @@ const ReceptionistWalkinMember = () => {
       } else if (viewMode === 'member') {
         newItem = {
           id: getNextId(),
-          ...formData,
-          ...memberFields
+          name: formData.name,
+          phone: formData.phone,
+          email: formData.email,
+          membership_plan: formData.membership_plan,
+          start_date: memberFields.start_date,
+          expiry_date: memberFields.expiry_date,
+          status: memberFields.status,
+          interested_in: formData.interested_in,
+          preferred_time: formData.preferred_time,
+          notes: formData.notes
         };
         setMembersData(prev => [...prev, newItem]);
         alert(`New member ${newItem.name} registered successfully!`);
@@ -295,8 +339,13 @@ const ReceptionistWalkinMember = () => {
       } else if (viewMode === 'member') {
         updatedItem = {
           ...selectedItem,
-          ...formData,
-          ...memberFields
+          name: formData.name,
+          phone: formData.phone,
+          email: formData.email,
+          membership_plan: formData.membership_plan || selectedItem.membership_plan,
+          interested_in: formData.interested_in || selectedItem.interested_in,
+          preferred_time: formData.preferred_time || selectedItem.preferred_time,
+          notes: formData.notes || selectedItem.notes
         };
         setMembersData(prev => prev.map(m => m.id === selectedItem.id ? updatedItem : m));
         alert(`Member record for ${updatedItem.name} updated successfully!`);
@@ -304,79 +353,69 @@ const ReceptionistWalkinMember = () => {
     }
     closeModal();
   };
+
   return (
-    <div className="">
+    <div className="container-fluid p-3 p-md-4">
       {/* Header */}
       <div className="row mb-4 align-items-center">
         <div className="col-12 col-lg-8">
-          <h2 className="fw-bold">{viewMode === 'staff' ? 'Staff Management' : 'Member Management'}</h2>
-          <p className="text-muted mb-0">Manage {viewMode === 'staff' ? 'staff members' : 'members'} and their details.</p>
+          <h1 className="h2 fw-bold">{viewMode === 'staff' ? 'Staff Management' : 'Member Management'}</h1>
+          <p className="text-muted">Manage {viewMode === 'staff' ? 'staff members' : 'members'} and their details.</p>
         </div>
         <div className="col-12 col-lg-4 text-lg-end mt-3 mt-lg-0">
-          {/* ✅ MOBILE RESPONSIVE ADD BUTTON */}
           <button
-            className="btn d-flex align-items-center col-6 w-md-auto ms-md-auto px-3 py-2 btn-sm"
+            className="btn d-flex align-items-center justify-content-center w-100 w-md-auto ms-md-auto px-4 py-2"
             style={{
               backgroundColor: '#6EB2CC',
               color: 'white',
               border: 'none',
               borderRadius: '8px',
-              fontSize: '0.9rem',
+              fontSize: '1rem',
               fontWeight: '500',
               transition: 'all 0.2s ease',
-              minWidth: '120px', // Ensures minimum width even on tiny screens
             }}
             onClick={handleAddNew}
           >
-            <FaUserPlus className="me-3" /> Add {viewMode === 'staff' ? 'Staff' : 'Member'}
+            <FaUserPlus className="me-2" /> Add {viewMode === 'staff' ? 'Staff' : 'Member'}
           </button>
         </div>
       </div>
+
       {/* Search & Actions - STAFF & MEMBER ONLY */}
       <div className="row mb-4 g-3">
-        {/* Toggle Buttons: Staff / Member — MOBILE RESPONSIVE */}
-        <div className="col-12 col-md-6 col-lg-3 d-flex flex-wrap gap-2 mb-2">
-          <button
-            className={`btn btn-sm flex-grow-1 px-3 py-2`}
-            style={{
-              backgroundColor: viewMode === 'staff' ? '#6EB2CC' : 'transparent',
-              borderColor: viewMode === 'staff' ? '#6EB2CC' : '#ced4da',
-              borderWidth: '1px',
-              borderStyle: 'solid',
-              color: viewMode === 'staff' ? 'white' : '#495057',
-              minWidth: '100px', // Ensures button doesn't shrink too much on mobile
-              textOverflow: 'ellipsis',
-              overflow: 'hidden',
-              whiteSpace: 'nowrap',
-            }}
-            onClick={() => setViewMode('staff')}
-          >
-            Staff
-          </button>
-          <button
-            className={`btn btn-sm flex-grow-1 px-3 py-2`}
-            style={{
-              backgroundColor: viewMode === 'member' ? '#6EB2CC' : 'transparent',
-              borderColor: viewMode === 'member' ? '#6EB2CC' : '#ced4da',
-              borderWidth: '1px',
-              borderStyle: 'solid',
-              color: viewMode === 'member' ? 'white' : '#495057',
-              minWidth: '100px',
-              textOverflow: 'ellipsis',
-              overflow: 'hidden',
-              whiteSpace: 'nowrap',
-            }}
-            onClick={() => setViewMode('member')}
-          >
-            Member
-          </button>
+        {/* Toggle Buttons: Staff / Member */}
+        <div className="col-12 col-md-6 col-lg-4">
+          <div className="btn-group w-100" role="group">
+            <button
+              className={`btn flex-fill ${viewMode === 'staff' ? 'btn-primary' : 'btn-outline-primary'}`}
+              style={{
+                backgroundColor: viewMode === 'staff' ? '#6EB2CC' : 'transparent',
+                borderColor: '#6EB2CC',
+                color: viewMode === 'staff' ? 'white' : '#6EB2CC',
+              }}
+              onClick={() => setViewMode('staff')}
+            >
+              Staff
+            </button>
+            <button
+              className={`btn flex-fill ${viewMode === 'member' ? 'btn-primary' : 'btn-outline-primary'}`}
+              style={{
+                backgroundColor: viewMode === 'member' ? '#6EB2CC' : 'transparent',
+                borderColor: '#6EB2CC',
+                color: viewMode === 'member' ? 'white' : '#6EB2CC',
+              }}
+              onClick={() => setViewMode('member')}
+            >
+              Member
+            </button>
+          </div>
         </div>
-        {/* Search Bar — Now WORKING */}
-        <div className="col-12 col-md-3 col-lg-3 ms-auto">
+        {/* Search Bar */}
+        <div className="col-12 col-md-6 col-lg-4">
           <div className="input-group">
             <input
               type="text"
-              className="form-control border"
+              className="form-control"
               placeholder={`Search by name or phone...`}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -384,17 +423,16 @@ const ReceptionistWalkinMember = () => {
           </div>
         </div>
         {/* Filter & Export Buttons */}
-        <div className="col-6 col-md-3 col-lg-2">
-          <button className="btn btn-outline-secondary w-100">
+        <div className="col-12 col-lg-4 d-flex gap-2">
+          <button className="btn btn-outline-secondary flex-fill">
             <i className="fas fa-filter me-1"></i> Filter
           </button>
-        </div>
-        <div className="col-6 col-md-3 col-lg-2">
-          <button className="btn btn-outline-secondary w-100">
+          <button className="btn btn-outline-secondary flex-fill">
             <i className="fas fa-file-export me-1"></i> Export
           </button>
         </div>
       </div>
+
       {/* Show Entries Dropdown */}
       <div className="row mb-3">
         <div className="col-12 col-md-6">
@@ -415,6 +453,7 @@ const ReceptionistWalkinMember = () => {
           </div>
         </div>
       </div>
+
       {/* Table */}
       <div className="card shadow-sm border-0">
         <div className="table-responsive">
@@ -425,11 +464,11 @@ const ReceptionistWalkinMember = () => {
                 {viewMode === 'staff' && (
                   <>
                     <th className="fw-semibold">NAME</th>
-                    <th className="fw-semibold">PHONE</th>
-                    <th className="fw-semibold">EMAIL</th>
-                    <th className="fw-semibold">ROLE</th>
-                    <th className="fw-semibold">DEPARTMENT</th>
-                    <th className="fw-semibold">JOINED</th>
+                    <th className="fw-semibold d-none d-md-table-cell">PHONE</th>
+                    <th className="fw-semibold d-none d-lg-table-cell">EMAIL</th>
+                    <th className="fw-semibold d-none d-md-table-cell">ROLE</th>
+                    <th className="fw-semibold d-none d-lg-table-cell">DEPARTMENT</th>
+                    <th className="fw-semibold d-none d-lg-table-cell">JOINED</th>
                     <th className="fw-semibold text-center">ACTIONS</th>
                   </>
                 )}
@@ -437,12 +476,12 @@ const ReceptionistWalkinMember = () => {
                 {viewMode === 'member' && (
                   <>
                     <th className="fw-semibold">NAME</th>
-                    <th className="fw-semibold">PHONE</th>
-                    <th className="fw-semibold">EMAIL</th>
-                    <th className="fw-semibold">MEMBERSHIP PLAN</th>
-                    <th className="fw-semibold">START DATE</th>
-                    <th className="fw-semibold">EXPIRY DATE</th>
-                    <th className="fw-semibold text-center">STATUS</th>
+                    <th className="fw-semibold d-none d-md-table-cell">PHONE</th>
+                    <th className="fw-semibold d-none d-lg-table-cell">EMAIL</th>
+                    <th className="fw-semibold d-none d-md-table-cell">PLAN</th>
+                    <th className="fw-semibold d-none d-lg-table-cell">START</th>
+                    <th className="fw-semibold d-none d-lg-table-cell">EXPIRY</th>
+                    <th className="fw-semibold text-center d-none d-md-table-cell">STATUS</th>
                     <th className="fw-semibold text-center">ACTIONS</th>
                   </>
                 )}
@@ -453,15 +492,19 @@ const ReceptionistWalkinMember = () => {
               {viewMode === 'staff' && currentData.length > 0 ? (
                 currentData.map((staff) => (
                   <tr key={staff.id}>
-                    <td><strong>{staff.name}</strong></td>
-                    <td>{staff.phone}</td>
-                    <td>{staff.email || <span className="text-muted">—</span>}</td>
-                    <td>{staff.role}</td>
-                    <td>{staff.department}</td>
-                    <td>{formatDateTime(staff.joined_at)}</td>
+                    <td>
+                      <div className="d-flex flex-column">
+                        <strong>{staff.name}</strong>
+                        <small className="text-muted d-md-none">{staff.phone}</small>
+                      </div>
+                    </td>
+                    <td className="d-none d-md-table-cell">{staff.phone}</td>
+                    <td className="d-none d-lg-table-cell">{staff.email || <span className="text-muted">—</span>}</td>
+                    <td className="d-none d-md-table-cell">{staff.role}</td>
+                    <td className="d-none d-lg-table-cell">{staff.department}</td>
+                    <td className="d-none d-lg-table-cell">{formatDateTime(staff.joined_at)}</td>
                     <td className="text-center">
-                      {/* ✅ HORIZONTAL RESPONSIVE ACTION BUTTONS */}
-                      <div className="d-flex flex-row justify-content-center gap-1">
+                      <div className="btn-group" role="group">
                         <button
                           className="btn btn-sm btn-outline-secondary"
                           title="View"
@@ -498,22 +541,29 @@ const ReceptionistWalkinMember = () => {
               {viewMode === 'member' && currentData.length > 0 ? (
                 currentData.map((member) => (
                   <tr key={member.id}>
-                    <td><strong>{member.name}</strong></td>
-                    <td>{member.phone}</td>
-                    <td>{member.email || <span className="text-muted">—</span>}</td>
-                    <td>{member.membership_plan}</td>
-                    <td>{member.start_date}</td>
-                    <td>{member.expiry_date}</td>
-                    <td className="text-center ">
-                      <span className={`badge ${
-                        member.status === 'Active' ? 'bg-success' : 'bg-danger'
-                      }`}>
+                    <td>
+                      <div className="d-flex flex-column">
+                        <strong>{member.name}</strong>
+                        <div className="d-flex align-items-center mt-1">
+                          <small className="text-muted d-md-none me-2">{member.phone}</small>
+                          <span className={`badge ${member.status === 'Active' ? 'bg-success' : 'bg-danger'} d-md-none`}>
+                            {member.status}
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="d-none d-md-table-cell">{member.phone}</td>
+                    <td className="d-none d-lg-table-cell">{member.email || <span className="text-muted">—</span>}</td>
+                    <td className="d-none d-md-table-cell">{member.membership_plan}</td>
+                    <td className="d-none d-lg-table-cell">{member.start_date}</td>
+                    <td className="d-none d-lg-table-cell">{member.expiry_date}</td>
+                    <td className="text-center d-none d-md-table-cell">
+                      <span className={`badge ${member.status === 'Active' ? 'bg-success' : 'bg-danger'}`}>
                         {member.status}
                       </span>
                     </td>
                     <td className="text-center">
-                      {/* ✅ HORIZONTAL RESPONSIVE ACTION BUTTONS */}
-                      <div className="d-flex flex-row justify-content-center gap-1">
+                      <div className="btn-group" role="group">
                         <button
                           className="btn btn-sm btn-outline-secondary"
                           title="View"
@@ -550,11 +600,12 @@ const ReceptionistWalkinMember = () => {
           </table>
         </div>
       </div>
+
       {/* Pagination */}
       <div className="row mt-3">
         <div className="col-12 col-md-5">
           <div className="d-flex align-items-center">
-            <span>
+            <span className="text-muted">
               Showing {indexOfFirstEntry + 1} to {Math.min(indexOfLastEntry, viewMode === 'staff' ? filteredStaffData.length : filteredMembersData.length)} of {viewMode === 'staff' ? filteredStaffData.length : filteredMembersData.length} entries
             </span>
           </div>
@@ -562,54 +613,73 @@ const ReceptionistWalkinMember = () => {
         <div className="col-12 col-md-7">
           <div className="d-flex justify-content-md-end justify-content-center mt-2 mt-md-0">
             <nav>
-              <ul className="pagination mb-0">
+              <ul className="pagination mb-0 flex-wrap">
                 <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
                   <button className="page-link" onClick={prevPage}>
                     Previous
                   </button>
                 </li>
-                <li className={`page-item ${currentPage === 1 ? 'active' : ''}`}>
-                  <button 
-                    className="page-link" 
-                    onClick={() => paginate(1)}
-                    style={{
-                      backgroundColor: currentPage === 1 ? '#2f6a87' : 'transparent',
-                      borderColor: currentPage === 1 ? '#2f6a87' : '#dee2e6',
-                      color: currentPage === 1 ? 'white' : '#2f6a87',
-                    }}
-                  >
-                    1
-                  </button>
-                </li>
-                {totalPages > 1 && (
-                  <li className={`page-item ${currentPage === 2 ? 'active' : ''}`}>
-                    <button 
-                      className="page-link" 
-                      onClick={() => paginate(2)}
-                      style={{
-                        backgroundColor: currentPage === 2 ? '#2f6a87' : 'transparent',
-                        borderColor: currentPage === 2 ? '#2f6a87' : '#dee2e6',
-                        color: currentPage === 2 ? 'white' : '#2f6a87',
-                      }}
-                    >
-                      2
-                    </button>
-                  </li>
-                )}
-                {totalPages > 2 && (
-                  <li className={`page-item ${currentPage === 3 ? 'active' : ''}`}>
-                    <button 
-                      className="page-link" 
-                      onClick={() => paginate(3)}
-                      style={{
-                        backgroundColor: currentPage === 3 ? '#2f6a87' : 'transparent',
-                        borderColor: currentPage === 3 ? '#2f6a87' : '#dee2e6',
-                        color: currentPage === 3 ? 'white' : '#2f6a87',
-                      }}
-                    >
-                      3
-                    </button>
-                  </li>
+                {/* Simplified pagination for mobile */}
+                {totalPages <= 5 ? (
+                  Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                    <li key={page} className={`page-item ${currentPage === page ? 'active' : ''}`}>
+                      <button 
+                        className="page-link" 
+                        onClick={() => paginate(page)}
+                        style={{
+                          backgroundColor: currentPage === page ? '#6EB2CC' : 'transparent',
+                          borderColor: currentPage === page ? '#6EB2CC' : '#dee2e6',
+                          color: currentPage === page ? 'white' : '#6EB2CC',
+                        }}
+                      >
+                        {page}
+                      </button>
+                    </li>
+                  ))
+                ) : (
+                  <>
+                    <li className={`page-item ${currentPage === 1 ? 'active' : ''}`}>
+                      <button 
+                        className="page-link" 
+                        onClick={() => paginate(1)}
+                        style={{
+                          backgroundColor: currentPage === 1 ? '#6EB2CC' : 'transparent',
+                          borderColor: currentPage === 1 ? '#6EB2CC' : '#dee2e6',
+                          color: currentPage === 1 ? 'white' : '#6EB2CC',
+                        }}
+                      >
+                        1
+                      </button>
+                    </li>
+                    {currentPage > 3 && (
+                      <li className="page-item disabled">
+                        <span className="page-link">...</span>
+                      </li>
+                    )}
+                    {currentPage > 2 && currentPage < totalPages - 1 && (
+                      <li className={`page-item active`}>
+                        <span className="page-link">{currentPage}</span>
+                      </li>
+                    )}
+                    {currentPage < totalPages - 2 && (
+                      <li className="page-item disabled">
+                        <span className="page-link">...</span>
+                      </li>
+                    )}
+                    <li className={`page-item ${currentPage === totalPages ? 'active' : ''}`}>
+                      <button 
+                        className="page-link" 
+                        onClick={() => paginate(totalPages)}
+                        style={{
+                          backgroundColor: currentPage === totalPages ? '#6EB2CC' : 'transparent',
+                          borderColor: currentPage === totalPages ? '#6EB2CC' : '#dee2e6',
+                          color: currentPage === totalPages ? 'white' : '#6EB2CC',
+                        }}
+                      >
+                        {totalPages}
+                      </button>
+                    </li>
+                  </>
                 )}
                 <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
                   <button className="page-link" onClick={nextPage}>
@@ -621,7 +691,8 @@ const ReceptionistWalkinMember = () => {
           </div>
         </div>
       </div>
-      {/* MAIN MODAL (Add/Edit/View) — Now only for Staff or Member */}
+
+      {/* MAIN MODAL (Add/Edit/View) */}
       {isModalOpen && (
         <div
           className="modal fade show"
@@ -630,7 +701,7 @@ const ReceptionistWalkinMember = () => {
           onClick={closeModal}
         >
           <div
-            className="modal-dialog modal-xl modal-dialog-centered"
+            className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="modal-content">
@@ -644,7 +715,7 @@ const ReceptionistWalkinMember = () => {
               </div>
               <div className="modal-body p-4">
                 <form>
-                  {/* STAFF FORM — FULLY UPDATED WITH ALL FIELDS */}
+                  {/* STAFF FORM */}
                   {viewMode === 'staff' && (
                     <>
                       {/* Basic Information Section */}
@@ -657,7 +728,7 @@ const ReceptionistWalkinMember = () => {
                           <label className="form-label">Staff ID</label>
                           <input
                             type="text"
-                            className="form-control rounded-3"
+                            className="form-control"
                             placeholder="STAFF004"
                             defaultValue={selectedItem?.id || ''}
                             readOnly={modalType === 'view'}
@@ -667,7 +738,7 @@ const ReceptionistWalkinMember = () => {
                           <label className="form-label">Profile Photo</label>
                           <input
                             type="file"
-                            className="form-control rounded-3"
+                            className="form-control"
                             accept="image/*"
                             disabled={modalType === 'view'}
                           />
@@ -677,7 +748,7 @@ const ReceptionistWalkinMember = () => {
                           <label className="form-label">First Name *</label>
                           <input
                             type="text"
-                            className="form-control rounded-3"
+                            className="form-control"
                             placeholder="Enter first name"
                             defaultValue={selectedItem?.name?.split(' ')[0] || ''}
                             required
@@ -688,7 +759,7 @@ const ReceptionistWalkinMember = () => {
                           <label className="form-label">Last Name *</label>
                           <input
                             type="text"
-                            className="form-control rounded-3"
+                            className="form-control"
                             placeholder="Enter last name"
                             defaultValue={selectedItem?.name?.split(' ').slice(1).join(' ') || ''}
                             required
@@ -699,7 +770,7 @@ const ReceptionistWalkinMember = () => {
                         <div className="col-12 col-md-6 mb-3">
                           <label className="form-label">Gender *</label>
                           <select
-                            className="form-select rounded-3"
+                            className="form-select"
                             aria-label="Gender"
                             defaultValue={selectedItem?.gender || 'Male'}
                             disabled={modalType === 'view'}
@@ -714,7 +785,7 @@ const ReceptionistWalkinMember = () => {
                           <label className="form-label">Date of Birth *</label>
                           <input
                             type="date"
-                            className="form-control rounded-3"
+                            className="form-control"
                             aria-label="Date of Birth"
                             defaultValue={selectedItem?.dob || ''}
                             required
@@ -726,7 +797,7 @@ const ReceptionistWalkinMember = () => {
                           <label className="form-label">Email *</label>
                           <input
                             type="email"
-                            className="form-control rounded-3"
+                            className="form-control"
                             placeholder="example@email.com"
                             defaultValue={selectedItem?.email || ''}
                             required
@@ -737,7 +808,7 @@ const ReceptionistWalkinMember = () => {
                           <label className="form-label">Phone *</label>
                           <input
                             type="tel"
-                            className="form-control rounded-3"
+                            className="form-control"
                             placeholder="+1 555-123-4567"
                             defaultValue={selectedItem?.phone || ''}
                             required
@@ -748,7 +819,7 @@ const ReceptionistWalkinMember = () => {
                         <div className="col-12 col-md-6 mb-3">
                           <label className="form-label">Status</label>
                           <select
-                            className="form-select rounded-3"
+                            className="form-select"
                             aria-label="Status"
                             defaultValue={selectedItem?.status || 'Active'}
                             disabled={modalType === 'view'}
@@ -766,7 +837,7 @@ const ReceptionistWalkinMember = () => {
                         <div className="col-12 col-md-6 mb-3">
                           <label className="form-label">Role *</label>
                           <select
-                            className="form-select rounded-3"
+                            className="form-select"
                             aria-label="Role"
                             defaultValue={selectedItem?.role || 'Receptionist'}
                             disabled={modalType === 'view'}
@@ -781,7 +852,7 @@ const ReceptionistWalkinMember = () => {
                         <div className="col-12 col-md-6 mb-3">
                           <label className="form-label">Department</label>
                           <select
-                            className="form-select rounded-3"
+                            className="form-select"
                             aria-label="Department"
                             defaultValue={selectedItem?.department || 'Fitness'}
                             disabled={modalType === 'view'}
@@ -796,7 +867,7 @@ const ReceptionistWalkinMember = () => {
                           <label className="form-label">Join Date *</label>
                           <input
                             type="date"
-                            className="form-control rounded-3"
+                            className="form-control"
                             aria-label="Join Date"
                             defaultValue={selectedItem?.joined_at ? selectedItem.joined_at.split('T')[0] : ''}
                             required
@@ -807,7 +878,7 @@ const ReceptionistWalkinMember = () => {
                           <label className="form-label">Exit Date</label>
                           <input
                             type="date"
-                            className="form-control rounded-3"
+                            className="form-control"
                             aria-label="Exit Date"
                             defaultValue={selectedItem?.exit_date || ''}
                             readOnly={modalType === 'view'}
@@ -822,7 +893,7 @@ const ReceptionistWalkinMember = () => {
                         <div className="col-12 col-md-6 mb-3">
                           <label className="form-label">Salary Type *</label>
                           <select
-                            className="form-select rounded-3"
+                            className="form-select"
                             aria-label="Salary Type"
                             defaultValue={selectedItem?.salary_type || 'Fixed Salary'}
                             disabled={modalType === 'view'}
@@ -838,7 +909,7 @@ const ReceptionistWalkinMember = () => {
                           <input
                             type="number"
                             step="0.01"
-                            className="form-control rounded-3"
+                            className="form-control"
                             placeholder="e.g., 25.50"
                             defaultValue={selectedItem?.hourly_rate || ''}
                             readOnly={modalType === 'view'}
@@ -848,7 +919,7 @@ const ReceptionistWalkinMember = () => {
                           <label className="form-label">Fixed Salary ($)</label>
                           <input
                             type="number"
-                            className="form-control rounded-3"
+                            className="form-control"
                             placeholder="e.g., 50000"
                             defaultValue={selectedItem?.fixed_salary || ''}
                             readOnly={modalType === 'view'}
@@ -858,7 +929,7 @@ const ReceptionistWalkinMember = () => {
                           <label className="form-label">Commission Rate (%)</label>
                           <input
                             type="number"
-                            className="form-control rounded-3"
+                            className="form-control"
                             placeholder="0"
                             defaultValue={selectedItem?.commission_rate || '0'}
                             readOnly={modalType === 'view'}
@@ -888,7 +959,7 @@ const ReceptionistWalkinMember = () => {
                           <label className="form-label">Username</label>
                           <input
                             type="text"
-                            className="form-control rounded-3"
+                            className="form-control"
                             placeholder="Enter username"
                             defaultValue={selectedItem?.username || ''}
                             readOnly={modalType === 'view'}
@@ -898,7 +969,7 @@ const ReceptionistWalkinMember = () => {
                           <label className="form-label">Password</label>
                           <input
                             type="password"
-                            className="form-control rounded-3"
+                            className="form-control"
                             placeholder="Enter password"
                             defaultValue={selectedItem?.password || ''}
                             readOnly={modalType === 'view'}
@@ -906,7 +977,7 @@ const ReceptionistWalkinMember = () => {
                           <small className="text-muted">Leave blank to keep existing password.</small>
                         </div>
                       </div>
-                      {/* Action Buttons — MOBILE RESPONSIVE (already good!) */}
+                      {/* Action Buttons */}
                       <div className="d-flex flex-column flex-sm-row justify-content-end gap-2 mt-4">
                         <button
                           type="button"
@@ -935,7 +1006,7 @@ const ReceptionistWalkinMember = () => {
                       </div>
                     </>
                   )}
-                  {/* MEMBER FORM — */}
+                  {/* MEMBER FORM */}
                   {viewMode === 'member' && (
                     <>
                       {/* Name & Phone */}
@@ -944,7 +1015,7 @@ const ReceptionistWalkinMember = () => {
                           <label className="form-label">Full Name <span className="text-danger">*</span></label>
                           <input
                             type="text"
-                            className="form-control rounded-3"
+                            className="form-control"
                             placeholder="Enter full name"
                             defaultValue={selectedItem?.name || ''}
                             readOnly={modalType === 'view'}
@@ -955,7 +1026,7 @@ const ReceptionistWalkinMember = () => {
                           <label className="form-label">Phone Number <span className="text-danger">*</span></label>
                           <input
                             type="tel"
-                            className="form-control rounded-3"
+                            className="form-control"
                             placeholder="+91 98765 43210"
                             defaultValue={selectedItem?.phone || ''}
                             readOnly={modalType === 'view'}
@@ -968,7 +1039,7 @@ const ReceptionistWalkinMember = () => {
                         <label className="form-label">Email Address</label>
                         <input
                           type="email"
-                          className="form-control rounded-3"
+                          className="form-control"
                           placeholder="example@email.com"
                           defaultValue={selectedItem?.email || ''}
                           readOnly={modalType === 'view'}
@@ -978,7 +1049,7 @@ const ReceptionistWalkinMember = () => {
                       <div className="mb-3">
                         <label className="form-label">Preferred Membership Plan</label>
                         <select
-                          className="form-select rounded-3"
+                          className="form-select"
                           defaultValue={selectedItem?.membership_plan || ''}
                           disabled={modalType === 'view'}
                         >
@@ -1018,7 +1089,7 @@ const ReceptionistWalkinMember = () => {
                         <label className="form-label">Preferred Time</label>
                         <input
                           type="datetime-local"
-                          className="form-control rounded-3"
+                          className="form-control"
                           defaultValue={selectedItem?.preferred_time ? selectedItem.preferred_time.slice(0, 16) : ''}
                           readOnly={modalType === 'view'}
                         />
@@ -1027,14 +1098,14 @@ const ReceptionistWalkinMember = () => {
                       <div className="mb-4">
                         <label className="form-label">Notes</label>
                         <textarea
-                          className="form-control rounded-3"
+                          className="form-control"
                           rows="3"
                           placeholder="Any additional information..."
                           defaultValue={selectedItem?.notes || ''}
                           readOnly={modalType === 'view'}
                         ></textarea>
                       </div>
-                      {/* Action Buttons — MOBILE RESPONSIVE (already good!) */}
+                      {/* Action Buttons */}
                       <div className="d-flex flex-column flex-sm-row justify-content-end gap-2 mt-4">
                         <button
                           type="button"
@@ -1069,7 +1140,8 @@ const ReceptionistWalkinMember = () => {
           </div>
         </div>
       )}
-      {/* DELETE CONFIRMATION MODAL —  */}
+
+      {/* DELETE CONFIRMATION MODAL */}
       {isDeleteModalOpen && (
         <div
           className="modal fade show"
@@ -1123,4 +1195,5 @@ const ReceptionistWalkinMember = () => {
     </div>
   );
 };
+
 export default ReceptionistWalkinMember;

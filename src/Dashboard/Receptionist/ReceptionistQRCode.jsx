@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaEye, FaEdit, FaTrashAlt, FaQrcode } from 'react-icons/fa';
+import { FaEye, FaEdit, FaTrashAlt, FaQrcode, FaChevronLeft, FaChevronRight, FaUser, FaClock, FaMobileAlt, FaCalendarAlt } from 'react-icons/fa';
 
 const ReceptionistQRCode = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -13,9 +13,10 @@ const ReceptionistQRCode = () => {
     mode: 'QR',
     device_info: ''
   });
+  const [searchQuery, setSearchQuery] = useState('');
   
   // Pagination states
-  const [entriesPerPage, setEntriesPerPage] = useState(10);
+  const [entriesPerPage, setEntriesPerPage] = useState(6); // Changed to 6 for better card layout
   const [currentPage, setCurrentPage] = useState(1);
   
   // Sample data
@@ -63,14 +64,44 @@ const ReceptionistQRCode = () => {
       mode: "QR",
       device_info: "iPad Pro",
       status: "Present"
+    },
+    {
+      id: 5,
+      date: "2025-04-04",
+      member_name: "Emma Wilson",
+      member_code: "MBR-005",
+      checkin_time: "08:00",
+      checkout_time: "09:15",
+      mode: "QR",
+      device_info: "iPhone 13",
+      status: "Present"
+    },
+    {
+      id: 6,
+      date: "2025-04-03",
+      member_name: "David Lee",
+      member_code: "MBR-006",
+      checkin_time: "07:30",
+      checkout_time: "08:45",
+      mode: "Manual",
+      device_info: "Admin Dashboard",
+      status: "Late"
     }
   ]);
 
   // Pagination logic
   const indexOfLastEntry = currentPage * entriesPerPage;
   const indexOfFirstEntry = indexOfLastEntry - entriesPerPage;
-  const currentRecords = records.slice(indexOfFirstEntry, indexOfLastEntry);
-  const totalPages = Math.ceil(records.length / entriesPerPage);
+  
+  // Filter records based on search query
+  const filteredRecords = records.filter(record => 
+    record.member_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    record.member_code.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  
+  // Apply pagination to filtered records
+  const currentRecords = filteredRecords.slice(indexOfFirstEntry, indexOfLastEntry);
+  const totalPages = Math.ceil(filteredRecords.length / entriesPerPage);
   
   // Handle entries per page change
   const handleEntriesChange = (e) => {
@@ -178,6 +209,16 @@ const ReceptionistQRCode = () => {
     );
   };
 
+  const getModeBadge = (mode) => {
+    return (
+      <span className={`badge rounded-pill ${
+        mode === 'QR' ? 'bg-info-subtle text-info-emphasis' : 'bg-secondary-subtle text-secondary-emphasis'
+      } px-2 py-1`}>
+        {mode}
+      </span>
+    );
+  };
+
   const getModalTitle = () => {
     switch (modalType) {
       case 'add': return 'Add New Attendance Record';
@@ -200,7 +241,7 @@ const ReceptionistQRCode = () => {
 
   // Handle QR code scan
   const handleQRScan = () => {
-    // In a real app, this would trigger the device's camera
+    // In a real app, this would trigger device's camera
     // For demo purposes, we'll simulate a successful scan
     const mockMemberCode = `MBR-${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`;
     setScanData(prev => ({
@@ -279,8 +320,115 @@ const ReceptionistQRCode = () => {
     }
   };
 
+  // Attendance Card Component
+  const AttendanceCard = ({ record }) => (
+    <div className="card attendance-card shadow-sm h-100">
+      <div className="card-body d-flex flex-column">
+        {/* Card Header */}
+        <div className="d-flex justify-content-between align-items-start mb-3">
+          <div className="flex-grow-1">
+            <h5 className="card-title mb-1">{record.member_name}</h5>
+            <p className="card-text text-muted small mb-0">{record.member_code}</p>
+          </div>
+          <div className="d-flex gap-1">
+            <button
+              className="btn btn-sm btn-outline-secondary action-btn"
+              title="View"
+              onClick={() => handleView(record)}
+            >
+              <FaEye size={14} />
+            </button>
+            <button
+              className="btn btn-sm btn-outline-primary action-btn"
+              title="Edit"
+              onClick={() => handleEdit(record)}
+            >
+              <FaEdit size={14} />
+            </button>
+            <button
+              className="btn btn-sm btn-outline-danger action-btn"
+              title="Delete"
+              onClick={() => handleDeleteClick(record)}
+            >
+              <FaTrashAlt size={14} />
+            </button>
+          </div>
+        </div>
+        
+        {/* Date and Status */}
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <div className="d-flex align-items-center">
+            <FaCalendarAlt className="text-primary me-2" />
+            <span className="small">{formatDate(record.date)}</span>
+          </div>
+          {getStatusBadge(record.status)}
+        </div>
+        
+        {/* Check-in/Check-out Times */}
+        <div className="row g-2 mb-3">
+          <div className="col-6">
+            <div className="d-flex align-items-center">
+              <FaClock className="text-success me-2" />
+              <div>
+                <small className="text-muted d-block">Check-in</small>
+                <span className="fw-bold">{record.checkin_time || <span className="text-muted">—</span>}</span>
+              </div>
+            </div>
+          </div>
+          <div className="col-6">
+            <div className="d-flex align-items-center">
+              <FaClock className="text-danger me-2" />
+              <div>
+                <small className="text-muted d-block">Check-out</small>
+                <span className="fw-bold">{record.checkout_time || <span className="text-muted">—</span>}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Mode and Device */}
+        <div className="row g-2 mb-3">
+          <div className="col-6">
+            <div className="d-flex align-items-center">
+              <FaQrcode className="text-info me-2" />
+              <div>
+                <small className="text-muted d-block">Mode</small>
+                {getModeBadge(record.mode)}
+              </div>
+            </div>
+          </div>
+          <div className="col-6">
+            <div className="d-flex align-items-center">
+              <FaMobileAlt className="text-secondary me-2" />
+              <div>
+                <small className="text-muted d-block">Device</small>
+                <small className="text-truncate d-block" title={record.device_info}>
+                  {record.device_info || '—'}
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Card Footer */}
+        <div className="mt-auto pt-2 border-top">
+          <div className="d-flex justify-content-between align-items-center">
+            <div className="d-flex align-items-center">
+              <FaUser className="text-primary me-2" />
+              <small className="text-muted">ID: {record.id}</small>
+            </div>
+            <div className="d-flex align-items-center">
+              <small className="text-muted me-1">Status:</small>
+              {getStatusBadge(record.status)}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="">
+    <div className="container-fluid p-3 p-md-4">
       {/* Header */}
       <div className="row mb-4 align-items-center">
         <div className="col-12 col-lg-8">
@@ -302,7 +450,7 @@ const ReceptionistQRCode = () => {
             }}
             onClick={handleScanQR}
           >
-            <FaQrcode className="me-2" /> Scan QR
+            <FaQrcode className="me-2" /> <span className="d-none d-sm-inline">Scan QR</span>
           </button>
           <button
             className="btn d-flex align-items-center justify-content-center"
@@ -318,7 +466,7 @@ const ReceptionistQRCode = () => {
             }}
             onClick={handleAddNew}
           >
-            <i className="fas fa-plus me-2"></i> Manual Entry
+            <i className="fas fa-plus me-2"></i> <span className="d-none d-sm-inline">Manual Entry</span>
           </button>
         </div>
       </div>
@@ -330,18 +478,23 @@ const ReceptionistQRCode = () => {
             <input
               type="text"
               className="form-control border"
-              placeholder="Search by member name..."
+              placeholder="Search by member name or code..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1); // Reset to first page when searching
+              }}
             />
           </div>
         </div>
         <div className="col-6 col-md-3 col-lg-2">
           <button className="btn btn-outline-secondary w-100">
-            <i className="fas fa-filter me-1"></i> Filter
+            <i className="fas fa-filter me-1"></i> <span className="d-none d-sm-inline">Filter</span>
           </button>
         </div>
         <div className="col-6 col-md-3 col-lg-2">
           <button className="btn btn-outline-secondary w-100">
-            <i className="fas fa-file-export me-1"></i> Export
+            <i className="fas fa-file-export me-1"></i> <span className="d-none d-sm-inline">Export</span>
           </button>
         </div>
       </div>
@@ -356,93 +509,42 @@ const ReceptionistQRCode = () => {
               value={entriesPerPage}
               onChange={handleEntriesChange}
             >
-              <option value={5}>5</option>
-              <option value={10}>10</option>
-              <option value={25}>25</option>
-              <option value={50}>50</option>
-              <option value={100}>100</option>
+              <option value={3}>3</option>
+              <option value={6}>6</option>
+              <option value={9}>9</option>
+              <option value={12}>12</option>
+              <option value={24}>24</option>
             </select>
             <span className="ms-2">entries</span>
           </div>
         </div>
       </div>
 
-      {/* Table */}
-      <div className="card shadow-sm border-0">
-        <div className="table-responsive">
-          <table className="table table-hover align-middle mb-0">
-            <thead className="bg-light">
-              <tr>
-                <th className="fw-semibold">DATE</th>
-                <th className="fw-semibold">MEMBER NAME</th>
-                <th className="fw-semibold">MEMBER CODE</th>
-                <th className="fw-semibold">CHECK-IN</th>
-                <th className="fw-semibold">CHECK-OUT</th>
-                <th className="fw-semibold">MODE</th>
-                <th className="fw-semibold">DEVICE</th>
-                <th className="fw-semibold">STATUS</th>
-                <th className="fw-semibold text-center">ACTIONS</th>
-              </tr>
-            </thead>
-            <tbody>
-              {currentRecords.map((record) => (
-                <tr key={record.id}>
-                  <td>{formatDate(record.date)}</td>
-                  <td><strong>{record.member_name}</strong></td>
-                  <td>{record.member_code || <span className="text-muted">—</span>}</td>
-                  <td>{record.checkin_time || <span className="text-muted">—</span>}</td>
-                  <td>{record.checkout_time || <span className="text-muted">—</span>}</td>
-                  <td>
-                    <span className={`badge rounded-pill ${
-                      record.mode === 'QR' ? 'bg-info-subtle text-info-emphasis' : 'bg-secondary-subtle text-secondary-emphasis'
-                    } px-2 py-1`}>
-                      {record.mode}
-                    </span>
-                  </td>
-                  <td>
-                    <small className="text-muted">
-                      {record.device_info || '—'}
-                    </small>
-                  </td>
-                  <td>{getStatusBadge(record.status)}</td>
-                  <td className="text-center">
-                    <div className="d-flex flex-row gap-1 justify-content-center">
-                      <button
-                        className="btn btn-sm btn-outline-secondary"
-                        title="View"
-                        onClick={() => handleView(record)}
-                      >
-                        <FaEye size={14} />
-                      </button>
-                      <button
-                        className="btn btn-sm btn-outline-primary"
-                        title="Edit"
-                        onClick={() => handleEdit(record)}
-                      >
-                        <FaEdit size={14} />
-                      </button>
-                      <button
-                        className="btn btn-sm btn-outline-danger"
-                        title="Delete"
-                        onClick={() => handleDeleteClick(record)}
-                      >
-                        <FaTrashAlt size={14} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      {/* Cards Grid */}
+      <div className="row g-3 g-lg-4">
+        {currentRecords.length > 0 ? (
+          currentRecords.map((record) => (
+            <div key={record.id} className="col-12 col-sm-6 col-lg-4 col-xl-3">
+              <AttendanceCard record={record} />
+            </div>
+          ))
+        ) : (
+          <div className="col-12">
+            <div className="card shadow-sm border-0">
+              <div className="card-body text-center py-5">
+                <p className="mb-0 text-muted">No attendance records found</p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Pagination */}
-      <div className="row mt-3">
+      <div className="row mt-4">
         <div className="col-12 col-md-5">
           <div className="d-flex align-items-center">
             <span>
-              Showing {indexOfFirstEntry + 1} to {Math.min(indexOfLastEntry, records.length)} of {records.length} entries
+              Showing {indexOfFirstEntry + 1} to {Math.min(indexOfLastEntry, filteredRecords.length)} of {filteredRecords.length} entries
             </span>
           </div>
         </div>
@@ -494,15 +596,15 @@ const ReceptionistQRCode = () => {
           onClick={closeModal}
         >
           <div
-            className="modal-dialog modal-lg modal-dialog-centered"
+            className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="modal-content">
-              <div className="modal-header border-0 pb-0">
+              <div className="modal-header border-0 pb-0" style={{ backgroundColor: '#6EB2CC', color: 'white' }}>
                 <h5 className="modal-title fw-bold">{getModalTitle()}</h5>
                 <button
                   type="button"
-                  className="btn-close"
+                  className="btn-close btn-close-white"
                   onClick={closeModal}
                 ></button>
               </div>
@@ -515,7 +617,7 @@ const ReceptionistQRCode = () => {
                         <FaQrcode size={80} className="text-primary" />
                       </div>
                       <h5>Scan Member QR Code</h5>
-                      <p className="text-muted">Position the QR code within the frame to scan</p>
+                      <p className="text-muted">Position QR code within frame to scan</p>
                     </div>
 
                     {/* QR Code Input */}
@@ -535,7 +637,7 @@ const ReceptionistQRCode = () => {
                           type="button"
                           onClick={handleQRScan}
                         >
-                          <FaQrcode /> Scan
+                          <FaQrcode /> <span className="d-none d-sm-inline ms-1">Scan</span>
                         </button>
                       </div>
                     </div>
@@ -591,21 +693,21 @@ const ReceptionistQRCode = () => {
                     <div className="d-flex flex-column flex-sm-row justify-content-end gap-2 mt-4">
                       <button
                         type="button"
-                        className="btn btn-outline-secondary px-4 py-2"
+                        className="btn btn-outline-secondary px-4 py-2 w-100 w-sm-auto"
                         onClick={closeModal}
                       >
                         Cancel
                       </button>
                       <button
                         type="button"
-                        className="btn btn-outline-primary px-4 py-2"
+                        className="btn btn-outline-primary px-4 py-2 w-100 w-sm-auto"
                         onClick={() => handleCheckIn('verify')}
                       >
                         Verify and Record
                       </button>
                       <button
                         type="button"
-                        className="btn"
+                        className="btn px-4 py-2 w-100 w-sm-auto"
                         style={{
                           backgroundColor: '#6EB2CC',
                           color: 'white',
@@ -726,7 +828,7 @@ const ReceptionistQRCode = () => {
                     <div className="d-flex flex-column flex-sm-row justify-content-end gap-2 mt-4">
                       <button
                         type="button"
-                        className="btn btn-outline-secondary px-4 py-2"
+                        className="btn btn-outline-secondary px-4 py-2 w-100 w-sm-auto"
                         onClick={closeModal}
                       >
                         Cancel
@@ -734,7 +836,7 @@ const ReceptionistQRCode = () => {
                       {modalType !== 'view' && (
                         <button
                           type="button"
-                          className="btn"
+                          className="btn px-4 py-2 w-100 w-sm-auto"
                           style={{
                             backgroundColor: '#6EB2CC',
                             color: 'white',
@@ -770,11 +872,11 @@ const ReceptionistQRCode = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="modal-content">
-              <div className="modal-header border-0 pb-0">
+              <div className="modal-header border-0 pb-0" style={{ backgroundColor: '#6EB2CC', color: 'white' }}>
                 <h5 className="modal-title fw-bold">Confirm Deletion</h5>
                 <button
                   type="button"
-                  className="btn-close"
+                  className="btn-close btn-close-white"
                   onClick={closeDeleteModal}
                 ></button>
               </div>
@@ -791,14 +893,14 @@ const ReceptionistQRCode = () => {
               <div className="modal-footer border-0 justify-content-center pb-4">
                 <button
                   type="button"
-                  className="btn btn-outline-secondary px-4"
+                  className="btn btn-outline-secondary px-4 w-100 w-sm-auto"
                   onClick={closeDeleteModal}
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
-                  className="btn btn-danger px-4"
+                  className="btn btn-danger px-4 w-100 w-sm-auto"
                   onClick={confirmDelete}
                 >
                   Delete
@@ -808,6 +910,49 @@ const ReceptionistQRCode = () => {
           </div>
         </div>
       )}
+      
+      <style jsx global>{`
+        .action-btn {
+          width: 36px;
+          height: 36px;
+          padding: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        
+        .attendance-card {
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+          border-radius: 12px;
+          border: 1px solid rgba(0,0,0,0.08);
+        }
+        
+        .attendance-card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        @media (max-width: 768px) {
+          .action-btn {
+            width: 32px;
+            height: 32px;
+          }
+          
+          .modal-dialog {
+            max-width: 95%;
+            margin: 1rem auto;
+          }
+        }
+        
+        @media (max-width: 576px) {
+          .modal-dialog {
+            margin: 0.5rem;
+          }
+          .modal-content {
+            border-radius: 0.5rem;
+          }
+        }
+      `}</style>
     </div>
   );
 };
