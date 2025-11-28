@@ -86,7 +86,7 @@ import Plans from "./Dashboard/SuperAdmin/Plans";
 // import Staff from "./Dashboard/SuperAdmin/People/Staff";
 // import Members from "./Dashboard/SuperAdmin/People/Members";
 // import Invoices from "./Dashboard/SuperAdmin/Payments/Invoices";
-import Payments from "./Dashboard/SuperAdmin/Payments/Payments";
+import Payments from "./Dashboard/SuperAdmin/Payments";
 // import Request from "./Dashboard/SuperAdmin/Request";
 import Request from "./Dashboard/SuperAdmin/Requestplan";
 
