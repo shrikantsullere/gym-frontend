@@ -316,12 +316,82 @@ const StaffAttendance = () => {
     setBranchFilter('All');
   };
 
+  // Mobile Card View Component
+  const MobileAttendanceCard = ({ record }) => (
+    <div className="card mb-3 shadow-sm" style={{ borderRadius: '0.5rem' }}>
+      <div className="card-body p-3">
+        <div className="d-flex justify-content-between align-items-start mb-2">
+          <div>
+            <h6 className="mb-1 fw-bold" style={{ fontSize: '0.95rem' }}>{record.staff_name}</h6>
+            <div className="d-flex gap-1 flex-wrap">
+              {getRoleBadge(record.role)}
+              {getBranchBadge(record.branch)}
+            </div>
+          </div>
+          {getStatusBadge(record.status)}
+        </div>
+        
+        <div className="row g-2 mb-2">
+          <div className="col-6">
+            <small className="text-muted d-block">Date</small>
+            <span style={{ fontSize: '0.85rem' }}>{formatDate(record.date)}</span>
+          </div>
+          <div className="col-6">
+            <small className="text-muted d-block">Shift</small>
+            <span style={{ fontSize: '0.85rem' }}>{record.shift_name}</span>
+          </div>
+          <div className="col-6">
+            <small className="text-muted d-block">Check-in</small>
+            <span style={{ fontSize: '0.85rem' }}>{formatTime(record.checkin_time)}</span>
+          </div>
+          <div className="col-6">
+            <small className="text-muted d-block">Check-out</small>
+            <span style={{ fontSize: '0.85rem' }}>{formatTime(record.checkout_time)}</span>
+          </div>
+        </div>
+        
+        {record.notes && (
+          <div className="mb-2">
+            <small className="text-muted">Notes:</small>
+            <p className="mb-0" style={{ fontSize: '0.85rem' }}>{record.notes}</p>
+          </div>
+        )}
+        
+        <div className="d-flex justify-content-end gap-1">
+          <button
+            className="btn btn-sm action-btn"
+            title="View"
+            onClick={() => handleView(record)}
+            style={{ borderColor: customColor, color: customColor }}
+          >
+            <FaEye size={12} />
+          </button>
+          <button
+            className="btn btn-sm action-btn"
+            title="Edit"
+            onClick={() => handleEdit(record)}
+            style={{ borderColor: customColor, color: customColor }}
+          >
+            <FaEdit size={12} />
+          </button>
+          <button
+            className="btn btn-sm btn-outline-danger action-btn"
+            title="Delete"
+            onClick={() => handleDeleteClick(record)}
+          >
+            <FaTrashAlt size={12} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="container-fluid p-2 p-md-4">
       {/* Header Section */}
       <div className="row mb-3 mb-md-4 align-items-center">
         <div className="col-12 col-md-8 mb-2 mb-md-0">
-          <h2 className="fw-bold mb-1 mb-md-2" style={{ fontSize: 'clamp(1.25rem, 4vw, 1.75rem' }}>Staff Attendance Records</h2>
+          <h2 className="fw-bold mb-1" style={{ fontSize: 'clamp(1.25rem, 4vw, 1.75rem)' }}>Staff Attendance Records</h2>
           <p className="text-muted mb-0 d-none d-md-block">Track staff attendance via QR scan or manual entry.</p>
         </div>
         <div className="col-12 col-md-4">
@@ -362,7 +432,6 @@ const StaffAttendance = () => {
 
           <div className={`row g-2 ${showMobileFilters ? 'd-block' : 'd-none d-md-flex'}`}>
             <div className="col-12 col-md-4">
-              <label className="form-label fw-semibold d-none d-md-block">Search</label>
               <div className="input-group input-group-sm">
                 <span className="input-group-text bg-light border">
                   <FaSearch className="text-muted" style={{ fontSize: '0.875rem' }} />
@@ -379,7 +448,6 @@ const StaffAttendance = () => {
             </div>
 
             <div className="col-6 col-md-2">
-              <label className="form-label fw-semibold d-none d-md-block">Role</label>
               <select
                 className="form-select form-select-sm"
                 value={roleFilter}
@@ -393,7 +461,6 @@ const StaffAttendance = () => {
             </div>
 
             <div className="col-6 col-md-2">
-              <label className="form-label fw-semibold d-none d-md-block">Status</label>
               <select
                 className="form-select form-select-sm"
                 value={statusFilter}
@@ -407,7 +474,6 @@ const StaffAttendance = () => {
             </div>
 
             <div className="col-6 col-md-2">
-              <label className="form-label fw-semibold d-none d-md-block">Branch</label>
               <select
                 className="form-select form-select-sm"
                 value={branchFilter}
@@ -421,7 +487,6 @@ const StaffAttendance = () => {
             </div>
 
             <div className="col-6 col-md-2">
-              <label className="form-label fw-semibold d-none d-md-block">&nbsp;</label>
               <button 
                 className="btn btn-outline-secondary btn-sm w-100" 
                 onClick={clearFilters}
@@ -434,7 +499,7 @@ const StaffAttendance = () => {
         </div>
       </div>
 
-      {/* Table Section */}
+      {/* Records Section */}
       <div className="card shadow-sm border-0">
         <div className="card-header bg-light py-2 py-md-3">
           <h6 className="mb-0 fw-bold" style={{ fontSize: 'clamp(0.875rem, 2vw, 1rem)' }}>
@@ -442,89 +507,108 @@ const StaffAttendance = () => {
           </h6>
         </div>
         <div className="card-body p-0">
-          <div className="table-responsive">
-            <table className="table table-hover align-middle mb-0" style={{ fontSize: '0.8rem' }}>
-              <thead className="bg-light">
-                <tr>
-                  <th className="fw-semibold text-nowrap" style={{ fontSize: '0.75rem', padding: '0.5rem' }}>DATE</th>
-                  <th className="fw-semibold text-nowrap" style={{ fontSize: '0.75rem', padding: '0.5rem' }}>STAFF NAME</th>
-                  <th className="fw-semibold text-nowrap d-none d-sm-table-cell" style={{ fontSize: '0.75rem', padding: '0.5rem' }}>ROLE</th>
-                  <th className="fw-semibold text-nowrap d-none d-md-table-cell" style={{ fontSize: '0.75rem', padding: '0.5rem' }}>BRANCH</th>
-                  <th className="fw-semibold text-nowrap d-none d-lg-table-cell" style={{ fontSize: '0.75rem', padding: '0.5rem' }}>CHECK-IN</th>
-                  <th className="fw-semibold text-nowrap d-none d-lg-table-cell" style={{ fontSize: '0.75rem', padding: '0.5rem' }}>CHECK-OUT</th>
-                  <th className="fw-semibold text-nowrap d-none d-xl-table-cell" style={{ fontSize: '0.75rem', padding: '0.5rem' }}>MODE</th>
-                  <th className="fw-semibold text-nowrap d-none d-xl-table-cell" style={{ fontSize: '0.75rem', padding: '0.5rem' }}>SHIFT</th>
-                  <th className="fw-semibold text-nowrap" style={{ fontSize: '0.75rem', padding: '0.5rem' }}>STATUS</th>
-                  <th className="fw-semibold text-center text-nowrap" style={{ fontSize: '0.75rem', padding: '0.5rem' }}>ACTIONS</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredRecords.length > 0 ? (
-                  filteredRecords.map((record) => (
-                    <tr key={record.attendance_id}>
-                      <td className="text-nowrap" style={{ padding: '0.5rem' }}>
-                        <span className="d-md-none">{new Date(record.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-                        <span className="d-none d-md-inline">{formatDate(record.date)}</span>
-                      </td>
-                      <td className="text-nowrap" style={{ padding: '0.5rem' }}>
-                        <strong style={{ fontSize: '0.8rem' }}>{record.staff_name}</strong>
-                      </td>
-                      <td className="text-nowrap d-none d-sm-table-cell" style={{ padding: '0.5rem' }}>{getRoleBadge(record.role)}</td>
-                      <td className="text-nowrap d-none d-md-table-cell" style={{ padding: '0.5rem' }}>{getBranchBadge(record.branch)}</td>
-                      <td className="text-nowrap d-none d-lg-table-cell" style={{ padding: '0.5rem' }}>{formatTime(record.checkin_time)}</td>
-                      <td className="text-nowrap d-none d-lg-table-cell" style={{ padding: '0.5rem' }}>{formatTime(record.checkout_time)}</td>
-                      <td className="text-nowrap d-none d-xl-table-cell" style={{ padding: '0.5rem' }}>
-                        <span className={`badge rounded-pill ${
-                          record.mode === 'QR' ? 'bg-info text-white' : 'bg-secondary text-white'
-                        } px-2 py-1`} style={{ fontSize: '0.65rem' }}>
-                          {record.mode}
-                        </span>
-                      </td>
-                      <td className="text-nowrap d-none d-xl-table-cell" style={{ padding: '0.5rem' }}>
-                        <span style={{ fontSize: '0.75rem' }}>{record.shift_name}</span>
-                      </td>
-                      <td className="text-nowrap" style={{ padding: '0.5rem' }}>{getStatusBadge(record.status)}</td>
-                      <td className="text-center text-nowrap" style={{ padding: '0.5rem' }}>
-                        <div className="d-flex justify-content-center gap-1">
-                          <button
-                            className="btn btn-sm action-btn"
-                            title="View"
-                            onClick={() => handleView(record)}
-                            style={{ borderColor: customColor, color: customColor }}
-                          >
-                            <FaEye size={10} />
-                          </button>
-                          <button
-                            className="btn btn-sm action-btn"
-                            title="Edit"
-                            onClick={() => handleEdit(record)}
-                            style={{ borderColor: customColor, color: customColor }}
-                          >
-                            <FaEdit size={10} />
-                          </button>
-                          <button
-                            className="btn btn-sm btn-outline-danger action-btn"
-                            title="Delete"
-                            onClick={() => handleDeleteClick(record)}
-                          >
-                            <FaTrashAlt size={10} />
-                          </button>
+          {/* Desktop Table View */}
+          <div className="d-none d-md-block">
+            <div className="table-responsive">
+              <table className="table table-hover align-middle mb-0" style={{ fontSize: '0.8rem' }}>
+                <thead className="bg-light">
+                  <tr>
+                    <th className="fw-semibold text-nowrap" style={{ fontSize: '0.75rem', padding: '0.5rem' }}>DATE</th>
+                    <th className="fw-semibold text-nowrap" style={{ fontSize: '0.75rem', padding: '0.5rem' }}>STAFF NAME</th>
+                    <th className="fw-semibold text-nowrap" style={{ fontSize: '0.75rem', padding: '0.5rem', width: '100px' }}>ROLE</th>
+                    <th className="fw-semibold text-nowrap" style={{ fontSize: '0.75rem', padding: '0.5rem', width: '90px' }}>BRANCH</th>
+                    <th className="fw-semibold text-nowrap" style={{ fontSize: '0.75rem', padding: '0.5rem' }}>CHECK-IN</th>
+                    <th className="fw-semibold text-nowrap" style={{ fontSize: '0.75rem', padding: '0.5rem' }}>CHECK-OUT</th>
+                    <th className="fw-semibold text-nowrap d-none d-lg-table-cell" style={{ fontSize: '0.75rem', padding: '0.5rem' }}>MODE</th>
+                    <th className="fw-semibold text-nowrap d-none d-md-table-cell" style={{ fontSize: '0.75rem', padding: '0.5rem' }}>SHIFT</th>
+                    <th className="fw-semibold text-nowrap" style={{ fontSize: '0.75rem', padding: '0.5rem' }}>STATUS</th>
+                    <th className="fw-semibold text-center text-nowrap" style={{ fontSize: '0.75rem', padding: '0.5rem' }}>ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredRecords.length > 0 ? (
+                    filteredRecords.map((record) => (
+                      <tr key={record.attendance_id}>
+                        <td className="text-nowrap" style={{ padding: '0.5rem' }}>
+                          <span className="d-none d-lg-inline">{formatDate(record.date)}</span>
+                          <span className="d-lg-none">{new Date(record.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                        </td>
+                        <td className="text-nowrap" style={{ padding: '0.5rem' }}>
+                          <strong>{record.staff_name}</strong>
+                        </td>
+                        <td className="text-nowrap" style={{ padding: '0.5rem' }}>{getRoleBadge(record.role)}</td>
+                        <td className="text-nowrap" style={{ padding: '0.5rem' }}>{getBranchBadge(record.branch)}</td>
+                        <td className="text-nowrap" style={{ padding: '0.5rem' }}>{formatTime(record.checkin_time)}</td>
+                        <td className="text-nowrap" style={{ padding: '0.5rem' }}>{formatTime(record.checkout_time)}</td>
+                        <td className="text-nowrap d-none d-lg-table-cell" style={{ padding: '0.5rem' }}>
+                          <span className={`badge rounded-pill ${
+                            record.mode === 'QR' ? 'bg-info text-white' : 'bg-secondary text-white'
+                          } px-2 py-1`} style={{ fontSize: '0.65rem' }}>
+                            {record.mode}
+                          </span>
+                        </td>
+                        <td className="text-nowrap d-none d-md-table-cell" style={{ padding: '0.5rem' }}>
+                          <span style={{ fontSize: '0.75rem' }}>{record.shift_name}</span>
+                        </td>
+                        <td className="text-nowrap" style={{ padding: '0.5rem' }}>{getStatusBadge(record.status)}</td>
+                        <td className="text-center text-nowrap" style={{ padding: '0.5rem' }}>
+                          <div className="d-flex justify-content-center gap-1">
+                            <button
+                              className="btn btn-sm action-btn"
+                              title="View"
+                              onClick={() => handleView(record)}
+                              style={{ borderColor: customColor, color: customColor }}
+                            >
+                              <FaEye size={12} />
+                            </button>
+                            <button
+                              className="btn btn-sm action-btn"
+                              title="Edit"
+                              onClick={() => handleEdit(record)}
+                              style={{ borderColor: customColor, color: customColor }}
+                            >
+                              <FaEdit size={12} />
+                            </button>
+                            <button
+                              className="btn btn-sm btn-outline-danger action-btn"
+                              title="Delete"
+                              onClick={() => handleDeleteClick(record)}
+                            >
+                              <FaTrashAlt size={12} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="10" className="text-center py-4">
+                        <div className="text-muted">
+                          <FaSearch size={24} className="mb-2" />
+                          <p className="mb-0">No attendance records found matching your criteria.</p>
                         </div>
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="10" className="text-center py-4">
-                      <div className="text-muted">
-                        <FaSearch size={20} className="mb-2" />
-                        <p className="mb-0" style={{ fontSize: '0.9rem' }}>No attendance records found matching your criteria.</p>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="d-md-none p-3">
+            {filteredRecords.length > 0 ? (
+              filteredRecords.map(record => (
+                <MobileAttendanceCard key={record.attendance_id} record={record} />
+              ))
+            ) : (
+              <div className="text-center py-4">
+                <div className="text-muted">
+                  <FaSearch size={24} className="mb-2" />
+                  <p className="mb-0">No attendance records found matching your criteria.</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -788,8 +872,8 @@ const StaffAttendance = () => {
       
       <style jsx global>{`
         .action-btn {
-          width: 24px;
-          height: 24px;
+          width: 28px;
+          height: 28px;
           padding: 0;
           display: flex;
           align-items: center;
@@ -799,8 +883,8 @@ const StaffAttendance = () => {
         
         @media (max-width: 576px) {
           .action-btn {
-            width: 20px;
-            height: 20px;
+            width: 24px;
+            height: 24px;
           }
         }
         
@@ -859,15 +943,6 @@ const StaffAttendance = () => {
           }
           .modal-body {
             padding: 1rem !important;
-          }
-        }
-
-        @media (max-width: 768px) {
-          .table {
-            font-size: 0.75rem;
-          }
-          .badge {
-            font-size: 0.6rem;
           }
         }
       `}</style>

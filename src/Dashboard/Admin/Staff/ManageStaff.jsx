@@ -341,7 +341,7 @@ const ManageStaff = () => {
           <div className="d-flex flex-wrap gap-2 justify-content-md-end">
             <div className="role-filter-dropdown">
               <button 
-                className="btn btn-outline-secondary btn-sm dropdown-toggle w-100" 
+                className="btn btn-outline-secondary btn-sm dropdown-toggle" 
                 type="button" 
                 onClick={() => setRoleFilterOpen(!roleFilterOpen)}
                 style={{ fontSize: '0.875rem', padding: '0.375rem 0.75rem' }}
@@ -390,7 +390,7 @@ const ManageStaff = () => {
             </div>
             <div className="status-filter-dropdown">
               <button 
-                className="btn btn-outline-secondary btn-sm dropdown-toggle w-100" 
+                className="btn btn-outline-secondary btn-sm dropdown-toggle" 
                 type="button" 
                 onClick={() => setStatusFilterOpen(!statusFilterOpen)}
                 style={{ fontSize: '0.875rem', padding: '0.375rem 0.75rem' }}
@@ -430,7 +430,7 @@ const ManageStaff = () => {
             </div>
             <div className="branch-filter-dropdown">
               <button 
-                className="btn btn-outline-secondary btn-sm dropdown-toggle w-100" 
+                className="btn btn-outline-secondary btn-sm dropdown-toggle" 
                 type="button" 
                 onClick={() => setBranchFilterOpen(!branchFilterOpen)}
                 style={{ fontSize: '0.875rem', padding: '0.375rem 0.75rem' }}
@@ -463,7 +463,7 @@ const ManageStaff = () => {
               </div>
             </div>
             <button 
-              className="btn btn-outline-secondary btn-sm w-100" 
+              className="btn btn-outline-secondary btn-sm" 
               onClick={clearFilters}
               style={{ fontSize: '0.875rem', padding: '0.375rem 0.75rem' }}
             >
@@ -473,123 +473,209 @@ const ManageStaff = () => {
         </div>
       </div>
 
-      {/* Table */}
-      <div className="card shadow-sm border-0">
-        <div className="table-responsive">
-          <table className="table table-hover align-middle mb-0">
-            <thead className="bg-light">
-              <tr>
-                <th className="fw-semibold">PHOTO</th>
-                <th className="fw-semibold">NAME</th>
-                <th className="fw-semibold d-none d-md-table-cell">ROLE</th>
-                <th className="fw-semibold d-none d-lg-table-cell">EMAIL</th>
-                <th className="fw-semibold d-none d-lg-table-cell">PHONE</th>
-                <th className="fw-semibold d-none d-md-table-cell">BRANCH</th>
-                <th className="fw-semibold d-none d-md-table-cell">STATUS</th>
-                <th className="fw-semibold text-center">ACTIONS</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredStaff.map((member) => (
-                <tr key={member.id}>
-                  <td>
-                    {member.profile_photo ? (
-                      <img
-                        src={member.profile_photo}
-                        alt={`${member.first_name} ${member.last_name}`}
-                        style={{
-                          width: '40px',
-                          height: '40px',
-                          borderRadius: '50%',
-                          objectFit: 'cover',
-                          border: '2px solid #eee'
-                        }}
-                      />
-                    ) : (
-                      <div
-                        className="rounded-circle text-white d-flex align-items-center justify-content-center"
-                        style={{
-                          width: '40px',
-                          height: '40px',
-                          fontSize: '0.85rem',
-                          fontWeight: 'bold',
-                          backgroundColor: getInitialColor(getInitials(member.first_name, member.last_name))
-                        }}
-                      >
-                        {getInitials(member.first_name, member.last_name)}
-                      </div>
-                    )}
-                  </td>
-                  <td>
-                    <strong>{member.first_name} {member.last_name}</strong>
-                    <div><small className="text-muted">{member.staff_id}</small></div>
-                    <div className="d-md-none">
-                      <small className="text-muted">Role: {member.role_id}</small>
-                    </div>
-                    <div className="d-lg-none">
-                      <small className="text-muted">Email: {member.email}</small>
-                    </div>
-                    <div className="d-lg-none">
-                      <small className="text-muted">Phone: {member.phone}</small>
-                    </div>
-                    <div className="d-md-none">
-                      <small className="text-muted">Branch: {getBranchName(member.branch_id)}</small>
-                    </div>
-                    <div className="d-md-none">
-                      <small className="text-muted">Status: {member.status}</small>
-                    </div>
-                  </td>
-                  <td className="d-none d-md-table-cell">{getRoleBadge(member.role_id)}</td>
-                  <td className="d-none d-lg-table-cell">{member.email}</td>
-                  <td className="d-none d-lg-table-cell">{member.phone}</td>
-                  <td className="d-none d-md-table-cell">
-                    <span className="badge bg-light text-dark">
-                      {getBranchName(member.branch_id)}
-                    </span>
-                  </td>
-                  <td className="d-none d-md-table-cell">{getStatusBadge(member.status)}</td>
-                  <td className="text-center">
-                    <div className="d-flex justify-content-center flex-nowrap" style={{ gap: '4px' }}>
-                      <button
-                        className="btn btn-sm btn-outline-secondary action-btn"
-                        title="View"
-                        onClick={() => handleView(member)}
-                        style={{ width: '32px', height: '32px', padding: '0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                      >
-                        <FaEye size={14} />
-                      </button>
-                      <button
-                        className="btn btn-sm"
-                        style={{ 
-                          width: '32px', 
-                          height: '32px', 
-                          padding: '0', 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          justifyContent: 'center',
-                          borderColor: customColor,
-                          color: customColor
-                        }}
-                        title="Edit"
-                        onClick={() => handleEdit(member)}
-                      >
-                        <FaEdit size={14} />
-                      </button>
-                      <button
-                        className="btn btn-sm btn-outline-danger action-btn"
-                        title="Delete"
-                        onClick={() => handleDeleteClick(member)}
-                        style={{ width: '32px', height: '32px', padding: '0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                      >
-                        <FaTrashAlt size={14} />
-                      </button>
-                    </div>
-                  </td>
+      {/* Desktop Table View */}
+      <div className="d-none d-md-block">
+        <div className="card shadow-sm border-0">
+          <div className="table-responsive">
+            <table className="table table-hover align-middle mb-0">
+              <thead className="bg-light">
+                <tr>
+                  <th className="fw-semibold">PHOTO</th>
+                  <th className="fw-semibold">NAME</th>
+                  <th className="fw-semibold">ROLE</th>
+                  <th className="fw-semibold d-none d-lg-table-cell">EMAIL</th>
+                  <th className="fw-semibold d-none d-lg-table-cell">PHONE</th>
+                  <th className="fw-semibold">BRANCH</th>
+                  <th className="fw-semibold">STATUS</th>
+                  <th className="fw-semibold text-center">ACTIONS</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filteredStaff.map((member) => (
+                  <tr key={member.id}>
+                    <td>
+                      {member.profile_photo ? (
+                        <img
+                          src={member.profile_photo}
+                          alt={`${member.first_name} ${member.last_name}`}
+                          style={{
+                            width: '40px',
+                            height: '40px',
+                            borderRadius: '50%',
+                            objectFit: 'cover',
+                            border: '2px solid #eee'
+                          }}
+                        />
+                      ) : (
+                        <div
+                          className="rounded-circle text-white d-flex align-items-center justify-content-center"
+                          style={{
+                            width: '40px',
+                            height: '40px',
+                            fontSize: '0.85rem',
+                            fontWeight: 'bold',
+                            backgroundColor: getInitialColor(getInitials(member.first_name, member.last_name))
+                          }}
+                        >
+                          {getInitials(member.first_name, member.last_name)}
+                        </div>
+                      )}
+                    </td>
+                    <td>
+                      <strong>{member.first_name} {member.last_name}</strong>
+                      <div><small className="text-muted">{member.staff_id}</small></div>
+                    </td>
+                    <td>{getRoleBadge(member.role_id)}</td>
+                    <td className="d-none d-lg-table-cell">{member.email}</td>
+                    <td className="d-none d-lg-table-cell">{member.phone}</td>
+                    <td>
+                      <span className="badge bg-light text-dark">
+                        {getBranchName(member.branch_id)}
+                      </span>
+                    </td>
+                    <td>{getStatusBadge(member.status)}</td>
+                    <td className="text-center">
+                      <div className="d-flex justify-content-center flex-nowrap" style={{ gap: '4px' }}>
+                        <button
+                          className="btn btn-sm btn-outline-secondary action-btn"
+                          title="View"
+                          onClick={() => handleView(member)}
+                          style={{ width: '32px', height: '32px', padding: '0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        >
+                          <FaEye size={14} />
+                        </button>
+                        <button
+                          className="btn btn-sm"
+                          style={{ 
+                            width: '32px', 
+                            height: '32px', 
+                            padding: '0', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center',
+                            borderColor: customColor,
+                            color: customColor
+                          }}
+                          title="Edit"
+                          onClick={() => handleEdit(member)}
+                        >
+                          <FaEdit size={14} />
+                        </button>
+                        <button
+                          className="btn btn-sm btn-outline-danger action-btn"
+                          title="Delete"
+                          onClick={() => handleDeleteClick(member)}
+                          style={{ width: '32px', height: '32px', padding: '0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        >
+                          <FaTrashAlt size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="d-md-none">
+        {filteredStaff.map((member) => (
+          <div className="card shadow-sm border-0 mb-3" key={member.id}>
+            <div className="card-body p-3">
+              <div className="d-flex align-items-start mb-3">
+                {member.profile_photo ? (
+                  <img
+                    src={member.profile_photo}
+                    alt={`${member.first_name} ${member.last_name}`}
+                    style={{
+                      width: '60px',
+                      height: '60px',
+                      borderRadius: '50%',
+                      objectFit: 'cover',
+                      border: '2px solid #eee'
+                    }}
+                  />
+                ) : (
+                  <div
+                    className="rounded-circle text-white d-flex align-items-center justify-content-center me-3"
+                    style={{
+                      width: '60px',
+                      height: '60px',
+                      fontSize: '1.2rem',
+                      fontWeight: 'bold',
+                      backgroundColor: getInitialColor(getInitials(member.first_name, member.last_name))
+                    }}
+                  >
+                    {getInitials(member.first_name, member.last_name)}
+                  </div>
+                )}
+                <div className="flex-grow-1">
+                  <h5 className="mb-1">{member.first_name} {member.last_name}</h5>
+                  <p className="text-muted small mb-2">{member.staff_id}</p>
+                  <div className="d-flex gap-2 flex-wrap">
+                    {getRoleBadge(member.role_id)}
+                    {getStatusBadge(member.status)}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="row g-2 mb-3">
+                <div className="col-12">
+                  <small className="text-muted d-block">Email</small>
+                  <span>{member.email}</span>
+                </div>
+                <div className="col-12">
+                  <small className="text-muted d-block">Phone</small>
+                  <span>{member.phone}</span>
+                </div>
+                <div className="col-12">
+                  <small className="text-muted d-block">Branch</small>
+                  <span className="badge bg-light text-dark">
+                    {getBranchName(member.branch_id)}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="d-flex justify-content-end gap-2">
+                <button
+                  className="btn btn-sm btn-outline-secondary action-btn"
+                  title="View"
+                  onClick={() => handleView(member)}
+                  style={{ width: '36px', height: '36px', padding: '0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  <FaEye size={14} />
+                </button>
+                <button
+                  className="btn btn-sm"
+                  style={{ 
+                    width: '36px', 
+                    height: '36px', 
+                    padding: '0', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    borderColor: customColor,
+                    color: customColor
+                  }}
+                  title="Edit"
+                  onClick={() => handleEdit(member)}
+                >
+                  <FaEdit size={14} />
+                </button>
+                <button
+                  className="btn btn-sm btn-outline-danger action-btn"
+                  title="Delete"
+                  onClick={() => handleDeleteClick(member)}
+                  style={{ width: '36px', height: '36px', padding: '0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  <FaTrashAlt size={14} />
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* MAIN MODAL (Add/Edit/View) */}
