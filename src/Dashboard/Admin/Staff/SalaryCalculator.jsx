@@ -111,7 +111,7 @@ const SalaryCalculator = () => {
       Paid: "bg-success-subtle text-success-emphasis"
     };
     return (
-      <span className={`badge rounded-pill ${badges[status] || 'bg-secondary'} px-3 py-1`}>
+      <span className={`badge rounded-pill ${badges[status] || 'bg-secondary'} px-2 py-1`}>
         {status}
       </span>
     );
@@ -171,12 +171,12 @@ const SalaryCalculator = () => {
 
   // ===== JSX =====
   return (
-    <div className="container-fluid p-4">
+    <div className="container-fluid p-2 p-md-4">
       {/* Header */}
-      <div className="row mb-4 align-items-center">
+      <div className="row mb-3 mb-md-4 align-items-center">
         <div className="col-12 col-lg-8">
-          <h2 className="fw-bold">Salary Calculator</h2>
-          <p className="text-muted mb-0">Calculate and manage staff salaries based on role (Fixed, Hourly, Commission).</p>
+          <h2 className="fw-bold fs-4 fs-md-3">Salary Calculator</h2>
+          <p className="text-muted mb-0 fs-6">Calculate and manage staff salaries based on role (Fixed, Hourly, Commission).</p>
         </div>
         <div className="col-12 col-lg-4 text-lg-end mt-3 mt-lg-0">
           <button
@@ -187,7 +187,7 @@ const SalaryCalculator = () => {
               border: 'none',
               borderRadius: '8px',
               padding: '10px 20px',
-              fontSize: '1rem',
+              fontSize: '0.9rem',
               fontWeight: '500',
               transition: 'all 0.2s ease',
             }}
@@ -199,7 +199,7 @@ const SalaryCalculator = () => {
       </div>
 
       {/* Search & Filter */}
-      <div className="row mb-4 g-3">
+      <div className="row mb-3 mb-md-4 g-2 g-md-3">
         <div className="col-12 col-md-6 col-lg-5">
           <div className="input-group">
             <span className="input-group-text bg-light border">
@@ -213,7 +213,7 @@ const SalaryCalculator = () => {
           </div>
         </div>
         <div className="col-6 col-md-3 col-lg-2">
-          <select className="form-select">
+          <select className="form-select form-select-sm">
             <option>All Status</option>
             <option>Generated</option>
             <option>Approved</option>
@@ -221,7 +221,7 @@ const SalaryCalculator = () => {
           </select>
         </div>
         <div className="col-6 col-md-3 col-lg-2">
-          <select className="form-select">
+          <select className="form-select form-select-sm">
             <option>All Roles</option>
             <option>Manager</option>
             <option>Trainer</option>
@@ -236,12 +236,12 @@ const SalaryCalculator = () => {
           <table className="table table-hover align-middle mb-0">
             <thead className="bg-light">
               <tr>
-                <th className="fw-semibold">SALARY ID</th>
+                <th className="fw-semibold d-none d-md-table-cell">SALARY ID</th>
                 <th className="fw-semibold">STAFF</th>
-                <th className="fw-semibold">ROLE</th>
-                <th className="fw-semibold">PERIOD</th>
+                <th className="fw-semibold d-none d-lg-table-cell">ROLE</th>
+                <th className="fw-semibold d-none d-md-table-cell">PERIOD</th>
                 <th className="fw-semibold text-end">NET PAY</th>
-                <th className="fw-semibold">STATUS</th>
+                <th className="fw-semibold text-center d-none d-lg-table-cell">STATUS</th>
                 <th className="fw-semibold text-center">ACTIONS</th>
               </tr>
             </thead>
@@ -250,23 +250,33 @@ const SalaryCalculator = () => {
                 const staff = getStaffInfo(salary.staff_id);
                 return (
                   <tr key={salary.salary_id}>
-                    <td><strong>{salary.salary_id}</strong></td>
-                    <td>{staff.first_name} {staff.last_name}</td>
-                    <td><span className="badge bg-primary">{staff.role}</span></td>
+                    <td className="d-none d-md-table-cell"><strong>{salary.salary_id}</strong></td>
                     <td>
+                      <div className="d-flex align-items-center">
+                        <div className="ms-2">
+                          <div className="fw-bold">{staff.first_name} {staff.last_name}</div>
+                          <div className="text-muted small d-md-none">{staff.role}</div>
+                          <div className="text-muted small d-md-none">{salary.salary_id}</div>
+                          <div className="text-muted small d-md-none">{formatDate(salary.period_start)} - {formatDate(salary.period_end)}</div>
+                          <div className="d-lg-none mt-1">{getStatusBadge(salary.status)}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="d-none d-lg-table-cell"><span className="badge bg-primary">{staff.role}</span></td>
+                    <td className="d-none d-md-table-cell">
                       {formatDate(salary.period_start)}<br/>
                       <small className="text-muted">to {formatDate(salary.period_end)}</small>
                     </td>
                     <td className="text-end fw-bold">₹{(salary.net_pay)}</td>
-                    <td>{getStatusBadge(salary.status)}</td>
+                    <td className="text-center d-none d-lg-table-cell">{getStatusBadge(salary.status)}</td>
                     <td className="text-center">
-                      <div className="btn-group" role="group">
+                      <div className="btn-group btn-group-sm" role="group">
                         <button
                           className="btn btn-sm btn-outline-secondary"
                           title="View"
                           onClick={() => handleView(salary)}
                         >
-                          <FaEye size={14} />
+                          <FaEye size={12} />
                         </button>
                         <button
                           className="btn btn-sm btn-outline-primary"
@@ -274,7 +284,7 @@ const SalaryCalculator = () => {
                           onClick={() => handleEdit(salary)}
                           disabled={salary.status === "Paid"}
                         >
-                          <FaEdit size={14} />
+                          <FaEdit size={12} />
                         </button>
                         <button
                           className="btn btn-sm btn-outline-danger"
@@ -282,7 +292,7 @@ const SalaryCalculator = () => {
                           onClick={() => handleDeleteClick(salary)}
                           disabled={salary.status === "Paid"}
                         >
-                          <FaTrashAlt size={14} />
+                          <FaTrashAlt size={12} />
                         </button>
                       </div>
                     </td>
@@ -303,35 +313,35 @@ const SalaryCalculator = () => {
           onClick={closeModal}
         >
           <div
-            className="modal-dialog modal-lg modal-dialog-centered"
+            className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="modal-content">
               <div className="modal-header border-0 pb-0">
-                <h5 className="modal-title fw-bold">
+                <h5 className="modal-title fw-bold fs-5">
                   {modalType === 'add' ? 'Add New Salary ' :
                    modalType === 'edit' ? 'Edit Salary ' : 'View Salary '}
                 </h5>
                 <button type="button" className="btn-close" onClick={closeModal}></button>
               </div>
-              <div className="modal-body p-4">
+              <div className="modal-body p-3 p-md-4">
                 <form>
                   {/* SECTION 1: Staff & Period */}
-                  <h6 className="fw-bold mb-3">Staff & Period</h6>
-                  <div className="row g-3 mb-3">
+                  <h6 className="fw-bold mb-3 fs-6">Staff & Period</h6>
+                  <div className="row g-2 g-md-3 mb-3">
                     <div className="col-12 col-md-6">
-                      <label className="form-label">Salary ID</label>
+                      <label className="form-label small">Salary ID</label>
                       <input
                         type="text"
-                        className="form-control"
+                        className="form-control form-control-sm"
                         value={selectedSalary?.salary_id || (modalType === 'add' ? getNextSalaryId() : '')}
                         readOnly
                       />
                     </div>
                     <div className="col-12 col-md-6">
-                      <label className="form-label">Staff Member <span className="text-danger">*</span></label>
+                      <label className="form-label small">Staff Member <span className="text-danger">*</span></label>
                       <select
-                        className="form-select"
+                        className="form-select form-select-sm"
                         disabled={modalType === 'view'}
                         defaultValue={selectedSalary?.staff_id || ''}
                         onChange={(e) => {
@@ -355,10 +365,10 @@ const SalaryCalculator = () => {
                       </select>
                     </div>
                     <div className="col-12 col-md-6">
-                      <label className="form-label">Role</label>
+                      <label className="form-label small">Role</label>
                       <input
                         type="text"
-                        className="form-control"
+                        className="form-control form-control-sm"
                         value={selectedSalary 
                           ? getStaffInfo(selectedSalary.staff_id)?.role 
                           : ''}
@@ -366,20 +376,20 @@ const SalaryCalculator = () => {
                       />
                     </div>
                     <div className="col-12 col-md-6">
-                      <label className="form-label">Period Start <span className="text-danger">*</span></label>
+                      <label className="form-label small">Period Start <span className="text-danger">*</span></label>
                       <input
                         type="date"
-                        className="form-control"
+                        className="form-control form-control-sm"
                         defaultValue={selectedSalary?.period_start || ''}
                         disabled={modalType === 'view'}
                         required
                       />
                     </div>
                     <div className="col-12 col-md-6">
-                      <label className="form-label">Period End <span className="text-danger">*</span></label>
+                      <label className="form-label small">Period End <span className="text-danger">*</span></label>
                       <input
                         type="date"
-                        className="form-control"
+                        className="form-control form-control-sm"
                         defaultValue={selectedSalary?.period_end || ''}
                         disabled={modalType === 'view'}
                         required
@@ -388,13 +398,13 @@ const SalaryCalculator = () => {
                   </div>
 
                   {/* SECTION 2: Compensation Details */}
-                  <h6 className="fw-bold mb-3">Compensation Details</h6>
-                  <div className="row g-3 mb-3">
+                  <h6 className="fw-bold mb-3 fs-6">Compensation Details</h6>
+                  <div className="row g-2 g-md-3 mb-3">
                     <div className="col-12 col-md-6">
-                      <label className="form-label">Hours Worked</label>
+                      <label className="form-label small">Hours Worked</label>
                       <input
                         type="number"
-                        className="form-control"
+                        className="form-control form-control-sm"
                         placeholder="e.g., 160"
                         defaultValue={selectedSalary?.hours_worked || ''}
                         disabled={modalType === 'view'}
@@ -414,10 +424,10 @@ const SalaryCalculator = () => {
                       />
                     </div>
                     <div className="col-12 col-md-6">
-                      <label className="form-label">Hourly Rate (from profile)</label>
+                      <label className="form-label small">Hourly Rate (from profile)</label>
                       <input
                         type="number"
-                        className="form-control"
+                        className="form-control form-control-sm"
                         placeholder="Auto-filled from staff profile"
                         readOnly
                         defaultValue={selectedSalary 
@@ -426,20 +436,20 @@ const SalaryCalculator = () => {
                       />
                     </div>
                     <div className="col-12 col-md-6">
-                      <label className="form-label">Hourly Total</label>
+                      <label className="form-label small">Hourly Total</label>
                       <input
                         type="number"
-                        className="form-control"
+                        className="form-control form-control-sm"
                         placeholder="Auto-calculated"
                         readOnly
                         defaultValue={selectedSalary?.hourly_total || 0}
                       />
                     </div>
                     <div className="col-12 col-md-6">
-                      <label className="form-label">Fixed Salary</label>
+                      <label className="form-label small">Fixed Salary</label>
                       <input
                         type="number"
-                        className="form-control"
+                        className="form-control form-control-sm"
                         placeholder="e.g., 5000"
                         defaultValue={selectedSalary?.fixed_salary || ''}
                         disabled={modalType === 'view'}
@@ -447,10 +457,10 @@ const SalaryCalculator = () => {
                       />
                     </div>
                     <div className="col-12 col-md-6">
-                      <label className="form-label">Commission Total</label>
+                      <label className="form-label small">Commission Total</label>
                       <input
                         type="number"
-                        className="form-control"
+                        className="form-control form-control-sm"
                         placeholder="e.g., 1200"
                         defaultValue={selectedSalary?.commission_total || ''}
                         disabled={modalType === 'view'}
@@ -460,13 +470,13 @@ const SalaryCalculator = () => {
                   </div>
 
                   {/* SECTION 3: Bonuses & Deductions */}
-                  <h6 className="fw-bold mb-3">Bonuses</h6>
+                  <h6 className="fw-bold mb-3 fs-6">Bonuses</h6>
                   <div className="mb-3">
                     <div className="row g-2 mb-2">
                       <div className="col-12 col-md-5">
                         <input
                           type="text"
-                          className="form-control"
+                          className="form-control form-control-sm"
                           placeholder="Bonus label (e.g., Performance Bonus)"
                           disabled={modalType === 'view'}
                         />
@@ -474,7 +484,7 @@ const SalaryCalculator = () => {
                       <div className="col-12 col-md-5">
                         <input
                           type="number"
-                          className="form-control"
+                          className="form-control form-control-sm"
                           placeholder="Amount"
                           disabled={modalType === 'view'}
                           min="0"
@@ -483,16 +493,16 @@ const SalaryCalculator = () => {
                       <div className="col-12 col-md-2 d-flex align-items-center">
                         <button
                           type="button"
-                          className="btn btn-outline-success w-100"
+                          className="btn btn-outline-success btn-sm w-100"
                           disabled={modalType === 'view'}
                         >
-                          <FaPlus size={14} />
+                          <FaPlus size={12} />
                         </button>
                       </div>
                     </div>
                     <div className="border rounded p-2 bg-light small">
                       {selectedSalary?.bonuses?.length > 0 ? (
-                        <ul className="mb-0">
+                        <ul className="mb-0 ps-3">
                           {selectedSalary.bonuses.map((bonus, i) => (
                             <li key={i} className="d-flex justify-content-between">
                               <span>{bonus.label}</span>
@@ -506,13 +516,13 @@ const SalaryCalculator = () => {
                     </div>
                   </div>
 
-                  <h6 className="fw-bold mb-3">Deductions</h6>
+                  <h6 className="fw-bold mb-3 fs-6">Deductions</h6>
                   <div className="mb-3">
                     <div className="row g-2 mb-2">
                       <div className="col-12 col-md-5">
                         <input
                           type="text"
-                          className="form-control"
+                          className="form-control form-control-sm"
                           placeholder="Deduction label (e.g., Tax)"
                           disabled={modalType === 'view'}
                         />
@@ -520,7 +530,7 @@ const SalaryCalculator = () => {
                       <div className="col-12 col-md-5">
                         <input
                           type="number"
-                          className="form-control"
+                          className="form-control form-control-sm"
                           placeholder="Amount"
                           disabled={modalType === 'view'}
                           min="0"
@@ -529,16 +539,16 @@ const SalaryCalculator = () => {
                       <div className="col-12 col-md-2 d-flex align-items-center">
                         <button
                           type="button"
-                          className="btn btn-outline-danger w-100"
+                          className="btn btn-outline-danger btn-sm w-100"
                           disabled={modalType === 'view'}
                         >
-                          <FaPlus size={14} />
+                          <FaPlus size={12} />
                         </button>
                       </div>
                     </div>
                     <div className="border rounded p-2 bg-light small">
                       {selectedSalary?.deductions?.length > 0 ? (
-                        <ul className="mb-0">
+                        <ul className="mb-0 ps-3">
                           {selectedSalary.deductions.map((deduction, i) => (
                             <li key={i} className="d-flex justify-content-between">
                               <span>{deduction.label}</span>
@@ -553,21 +563,21 @@ const SalaryCalculator = () => {
                   </div>
 
                   {/* SECTION 4: Summary & Status */}
-                  <h6 className="fw-bold mb-3">Summary</h6>
-                  <div className="row g-3 mb-3">
+                  <h6 className="fw-bold mb-3 fs-6">Summary</h6>
+                  <div className="row g-2 g-md-3 mb-3">
                     <div className="col-12 col-md-6">
-                      <label className="form-label">Net Pay (auto-calculated)</label>
+                      <label className="form-label small">Net Pay (auto-calculated)</label>
                       <input
                         type="number"
-                        className="form-control fw-bold"
+                        className="form-control form-control-sm fw-bold"
                         value={selectedSalary?.net_pay || 0}
                         readOnly
                       />
                     </div>
                     <div className="col-12 col-md-6">
-                      <label className="form-label">Status</label>
+                      <label className="form-label small">Status</label>
                       <select
-                        className="form-select"
+                        className="form-select form-select-sm"
                         disabled={modalType === 'view'}
                         defaultValue={selectedSalary?.status || 'Generated'}
                       >
@@ -578,10 +588,10 @@ const SalaryCalculator = () => {
                     </div>
                     {selectedSalary?.status === "Paid" && (
                       <div className="col-12">
-                        <label className="form-label">Paid At</label>
+                        <label className="form-label small">Paid At</label>
                         <input
                           type="datetime-local"
-                          className="form-control"
+                          className="form-control form-control-sm"
                           defaultValue={selectedSalary?.paid_at ? new Date(selectedSalary.paid_at).toISOString().slice(0,16) : ''}
                           disabled={modalType === 'view'}
                         />
@@ -590,10 +600,10 @@ const SalaryCalculator = () => {
                   </div>
 
                   {/* Buttons */}
-                  <div className="d-grid gap-2 d-md-flex justify-content-md-end">
+                  <div className="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
                     <button
                       type="button"
-                      className="btn btn-outline-secondary px-4 py-2"
+                      className="btn btn-outline-secondary px-3 py-2 btn-sm"
                       onClick={closeModal}
                     >
                       Cancel
@@ -601,13 +611,13 @@ const SalaryCalculator = () => {
                     {modalType !== 'view' && (
                       <button
                         type="button"
-                        className="btn"
+                        className="btn btn-sm"
                         style={{
                           backgroundColor: '#6EB2CC',
                           color: 'white',
                           border: 'none',
                           borderRadius: '8px',
-                          padding: '10px 20px',
+                          padding: '8px 16px',
                           fontWeight: '500',
                         }}
                         onClick={() => {
@@ -635,36 +645,36 @@ const SalaryCalculator = () => {
           onClick={closeDeleteModal}
         >
           <div
-            className="modal-dialog modal-dialog-centered"
+            className="modal-dialog modal-dialog-centered modal-sm"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="modal-content">
               <div className="modal-header border-0 pb-0">
-                <h5 className="modal-title fw-bold">Confirm Deletion</h5>
+                <h5 className="modal-title fw-bold fs-5">Confirm Deletion</h5>
                 <button type="button" className="btn-close" onClick={closeDeleteModal}></button>
               </div>
-              <div className="modal-body text-center py-4">
+              <div className="modal-body text-center py-3">
                 <div className="display-6 text-danger mb-3">
                   <i className="fas fa-exclamation-triangle"></i>
                 </div>
-                <h5>Are you sure?</h5>
-                <p className="text-muted">
+                <h5 className="fs-6">Are you sure?</h5>
+                <p className="text-muted small">
                   This will permanently delete salary record <strong>{selectedSalary?.salary_id}</strong>.<br />
                   This action cannot be undone.
                 </p>
               </div>
-              <div className="modal-footer border-0 justify-content-center pb-4">
+              <div className="modal-footer border-0 justify-content-center pb-3">
                 <div className="d-grid gap-2 d-sm-flex justify-content-sm-center">
                   <button
                     type="button"
-                    className="btn btn-outline-secondary px-4"
+                    className="btn btn-outline-secondary px-3 btn-sm"
                     onClick={closeDeleteModal}
                   >
                     Cancel
                   </button>
                   <button
                     type="button"
-                    className="btn btn-danger px-4"
+                    className="btn btn-danger px-3 btn-sm"
                     onClick={confirmDelete}
                   >
                     Delete

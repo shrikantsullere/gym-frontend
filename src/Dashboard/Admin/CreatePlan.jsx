@@ -12,28 +12,33 @@ const CreatePlan = () => {
   const [planToDelete, setPlanToDelete] = useState({ id: null, type: null });
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [requestToProcess, setRequestToProcess] = useState(null);
+  const [selectedBranch, setSelectedBranch] = useState('all');
   const [newPlan, setNewPlan] = useState({
     name: '',
     sessions: '',
     validity: '',
     price: '',
-    type: 'group'
+    type: 'group',
+    branch: 'Downtown'
   });
 
   // Custom color for all blue elements
   const customColor = '#6EB2CC';
 
+  // Available branches
+  const branches = ['Downtown', 'North Branch', 'South Branch', 'East Branch'];
+
   // Plans (Admin-created only)
   const [groupPlans, setGroupPlans] = useState([
-    { id: 1, name: "Starter Pack", sessions: 8, validity: 30, price: "₹2,499", active: true },
-    { id: 2, name: "Pro Pack", sessions: 16, validity: 60, price: "₹4,499", active: true },
-    { id: 3, name: "Unlimited", sessions: 30, validity: 90, price: "₹7,999", active: true },
+    { id: 1, name: "Starter Pack", sessions: 8, validity: 30, price: "₹2,499", active: true, branch: "Downtown" },
+    { id: 2, name: "Pro Pack", sessions: 16, validity: 60, price: "₹4,499", active: true, branch: "North Branch" },
+    { id: 3, name: "Unlimited", sessions: 30, validity: 90, price: "₹7,999", active: true, branch: "South Branch" },
   ]);
 
   const [personalPlans, setPersonalPlans] = useState([
-    { id: 4, name: "Basic 1:1", sessions: 6, validity: 30, price: "₹4,999", active: true },
-    { id: 5, name: "Advanced 1:1", sessions: 12, validity: 60, price: "₹8,999", active: true },
-    { id: 6, name: "Elite 1:1", sessions: 20, validity: 90, price: "₹14,999", active: true },
+    { id: 4, name: "Basic 1:1", sessions: 6, validity: 30, price: "₹4,999", active: true, branch: "Downtown" },
+    { id: 5, name: "Advanced 1:1", sessions: 12, validity: 60, price: "₹8,999", active: true, branch: "East Branch" },
+    { id: 6, name: "Elite 1:1", sessions: 20, validity: 90, price: "₹14,999", active: true, branch: "North Branch" },
   ]);
 
   // Mock Booking Requests from Members
@@ -84,9 +89,10 @@ const CreatePlan = () => {
     },
   ]);
 
-  // Get the appropriate plan list based on type
+  // Get the appropriate plan list based on type and filter by branch
   const getPlansByType = (type) => {
-    return type === 'group' ? groupPlans : personalPlans;
+    const plans = type === 'group' ? groupPlans : personalPlans;
+    return selectedBranch === 'all' ? plans : plans.filter(plan => plan.branch === selectedBranch);
   };
 
   // Update the appropriate plan list based on type
@@ -111,10 +117,11 @@ const CreatePlan = () => {
       sessions: parseInt(newPlan.sessions),
       validity: parseInt(newPlan.validity),
       price: `₹${newPlan.price}`,
-      active: true
+      active: true,
+      branch: newPlan.branch
     };
 
-    const currentPlans = getPlansByType(newPlan.type);
+    const currentPlans = newPlan.type === 'group' ? groupPlans : personalPlans;
     updatePlansByType(newPlan.type, [...currentPlans, plan]);
 
     setNewPlan({ 
@@ -122,7 +129,8 @@ const CreatePlan = () => {
       sessions: '', 
       validity: '', 
       price: '', 
-      type: activeTab === 'personal' ? 'personal' : 'group' 
+      type: activeTab === 'personal' ? 'personal' : 'group',
+      branch: 'Downtown'
     });
     setShowCreateModal(false);
     alert(`✅ ${newPlan.type === 'group' ? 'Group' : 'Personal'} Plan Created: ${plan.name}`);
@@ -136,7 +144,8 @@ const CreatePlan = () => {
       sessions: plan.sessions.toString(),
       validity: plan.validity.toString(),
       price: plan.price.replace('₹', ''),
-      type: planType
+      type: planType,
+      branch: plan.branch
     });
     setShowEditModal(true);
   };
@@ -153,7 +162,8 @@ const CreatePlan = () => {
       name: newPlan.name,
       sessions: parseInt(newPlan.sessions),
       validity: parseInt(newPlan.validity),
-      price: `₹${newPlan.price}`
+      price: `₹${newPlan.price}`,
+      branch: newPlan.branch
     };
 
     const currentPlans = getPlansByType(selectedPlan.type);
@@ -162,7 +172,7 @@ const CreatePlan = () => {
       currentPlans.map(p => p.id === selectedPlan.id ? updatedPlan : p)
     );
 
-    setNewPlan({ name: '', sessions: '', validity: '', price: '', type: 'group' });
+    setNewPlan({ name: '', sessions: '', validity: '', price: '', type: 'group', branch: 'Downtown' });
     setShowEditModal(false);
     setSelectedPlan(null);
     alert(`✅ Plan Updated: ${updatedPlan.name}`);
@@ -271,6 +281,9 @@ const CreatePlan = () => {
                 {planType === 'group' ? 'GROUP' : 'PERSONAL'}
               </div>
               <h5 className="fw-bold mb-0" style={{ color: customColor, fontSize: 'clamp(0.9rem, 2vw, 1.1rem)' }}>{plan.name}</h5>
+              <div className="badge bg-light text-dark mb-2 px-2 py-1" style={{ fontSize: '0.7rem' }}>
+                📍 {plan.branch}
+              </div>
             </div>
             <div className="d-flex gap-1">
               <Button
@@ -439,6 +452,27 @@ const CreatePlan = () => {
           </Button>
         </div>
 
+        {/* Branch Filter */}
+        <div className="mb-4 p-3 bg-white rounded shadow-sm border">
+          <div className="d-flex align-items-center gap-3">
+            <Form.Label className="mb-0 fw-medium" style={{ color: '#333' }}>Filter by Branch:</Form.Label>
+            <Form.Select
+              value={selectedBranch}
+              onChange={(e) => setSelectedBranch(e.target.value)}
+              style={{
+                width: '200px',
+                borderColor: customColor,
+                color: selectedBranch === 'all' ? '#6c757d' : customColor
+              }}
+            >
+              <option value="all">All Branches</option>
+              {branches.map(branch => (
+                <option key={branch} value={branch}>{branch}</option>
+              ))}
+            </Form.Select>
+          </div>
+        </div>
+
         <Tab.Container activeKey={activeTab} onSelect={(k) => setActiveTab(k)}>
           <Row>
             <Col md={12}>
@@ -446,14 +480,14 @@ const CreatePlan = () => {
                 {/* Group Plans Tab */}
                 <Tab.Pane eventKey="group">
                   <Row className="g-2 g-md-3">
-                    {groupPlans.map(plan => renderPlanCard(plan, 'group'))}
+                    {getPlansByType('group').map(plan => renderPlanCard(plan, 'group'))}
                   </Row>
                 </Tab.Pane>
 
                 {/* Personal Plans Tab */}
                 <Tab.Pane eventKey="personal">
                   <Row className="g-2 g-md-3">
-                    {personalPlans.map(plan => renderPlanCard(plan, 'personal'))}
+                    {getPlansByType('personal').map(plan => renderPlanCard(plan, 'personal'))}
                   </Row>
                 </Tab.Pane>
               </Tab.Content>
@@ -722,17 +756,36 @@ const CreatePlan = () => {
                   </Form.Group>
                 </Col>
               </Row>
-              <Form.Group className="mb-4">
-                <Form.Label className="fw-medium" style={{ color: '#333' }}>Price (₹)</Form.Label>
-                <Form.Control
-                  type="number"
-                  placeholder="e.g., 5999"
-                  value={newPlan.price}
-                  onChange={(e) => setNewPlan({ ...newPlan, price: e.target.value })}
-                  required
-                  style={{ padding: '12px', fontSize: '1rem' }}
-                />
-              </Form.Group>
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-4">
+                    <Form.Label className="fw-medium" style={{ color: '#333' }}>Price (₹)</Form.Label>
+                    <Form.Control
+                      type="number"
+                      placeholder="e.g., 5999"
+                      value={newPlan.price}
+                      onChange={(e) => setNewPlan({ ...newPlan, price: e.target.value })}
+                      required
+                      style={{ padding: '12px', fontSize: '1rem' }}
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group className="mb-4">
+                    <Form.Label className="fw-medium" style={{ color: '#333' }}>Branch</Form.Label>
+                    <Form.Select
+                      value={newPlan.branch}
+                      onChange={(e) => setNewPlan({ ...newPlan, branch: e.target.value })}
+                      required
+                      style={{ padding: '12px', fontSize: '1rem' }}
+                    >
+                      {branches.map(branch => (
+                        <option key={branch} value={branch}>{branch}</option>
+                      ))}
+                    </Form.Select>
+                  </Form.Group>
+                </Col>
+              </Row>
             </Form>
           </Modal.Body>
           <Modal.Footer style={{ borderTop: '1px solid #eee' }}>
@@ -806,17 +859,36 @@ const CreatePlan = () => {
                   </Form.Group>
                 </Col>
               </Row>
-              <Form.Group className="mb-4">
-                <Form.Label className="fw-medium" style={{ color: '#333' }}>Price (₹)</Form.Label>
-                <Form.Control
-                  type="number"
-                  placeholder="e.g., 5999"
-                  value={newPlan.price}
-                  onChange={(e) => setNewPlan({ ...newPlan, price: e.target.value })}
-                  required
-                  style={{ padding: '12px', fontSize: '1rem' }}
-                />
-              </Form.Group>
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-4">
+                    <Form.Label className="fw-medium" style={{ color: '#333' }}>Price (₹)</Form.Label>
+                    <Form.Control
+                      type="number"
+                      placeholder="e.g., 5999"
+                      value={newPlan.price}
+                      onChange={(e) => setNewPlan({ ...newPlan, price: e.target.value })}
+                      required
+                      style={{ padding: '12px', fontSize: '1rem' }}
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group className="mb-4">
+                    <Form.Label className="fw-medium" style={{ color: '#333' }}>Branch</Form.Label>
+                    <Form.Select
+                      value={newPlan.branch}
+                      onChange={(e) => setNewPlan({ ...newPlan, branch: e.target.value })}
+                      required
+                      style={{ padding: '12px', fontSize: '1rem' }}
+                    >
+                      {branches.map(branch => (
+                        <option key={branch} value={branch}>{branch}</option>
+                      ))}
+                    </Form.Select>
+                  </Form.Group>
+                </Col>
+              </Row>
             </Form>
           </Modal.Body>
           <Modal.Footer style={{ borderTop: '1px solid #eee' }}>
@@ -880,6 +952,15 @@ const CreatePlan = () => {
                       <div>
                         <div className="text-muted small">Price</div>
                         <div className="fw-bold">{selectedPlan.price}</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="mb-3 d-flex align-items-center">
+                      <span className="me-3" style={{ color: customColor, fontSize: '1.2rem' }}>📍</span>
+                      <div>
+                        <div className="text-muted small">Branch</div>
+                        <div className="fw-bold">{selectedPlan.branch}</div>
                       </div>
                     </div>
                   </div>

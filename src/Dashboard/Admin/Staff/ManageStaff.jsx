@@ -10,9 +10,16 @@ const ManageStaff = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilterOpen, setRoleFilterOpen] = useState(false);
   const [statusFilterOpen, setStatusFilterOpen] = useState(false);
+  const [branchFilterOpen, setBranchFilterOpen] = useState(false);
   const [roleFilter, setRoleFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [branchFilter, setBranchFilter] = useState('All');
   const fileInputRef = useRef(null);
+  
+  // State for salary type and status
+  const [salaryType, setSalaryType] = useState('Fixed');
+  const [fixedSalary, setFixedSalary] = useState('');
+  const [staffStatus, setStaffStatus] = useState('Active');
 
   // Custom color for all blue elements
   const customColor = '#6EB2CC';
@@ -92,6 +99,12 @@ const ManageStaff = () => {
     }
   ]);
 
+  // Helper function to get branch name by ID
+  const getBranchName = (branchId) => {
+    const branch = branches.find(b => b.id === branchId);
+    return branch ? branch.name : "Unknown";
+  };
+
   // Filter staff based on search query and filters
   const filteredStaff = staff.filter(member => 
     (member.first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -99,24 +112,37 @@ const ManageStaff = () => {
     member.role_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
     member.email.toLowerCase().includes(searchQuery.toLowerCase())) &&
     (roleFilter === 'All' || member.role_id === roleFilter) &&
-    (statusFilter === 'All' || member.status === statusFilter)
+    (statusFilter === 'All' || member.status === statusFilter) &&
+    (branchFilter === 'All' || member.branch_id === parseInt(branchFilter))
   );
 
   const handleAddNew = () => {
     setModalType('add');
     setSelectedStaff(null);
+    // Reset form states
+    setSalaryType('Fixed');
+    setFixedSalary('');
+    setStaffStatus('Active');
     setIsModalOpen(true);
   };
 
   const handleView = (staffMember) => {
     setModalType('view');
     setSelectedStaff(staffMember);
+    // Set form states from selected staff
+    setSalaryType(staffMember.salary_type || 'Fixed');
+    setFixedSalary(staffMember.fixed_salary || '');
+    setStaffStatus(staffMember.status || 'Active');
     setIsModalOpen(true);
   };
 
   const handleEdit = (staffMember) => {
     setModalType('edit');
     setSelectedStaff(staffMember);
+    // Set form states from selected staff
+    setSalaryType(staffMember.salary_type || 'Fixed');
+    setFixedSalary(staffMember.fixed_salary || '');
+    setStaffStatus(staffMember.status || 'Active');
     setIsModalOpen(true);
   };
 
@@ -147,6 +173,38 @@ const ManageStaff = () => {
     setSelectedStaff(null);
   };
 
+  // Handle salary type change
+  const handleSalaryTypeChange = (e) => {
+    const newSalaryType = e.target.value;
+    setSalaryType(newSalaryType);
+    
+    // Update status based on salary type
+    if (newSalaryType === 'Volunteer' || newSalaryType === 'Intern') {
+      setStaffStatus('Active'); // Volunteers and interns are active but unpaid
+    } else if (newSalaryType === 'Commission') {
+      setStaffStatus('Active'); // Commission-based staff are active
+    } else if (newSalaryType === 'Unpaid') {
+      setStaffStatus('Inactive'); // Unpaid staff are inactive
+    }
+    
+    // Clear fixed salary if not Fixed salary type
+    if (newSalaryType !== 'Fixed') {
+      setFixedSalary('');
+    }
+  };
+
+  // Handle fixed salary change
+  const handleFixedSalaryChange = (e) => {
+    setFixedSalary(e.target.value);
+    
+    // Update status based on salary amount
+    if (e.target.value === '' || e.target.value === '0') {
+      setStaffStatus('Inactive');
+    } else {
+      setStaffStatus('Active');
+    }
+  };
+
   // Prevent background scroll
   React.useEffect(() => {
     if (isModalOpen || isDeleteModalOpen) {
@@ -168,6 +226,9 @@ const ManageStaff = () => {
       if (statusFilterOpen && !event.target.closest('.status-filter-dropdown')) {
         setStatusFilterOpen(false);
       }
+      if (branchFilterOpen && !event.target.closest('.branch-filter-dropdown')) {
+        setBranchFilterOpen(false);
+      }
     };
 
     document.addEventListener('click', handleClickOutside);
@@ -175,7 +236,7 @@ const ManageStaff = () => {
     return () => {
       document.removeEventListener('click', handleClickOutside);
     };
-  }, [roleFilterOpen, statusFilterOpen]);
+  }, [roleFilterOpen, statusFilterOpen, branchFilterOpen]);
 
   const getStatusBadge = (status) => {
     const badgeClasses = {
@@ -248,11 +309,12 @@ const ManageStaff = () => {
   const clearFilters = () => {
     setRoleFilter('All');
     setStatusFilter('All');
+    setBranchFilter('All');
   };
 
   const exportData = () => {
     // Create CSV content
-    const headers = ['ID', 'First Name', 'Last Name', 'Email', 'Phone', 'Role', 'Status'];
+    const headers = ['ID', 'First Name', 'Last Name', 'Email', 'Phone', 'Role', 'Status', 'Branch'];
     const csvContent = [
       headers.join(','),
       ...filteredStaff.map(member => [
@@ -262,11 +324,12 @@ const ManageStaff = () => {
         member.email,
         member.phone,
         member.role_id,
-        member.status
+        member.status,
+        getBranchName(member.branch_id)
       ].join(','))
     ].join('\n');
 
-    // Create a blob with the CSV content
+    // Create a blob with CSV content
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     
     // Create a link element and trigger download
@@ -279,13 +342,76 @@ const ManageStaff = () => {
     document.body.removeChild(link);
   };
 
+  // Handle form submission
+  const handleFormSubmit = () => {
+    if (modalType === 'add') {
+      // Create new staff object with form data
+      const newStaff = {
+        id: staff.length > 0 ? Math.max(...staff.map(s => s.id)) + 1 : 101,
+        staff_id: getNextStaffId(),
+        first_name: document.getElementById('firstName').value,
+        last_name: document.getElementById('lastName').value,
+        gender: document.getElementById('gender').value,
+        dob: document.getElementById('dob').value,
+        email: document.getElementById('email').value,
+        phone: document.getElementById('phone').value,
+        profile_photo: "",
+        status: staffStatus, // Use the status from state
+        role_id: document.getElementById('role').value,
+        branch_id: parseInt(document.getElementById('branch').value),
+        join_date: document.getElementById('joinDate').value,
+        exit_date: document.getElementById('exitDate').value || null,
+        salary_type: salaryType, // Use the salary type from state
+        fixed_salary: salaryType === 'Fixed' ? parseFloat(fixedSalary) : 0,
+        login_enabled: document.getElementById('loginEnabled').checked,
+        username: document.getElementById('username').value,
+        password: document.getElementById('passwordField').value || 'auto-generated'
+      };
+      
+      // Add new staff to the array
+      setStaff([...staff, newStaff]);
+      alert('New staff member added successfully!');
+    } else if (modalType === 'edit') {
+      // Update existing staff
+      const updatedStaff = staff.map(member => {
+        if (member.id === selectedStaff.id) {
+          return {
+            ...member,
+            first_name: document.getElementById('firstName').value,
+            last_name: document.getElementById('lastName').value,
+            gender: document.getElementById('gender').value,
+            dob: document.getElementById('dob').value,
+            email: document.getElementById('email').value,
+            phone: document.getElementById('phone').value,
+            status: staffStatus, // Use the status from state
+            role_id: document.getElementById('role').value,
+            branch_id: parseInt(document.getElementById('branch').value),
+            join_date: document.getElementById('joinDate').value,
+            exit_date: document.getElementById('exitDate').value || null,
+            salary_type: salaryType, // Use the salary type from state
+            fixed_salary: salaryType === 'Fixed' ? parseFloat(fixedSalary) : 0,
+            login_enabled: document.getElementById('loginEnabled').checked,
+            username: document.getElementById('username').value,
+            password: document.getElementById('passwordField').value || member.password
+          };
+        }
+        return member;
+      });
+      
+      setStaff(updatedStaff);
+      alert('Staff member updated successfully!');
+    }
+    
+    closeModal();
+  };
+
   return (
-    <div className="container-fluid p-4">
+    <div className="container-fluid p-2 p-md-4">
       {/* Header */}
-      <div className="row mb-4 align-items-center">
+      <div className="row mb-3 mb-md-4 align-items-center">
         <div className="col-12 col-lg-8">
-          <h2 className="fw-bold">Staff Management</h2>
-          <p className="text-muted mb-0">Manage all gym staff members, their roles, and compensation.</p>
+          <h2 className="fw-bold fs-4 fs-md-3">Staff Management</h2>
+          <p className="text-muted mb-0 fs-6">Manage all gym staff members, their roles, and compensation.</p>
         </div>
         <div className="col-12 col-lg-4 text-lg-end mt-3 mt-lg-0">
           <button
@@ -308,7 +434,7 @@ const ManageStaff = () => {
       </div>
 
       {/* Search & Actions */}
-      <div className="row mb-4 g-3">
+      <div className="row mb-3 mb-md-4 g-3 align-items-center">
         <div className="col-12 col-md-6">
           <div className="input-group">
             <span className="input-group-text bg-light border">
@@ -323,200 +449,345 @@ const ManageStaff = () => {
             />
           </div>
         </div>
-        <div className="col-6 col-md-2">
-          <div className="role-filter-dropdown">
-            <button 
-              className="btn btn-outline-secondary w-100 dropdown-toggle" 
-              type="button" 
-              onClick={() => setRoleFilterOpen(!roleFilterOpen)}
-            >
-              <span className="">Role</span>
-              <FaCaretDown className="ms-1" />
-            </button>
-            <div className={`dropdown-menu ${roleFilterOpen ? 'show' : ''}`}>
+        <div className="col-12 col-md-6">
+          <div className="d-flex flex-wrap gap-2 justify-content-md-end">
+            <div className="role-filter-dropdown">
               <button 
-                className={`dropdown-item ${roleFilter === 'All' ? 'active' : ''}`}
-                onClick={() => {
-                  setRoleFilter('All');
-                  setRoleFilterOpen(false);
-                }}
+                className="btn btn-outline-secondary btn-sm dropdown-toggle" 
+                type="button" 
+                onClick={() => setRoleFilterOpen(!roleFilterOpen)}
+                style={{ fontSize: '0.875rem', padding: '0.375rem 0.75rem' }}
               >
-                All Roles
+                <span className="">Role</span>
+                <FaCaretDown className="ms-1" style={{ fontSize: '0.75rem' }} />
               </button>
-              <button 
-                className={`dropdown-item ${roleFilter === 'Manager' ? 'active' : ''}`}
-                onClick={() => {
-                  setRoleFilter('Manager');
-                  setRoleFilterOpen(false);
-                }}
-              >
-                Manager
-              </button>
-              <button 
-                className={`dropdown-item ${roleFilter === 'Trainer' ? 'active' : ''}`}
-                onClick={() => {
-                  setRoleFilter('Trainer');
-                  setRoleFilterOpen(false);
-                }}
-              >
-                Trainer
-              </button>
-              <button 
-                className={`dropdown-item ${roleFilter === 'Receptionist' ? 'active' : ''}`}
-                onClick={() => {
-                  setRoleFilter('Receptionist');
-                  setRoleFilterOpen(false);
-                }}
-              >
-                Receptionist
-              </button>
+              <div className={`dropdown-menu ${roleFilterOpen ? 'show' : ''}`}>
+                <button 
+                  className={`dropdown-item ${roleFilter === 'All' ? 'active' : ''}`}
+                  onClick={() => {
+                    setRoleFilter('All');
+                    setRoleFilterOpen(false);
+                  }}
+                >
+                  All Roles
+                </button>
+                <button 
+                  className={`dropdown-item ${roleFilter === 'Manager' ? 'active' : ''}`}
+                  onClick={() => {
+                    setRoleFilter('Manager');
+                    setRoleFilterOpen(false);
+                  }}
+                >
+                  Manager
+                </button>
+                <button 
+                  className={`dropdown-item ${roleFilter === 'Trainer' ? 'active' : ''}`}
+                  onClick={() => {
+                    setRoleFilter('Trainer');
+                    setRoleFilterOpen(false);
+                  }}
+                >
+                  Trainer
+                </button>
+                <button 
+                  className={`dropdown-item ${roleFilter === 'Receptionist' ? 'active' : ''}`}
+                  onClick={() => {
+                    setRoleFilter('Receptionist');
+                    setRoleFilterOpen(false);
+                  }}
+                >
+                  Receptionist
+                </button>
+              </div>
             </div>
-          </div>
-        </div>
-        <div className="col-6 col-md-2">
-          <div className="status-filter-dropdown">
-            <button 
-              className="btn btn-outline-secondary w-100 dropdown-toggle" 
-              type="button" 
-              onClick={() => setStatusFilterOpen(!statusFilterOpen)}
-            >
-              <span className="">Status</span>
-              <FaCaretDown className="ms-1" />
-            </button>
-            <div className={`dropdown-menu ${statusFilterOpen ? 'show' : ''}`}>
+            <div className="status-filter-dropdown">
               <button 
-                className={`dropdown-item ${statusFilter === 'All' ? 'active' : ''}`}
-                onClick={() => {
-                  setStatusFilter('All');
-                  setStatusFilterOpen(false);
-                }}
+                className="btn btn-outline-secondary btn-sm dropdown-toggle" 
+                type="button" 
+                onClick={() => setStatusFilterOpen(!statusFilterOpen)}
+                style={{ fontSize: '0.875rem', padding: '0.375rem 0.75rem' }}
               >
-                All Status
+                <span className="">Status</span>
+                <FaCaretDown className="ms-1" style={{ fontSize: '0.75rem' }} />
               </button>
-              <button 
-                className={`dropdown-item ${statusFilter === 'Active' ? 'active' : ''}`}
-                onClick={() => {
-                  setStatusFilter('Active');
-                  setStatusFilterOpen(false);
-                }}
-              >
-                Active
-              </button>
-              <button 
-                className={`dropdown-item ${statusFilter === 'Inactive' ? 'active' : ''}`}
-                onClick={() => {
-                  setStatusFilter('Inactive');
-                  setStatusFilterOpen(false);
-                }}
-              >
-                Inactive
-              </button>
+              <div className={`dropdown-menu ${statusFilterOpen ? 'show' : ''}`}>
+                <button 
+                  className={`dropdown-item ${statusFilter === 'All' ? 'active' : ''}`}
+                  onClick={() => {
+                    setStatusFilter('All');
+                    setStatusFilterOpen(false);
+                  }}
+                >
+                  All Status
+                </button>
+                <button 
+                  className={`dropdown-item ${statusFilter === 'Active' ? 'active' : ''}`}
+                  onClick={() => {
+                    setStatusFilter('Active');
+                    setStatusFilterOpen(false);
+                  }}
+                >
+                  Active
+                </button>
+                <button 
+                  className={`dropdown-item ${statusFilter === 'Inactive' ? 'active' : ''}`}
+                  onClick={() => {
+                    setStatusFilter('Inactive');
+                    setStatusFilterOpen(false);
+                  }}
+                >
+                  Inactive
+                </button>
+              </div>
             </div>
+            <div className="branch-filter-dropdown">
+              <button 
+                className="btn btn-outline-secondary btn-sm dropdown-toggle" 
+                type="button" 
+                onClick={() => setBranchFilterOpen(!branchFilterOpen)}
+                style={{ fontSize: '0.875rem', padding: '0.375rem 0.75rem' }}
+              >
+                <span className="">Branch</span>
+                <FaCaretDown className="ms-1" style={{ fontSize: '0.75rem' }} />
+              </button>
+              <div className={`dropdown-menu ${branchFilterOpen ? 'show' : ''}`}>
+                <button 
+                  className={`dropdown-item ${branchFilter === 'All' ? 'active' : ''}`}
+                  onClick={() => {
+                    setBranchFilter('All');
+                    setBranchFilterOpen(false);
+                  }}
+                >
+                  All Branches
+                </button>
+                {branches.map(branch => (
+                  <button 
+                    key={branch.id}
+                    className={`dropdown-item ${branchFilter === branch.id.toString() ? 'active' : ''}`}
+                    onClick={() => {
+                      setBranchFilter(branch.id.toString());
+                      setBranchFilterOpen(false);
+                    }}
+                  >
+                    {branch.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <button 
+              className="btn btn-outline-secondary btn-sm" 
+              onClick={clearFilters}
+              style={{ fontSize: '0.875rem', padding: '0.375rem 0.75rem' }}
+            >
+              <span className="">Clear</span>
+            </button>
           </div>
-        </div>
-        <div className="col-6 col-md-2">
-          <button className="btn btn-outline-secondary w-100" onClick={clearFilters}>
-            <span className="">Clear Filters</span>
-          </button>
         </div>
       </div>
 
-      {/* Table */}
-      <div className="card shadow-sm border-0">
-        <div className="table-responsive">
-          <table className="table table-hover align-middle mb-0">
-            <thead className="bg-light">
-              <tr>
-                <th className="fw-semibold">PHOTO</th>
-                <th className="fw-semibold">NAME</th>
-                <th className="fw-semibold">ROLE</th>
-                <th className="fw-semibold">EMAIL</th>
-                <th className="fw-semibold">PHONE</th>
-                <th className="fw-semibold">STATUS</th>
-                <th className="fw-semibold text-center">ACTIONS</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredStaff.map((member) => (
-                <tr key={member.id}>
-                  <td>
-                    {member.profile_photo ? (
-                      <img
-                        src={member.profile_photo}
-                        alt={`${member.first_name} ${member.last_name}`}
-                        style={{
-                          width: '40px',
-                          height: '40px',
-                          borderRadius: '50%',
-                          objectFit: 'cover',
-                          border: '2px solid #eee'
-                        }}
-                      />
-                    ) : (
-                      <div
-                        className="rounded-circle text-white d-flex align-items-center justify-content-center"
-                        style={{
-                          width: '40px',
-                          height: '40px',
-                          fontSize: '0.85rem',
-                          fontWeight: 'bold',
-                          backgroundColor: getInitialColor(getInitials(member.first_name, member.last_name))
-                        }}
-                      >
-                        {getInitials(member.first_name, member.last_name)}
-                      </div>
-                    )}
-                  </td>
-                  <td>
-                    <strong>{member.first_name} {member.last_name}</strong>
-                    <div><small className="text-muted">{member.staff_id}</small></div>
-                  </td>
-                  <td>{getRoleBadge(member.role_id)}</td>
-                  <td>{member.email}</td>
-                  <td>{member.phone}</td>
-                  <td>{getStatusBadge(member.status)}</td>
-                  <td className="text-center">
-                    <div className="d-flex justify-content-center flex-nowrap" style={{ gap: '4px' }}>
-                      <button
-                        className="btn btn-sm btn-outline-secondary action-btn"
-                        title="View"
-                        onClick={() => handleView(member)}
-                        style={{ width: '32px', height: '32px', padding: '0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                      >
-                        <FaEye size={14} />
-                      </button>
-                      <button
-                        className="btn btn-sm"
-                        style={{ 
-                          width: '32px', 
-                          height: '32px', 
-                          padding: '0', 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          justifyContent: 'center',
-                          borderColor: customColor,
-                          color: customColor
-                        }}
-                        title="Edit"
-                        onClick={() => handleEdit(member)}
-                      >
-                        <FaEdit size={14} />
-                      </button>
-                      <button
-                        className="btn btn-sm btn-outline-danger action-btn"
-                        title="Delete"
-                        onClick={() => handleDeleteClick(member)}
-                        style={{ width: '32px', height: '32px', padding: '0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                      >
-                        <FaTrashAlt size={14} />
-                      </button>
-                    </div>
-                  </td>
+      {/* Desktop Table View */}
+      <div className="d-none d-md-block">
+        <div className="card shadow-sm border-0">
+          <div className="table-responsive">
+            <table className="table table-hover align-middle mb-0">
+              <thead className="bg-light">
+                <tr>
+                  <th className="fw-semibold">PHOTO</th>
+                  <th className="fw-semibold">NAME</th>
+                  <th className="fw-semibold">ROLE</th>
+                  <th className="fw-semibold d-none d-lg-table-cell">EMAIL</th>
+                  <th className="fw-semibold d-none d-lg-table-cell">PHONE</th>
+                  <th className="fw-semibold">BRANCH</th>
+                  <th className="fw-semibold">STATUS</th>
+                  <th className="fw-semibold text-center">ACTIONS</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filteredStaff.map((member) => (
+                  <tr key={member.id}>
+                    <td>
+                      {member.profile_photo ? (
+                        <img
+                          src={member.profile_photo}
+                          alt={`${member.first_name} ${member.last_name}`}
+                          style={{
+                            width: '40px',
+                            height: '40px',
+                            borderRadius: '50%',
+                            objectFit: 'cover',
+                            border: '2px solid #eee'
+                          }}
+                        />
+                      ) : (
+                        <div
+                          className="rounded-circle text-white d-flex align-items-center justify-content-center"
+                          style={{
+                            width: '40px',
+                            height: '40px',
+                            fontSize: '0.85rem',
+                            fontWeight: 'bold',
+                            backgroundColor: getInitialColor(getInitials(member.first_name, member.last_name))
+                          }}
+                        >
+                          {getInitials(member.first_name, member.last_name)}
+                        </div>
+                      )}
+                    </td>
+                    <td>
+                      <strong>{member.first_name} {member.last_name}</strong>
+                      <div><small className="text-muted">{member.staff_id}</small></div>
+                    </td>
+                    <td>{getRoleBadge(member.role_id)}</td>
+                    <td className="d-none d-lg-table-cell">{member.email}</td>
+                    <td className="d-none d-lg-table-cell">{member.phone}</td>
+                    <td>
+                      <span className="badge bg-light text-dark">
+                        {getBranchName(member.branch_id)}
+                      </span>
+                    </td>
+                    <td>{getStatusBadge(member.status)}</td>
+                    <td className="text-center">
+                      <div className="d-flex justify-content-center flex-nowrap" style={{ gap: '4px' }}>
+                        <button
+                          className="btn btn-sm btn-outline-secondary action-btn"
+                          title="View"
+                          onClick={() => handleView(member)}
+                          style={{ width: '32px', height: '32px', padding: '0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        >
+                          <FaEye size={14} />
+                        </button>
+                        <button
+                          className="btn btn-sm"
+                          style={{ 
+                            width: '32px', 
+                            height: '32px', 
+                            padding: '0', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center',
+                            borderColor: customColor,
+                            color: customColor
+                          }}
+                          title="Edit"
+                          onClick={() => handleEdit(member)}
+                        >
+                          <FaEdit size={14} />
+                        </button>
+                        <button
+                          className="btn btn-sm btn-outline-danger action-btn"
+                          title="Delete"
+                          onClick={() => handleDeleteClick(member)}
+                          style={{ width: '32px', height: '32px', padding: '0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        >
+                          <FaTrashAlt size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="d-md-none">
+        {filteredStaff.map((member) => (
+          <div className="card shadow-sm border-0 mb-3" key={member.id}>
+            <div className="card-body p-3">
+              <div className="d-flex align-items-start mb-3">
+                {member.profile_photo ? (
+                  <img
+                    src={member.profile_photo}
+                    alt={`${member.first_name} ${member.last_name}`}
+                    style={{
+                      width: '60px',
+                      height: '60px',
+                      borderRadius: '50%',
+                      objectFit: 'cover',
+                      border: '2px solid #eee'
+                    }}
+                  />
+                ) : (
+                  <div
+                    className="rounded-circle text-white d-flex align-items-center justify-content-center me-3"
+                    style={{
+                      width: '60px',
+                      height: '60px',
+                      fontSize: '1.2rem',
+                      fontWeight: 'bold',
+                      backgroundColor: getInitialColor(getInitials(member.first_name, member.last_name))
+                    }}
+                  >
+                    {getInitials(member.first_name, member.last_name)}
+                  </div>
+                )}
+                <div className="flex-grow-1">
+                  <h5 className="mb-1">{member.first_name} {member.last_name}</h5>
+                  <p className="text-muted small mb-2">{member.staff_id}</p>
+                  <div className="d-flex gap-2 flex-wrap">
+                    {getRoleBadge(member.role_id)}
+                    {getStatusBadge(member.status)}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="row g-2 mb-3">
+                <div className="col-12">
+                  <small className="text-muted d-block">Email</small>
+                  <span>{member.email}</span>
+                </div>
+                <div className="col-12">
+                  <small className="text-muted d-block">Phone</small>
+                  <span>{member.phone}</span>
+                </div>
+                <div className="col-12">
+                  <small className="text-muted d-block">Branch</small>
+                  <span className="badge bg-light text-dark">
+                    {getBranchName(member.branch_id)}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="d-flex justify-content-end gap-2">
+                <button
+                  className="btn btn-sm btn-outline-secondary action-btn"
+                  title="View"
+                  onClick={() => handleView(member)}
+                  style={{ width: '36px', height: '36px', padding: '0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  <FaEye size={14} />
+                </button>
+                <button
+                  className="btn btn-sm"
+                  style={{ 
+                    width: '36px', 
+                    height: '36px', 
+                    padding: '0', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    borderColor: customColor,
+                    color: customColor
+                  }}
+                  title="Edit"
+                  onClick={() => handleEdit(member)}
+                >
+                  <FaEdit size={14} />
+                </button>
+                <button
+                  className="btn btn-sm btn-outline-danger action-btn"
+                  title="Delete"
+                  onClick={() => handleDeleteClick(member)}
+                  style={{ width: '36px', height: '36px', padding: '0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  <FaTrashAlt size={14} />
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* MAIN MODAL (Add/Edit/View) */}
@@ -528,7 +799,7 @@ const ManageStaff = () => {
           onClick={closeModal}
         >
           <div
-            className="modal-dialog modal-lg modal-dialog-centered"
+            className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="modal-content">
@@ -540,7 +811,7 @@ const ManageStaff = () => {
                   onClick={closeModal}
                 ></button>
               </div>
-              <div className="modal-body p-4">
+              <div className="modal-body p-3 p-md-4">
                 <form>
                   {/* SECTION 1: Basic Information */}
                   <h6 className="fw-bold mb-3">Basic Information</h6>
@@ -570,6 +841,7 @@ const ManageStaff = () => {
                         type="text"
                         className="form-control rounded-3"
                         placeholder="Enter first name"
+                        id="firstName"
                         defaultValue={selectedStaff?.first_name || ''}
                         readOnly={modalType === 'view'}
                         required
@@ -581,6 +853,7 @@ const ManageStaff = () => {
                           type="text"
                           className="form-control rounded-3"
                           placeholder="Enter last name"
+                          id="lastName"
                           defaultValue={selectedStaff?.last_name || ''}
                           readOnly={modalType === 'view'}
                           required
@@ -590,6 +863,7 @@ const ManageStaff = () => {
                       <label className="form-label">Gender <span className="text-danger">*</span></label>
                       <select
                         className="form-select rounded-3"
+                        id="gender"
                         defaultValue={selectedStaff?.gender || 'Male'}
                         disabled={modalType === 'view'}
                         required
@@ -604,6 +878,7 @@ const ManageStaff = () => {
                       <input
                         type="date"
                         className="form-control rounded-3"
+                        id="dob"
                         defaultValue={selectedStaff?.dob || ''}
                         readOnly={modalType === 'view'}
                         required
@@ -615,6 +890,7 @@ const ManageStaff = () => {
                         type="email"
                         className="form-control rounded-3"
                         placeholder="example@email.com"
+                        id="email"
                         defaultValue={selectedStaff?.email || ''}
                         readOnly={modalType === 'view'}
                         required
@@ -626,6 +902,7 @@ const ManageStaff = () => {
                         type="tel"
                         className="form-control rounded-3 "
                         placeholder="+1 555-123-4567"
+                        id="phone"
                         defaultValue={selectedStaff?.phone || ''}
                         readOnly={modalType === 'view'}
                         required
@@ -635,12 +912,19 @@ const ManageStaff = () => {
                       <label className="form-label">Status</label>
                       <select
                         className="form-select rounded-3"
-                        defaultValue={selectedStaff?.status || 'Active'}
+                        id="status"
+                        value={staffStatus}
+                        onChange={(e) => setStaffStatus(e.target.value)}
                         disabled={modalType === 'view'}
                       >
                         <option value="Active">Active</option>
                         <option value="Inactive">Inactive</option>
                       </select>
+                      {salaryType === 'Unpaid' && (
+                        <small className="text-danger">
+                          Status automatically set to Inactive for unpaid staff
+                        </small>
+                      )}
                     </div>
                   </div>
 
@@ -651,6 +935,7 @@ const ManageStaff = () => {
                       <label className="form-label">Role <span className="text-danger">*</span></label>
                       <select
                         className="form-select rounded-3"
+                        id="role"
                         defaultValue={selectedStaff?.role_id || 'Receptionist'}
                         disabled={modalType === 'view'}
                         required
@@ -665,6 +950,7 @@ const ManageStaff = () => {
                       <label className="form-label">Branch <span className="text-danger">*</span></label>
                       <select
                         className="form-select rounded-3"
+                        id="branch"
                         defaultValue={selectedStaff?.branch_id || 1}
                         disabled={modalType === 'view'}
                         required
@@ -679,6 +965,7 @@ const ManageStaff = () => {
                       <input
                         type="date"
                         className="form-control rounded-3"
+                        id="joinDate"
                         defaultValue={selectedStaff?.join_date || new Date().toISOString().split('T')[0]}
                         readOnly={modalType === 'view'}
                         required
@@ -689,6 +976,7 @@ const ManageStaff = () => {
                       <input
                         type="date"
                         className="form-control rounded-3"
+                        id="exitDate"
                         defaultValue={selectedStaff?.exit_date || ''}
                         readOnly={modalType === 'view'}
                       />
@@ -702,23 +990,56 @@ const ManageStaff = () => {
                       <label className="form-label">Salary Type <span className="text-danger">*</span></label>
                       <select
                         className="form-select rounded-3"
-                        defaultValue={selectedStaff?.salary_type || 'Fixed'}
+                        id="salaryType"
+                        value={salaryType}
+                        onChange={handleSalaryTypeChange}
                         disabled={modalType === 'view'}
                         required
                       >
                         <option value="Fixed">Fixed Salary</option>
+                        <option value="Commission">Commission-based</option>
+                        <option value="Volunteer">Volunteer</option>
+                        <option value="Intern">Intern</option>
+                        <option value="Unpaid">Unpaid</option>
                       </select>
+                      {salaryType !== 'Fixed' && (
+                        <small className="text-info">
+                          {salaryType === 'Commission' && 'Staff will be paid based on commission'}
+                          {salaryType === 'Volunteer' && 'Staff is working voluntarily'}
+                          {salaryType === 'Intern' && 'Staff is an intern'}
+                          {salaryType === 'Unpaid' && 'Staff will not be paid'}
+                        </small>
+                      )}
                     </div>
                     <div className="col-12 col-md-6">
-                      <label className="form-label">Fixed Salary ($)</label>
-                      <input
-                        type="number"
-                        className="form-control rounded-3"
-                        placeholder="e.g., 50000"
-                        defaultValue={selectedStaff?.fixed_salary || ''}
-                        readOnly={modalType === 'view'}
-                        min="0"
-                      />
+                      <label className="form-label">
+                        {salaryType === 'Fixed' ? 'Fixed Salary ($)' : 'Compensation Details'}
+                      </label>
+                      {salaryType === 'Fixed' ? (
+                        <input
+                          type="number"
+                          className="form-control rounded-3"
+                          placeholder="e.g., 50000"
+                          id="fixedSalary"
+                          value={fixedSalary}
+                          onChange={handleFixedSalaryChange}
+                          readOnly={modalType === 'view'}
+                          min="0"
+                        />
+                      ) : (
+                        <input
+                          type="text"
+                          className="form-control rounded-3"
+                          placeholder="No fixed salary"
+                          value="No fixed salary"
+                          readOnly
+                        />
+                      )}
+                      {salaryType === 'Fixed' && fixedSalary === '' && (
+                        <small className="text-danger">
+                          Please enter a fixed salary amount
+                        </small>
+                      )}
                     </div>
                   </div>
 
@@ -745,6 +1066,7 @@ const ManageStaff = () => {
                         type="text"
                         className="form-control rounded-3"
                         placeholder="Enter username"
+                        id="username"
                         defaultValue={selectedStaff?.username || ''}
                         readOnly={modalType === 'view'}
                       />
@@ -815,15 +1137,7 @@ const ManageStaff = () => {
                           padding: '10px 20px',
                           fontWeight: '500',
                         }}
-                        onClick={() => {
-                          // In real app, you'd collect all form data here
-                          if (modalType === 'add') {
-                            alert('New staff member added successfully!');
-                          } else {
-                            alert('Staff member updated successfully!');
-                          }
-                          closeModal();
-                        }}
+                        onClick={handleFormSubmit}
                       >
                         {modalType === 'add' ? 'Add Staff' : 'Update Staff'}
                       </button>
@@ -914,23 +1228,47 @@ const ManageStaff = () => {
         @media (max-width: 576px) {
           .modal-dialog {
             margin: 0.5rem;
+            max-width: calc(100% - 1rem);
           }
           .modal-content {
             border-radius: 0.5rem;
           }
+          .modal-body {
+            padding: 1rem;
+          }
         }
         
-        .role-filter-dropdown, .status-filter-dropdown {
+        .role-filter-dropdown, .status-filter-dropdown, .branch-filter-dropdown {
           position: relative;
         }
         
         .dropdown-menu {
           min-width: 200px;
+          z-index: 1050;
         }
         
         .dropdown-item.active {
           background-color: ${customColor} !important;
           color: white !important;
+        }
+        
+        /* Responsive table styles */
+        @media (max-width: 768px) {
+          .table-responsive {
+            border-radius: 0.25rem;
+          }
+          
+          .table th, .table td {
+            padding: 0.5rem;
+            vertical-align: middle;
+          }
+        }
+        
+        /* Adjust button sizes on smaller screens */
+        @media (max-width: 576px) {
+          .btn {
+            font-size: 0.875rem;
+          }
         }
       `}</style>
     </div>

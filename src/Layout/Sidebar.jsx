@@ -122,11 +122,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
       {
         name: "Settings",
         icon: faGear,
-        key: "settings",
-        subItems: [
-          { label: "Role Management", path: "/admin/settings/RoleManagement" },
-          { label: "Branch Management", path: "/admin/settings/BranchManagement" }
-        ]
+        path: "/admin/settings/RoleManagement"
       }
     ],
 
