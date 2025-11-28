@@ -114,9 +114,15 @@ const PersonalPlansBookings = () => {
   return (
     <div className="bg-light py-2">
       <Container fluid className="px-2 px-md-3">
-        <h1 className="mb-3 mb-md-4 fw-bold text-dark" style={{ color: '#2f6a87', fontSize: '1.5rem', fontSize: 'clamp(1.2rem, 4vw, 1.8rem)' }}>
-          Personal Training Plans & Bookings
-        </h1>
+      <h1
+  className="fw-bold text-dark"
+  style={{
+    color: "#2f6a87",
+    fontSize: "clamp(1.2rem, 4vw, 1.8rem)",
+  }}
+>
+  Personal Training Plans & Bookings
+</h1>
 
         {/* Plans as Cards */}
         <div className="mb-3">
