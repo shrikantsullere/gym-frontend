@@ -312,7 +312,6 @@ const ModalWrapper = ({ title, children, onClose }) => (
 const AdminForm = ({ mode, admin, onCancel, onSubmit }) => {
   const isView = mode === "view";
   const isAdd = mode === "add";
-  const [activeTab, setActiveTab] = useState("personal");
   
   const planOptions = {
     Gold: { price: "1200", duration: "12 Months", description: "Full access plan" },
@@ -390,76 +389,161 @@ const AdminForm = ({ mode, admin, onCancel, onSubmit }) => {
 
   return (
     <form onSubmit={handleSubmit}>
-      {/* Tab Navigation */}
-      <ul className="nav nav-tabs mb-3" id="adminFormTabs" role="tablist">
-        <li className="nav-item" role="presentation">
-          <button 
-            className={`nav-link ${activeTab === "personal" ? "active" : ""}`} 
-            id="personal-tab" 
-            type="button" 
-            role="tab" 
-            aria-controls="personal" 
-            aria-selected={activeTab === "personal"}
-            onClick={() => setActiveTab("personal")}
-          >
-            Personal
-          </button>
-        </li>
-        <li className="nav-item" role="presentation">
-          <button 
-            className={`nav-link ${activeTab === "login" ? "active" : ""}`} 
-            id="login-tab" 
-            type="button" 
-            role="tab" 
-            aria-controls="login" 
-            aria-selected={activeTab === "login"}
-            onClick={() => setActiveTab("login")}
-          >
-            Login
-          </button>
-        </li>
-        <li className="nav-item" role="presentation">
-          <button 
-            className={`nav-link ${activeTab === "plans" ? "active" : ""}`} 
-            id="plans-tab" 
-            type="button" 
-            role="tab" 
-            aria-controls="plans" 
-            aria-selected={activeTab === "plans"}
-            onClick={() => setActiveTab("plans")}
-          >
-            Plans
-          </button>
-        </li>
-      </ul>
+      {/* Personal Information Section */}
+      <div className="mb-4">
+        <h6 className="fw-bold mb-3 text-primary">Personal Information</h6>
+        <div className="row g-2 mb-3">
+          <div className="col-12 col-md-6">
+            <label className="form-label fs-6">Admin Name *</label>
+            <input 
+              name="name" 
+              className="form-control form-control-sm" 
+              value={formData.name} 
+              onChange={handleInputChange} 
+              readOnly={isView} 
+            />
+          </div>
 
-      {/* Tab Content */}
-      <div className="tab-content" id="adminFormTabsContent">
-        {activeTab === "personal" && (
-          <PersonalInfoTab 
-            formData={formData} 
-            handleInputChange={handleInputChange} 
-            isView={isView} 
-            isAdd={isAdd} 
-          />
-        )}
-        
-        {activeTab === "login" && (
-          <LoginInfoTab 
-            formData={formData} 
-            handleInputChange={handleInputChange} 
-            isView={isView} 
-          />
-        )}
-        
-        {activeTab === "plans" && (
-          <PlansInfoTab 
-            formData={formData} 
-            handleInputChange={handleInputChange} 
-            handlePlanChange={handlePlanChange} 
-            isView={isView} 
-          />
-        )}
+          {isAdd ? (
+            <div className="col-12 col-md-6">
+              <label className="form-label fs-6">Gym Name *</label>
+              <input 
+                name="gymName" 
+                className="form-control form-control-sm" 
+                value={formData.gymName}
+                onChange={handleInputChange}
+                placeholder="Enter Gym Name" 
+                readOnly={isView} 
+              />
+            </div>
+          ) : (
+            <div className="col-12 col-md-6">
+              <label className="form-label fs-6">Admin ID *</label>
+              <input 
+                name="adminId" 
+                className="form-control form-control-sm" 
+                value={formData.adminId} 
+                onChange={handleInputChange}
+                readOnly={isView} 
+              />
+            </div>
+          )}
+
+          <div className="col-12">
+            <label className="form-label fs-6">Address *</label>
+            <input 
+              name="address" 
+              className="form-control form-control-sm" 
+              value={formData.address} 
+              onChange={handleInputChange}
+              readOnly={isView} 
+            />
+          </div>
+          
+          <div className="col-12 col-md-6">
+            <label className="form-label fs-6">Phone *</label>
+            <input 
+              name="phone" 
+              className="form-control form-control-sm" 
+              value={formData.phone} 
+              onChange={handleInputChange}
+              readOnly={isView} 
+            />
+          </div>
+
+          <div className="col-12 col-md-6">
+            <label className="form-label fs-6">Email *</label>
+            <input 
+              name="email" 
+              className="form-control form-control-sm" 
+              value={formData.email} 
+              onChange={handleInputChange}
+              readOnly={isView} 
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Login Information Section */}
+      <div className="mb-4">
+        <h6 className="fw-bold mb-3 text-primary">Login Information</h6>
+        <div className="row g-2 mb-3">
+          <div className="col-12 col-md-6">
+            <label className="form-label fs-6">Username *</label>
+            <input 
+              name="username" 
+              className="form-control form-control-sm" 
+              value={formData.username} 
+              onChange={handleInputChange}
+              readOnly={isView} 
+            />
+          </div>
+
+          {!isView && (
+            <div className="col-12 col-md-6">
+              <label className="form-label fs-6">Password *</label>
+              <input 
+                name="password" 
+                type="password" 
+                className="form-control form-control-sm" 
+                value={formData.password}
+                onChange={handleInputChange}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Plan Information Section */}
+      <div className="mb-4">
+        <h6 className="fw-bold mb-3 text-primary">Plan Information</h6>
+        <div className="row g-2 mb-3">
+          <div className="col-12 col-md-6">
+            <label className="form-label fs-6">Plan Name *</label>
+            <select
+              name="planName"
+              className="form-select form-select-sm"
+              value={formData.planName}
+              onChange={(e) => handlePlanChange(e.target.value)}
+              disabled={isView}
+            >
+              <option value="">Select Plan</option>
+              <option value="Gold">Gold</option>
+              <option value="Silver">Silver</option>
+              <option value="Basic">Basic</option>
+            </select>
+          </div>
+
+          <div className="col-12 col-md-6">
+            <label className="form-label fs-6">Price *</label>
+            <input 
+              className="form-control form-control-sm" 
+              value={formData.planPrice} 
+              readOnly 
+            />
+          </div>
+
+          <div className="col-12 col-md-6">
+            <label className="form-label fs-6">Duration *</label>
+            <input 
+              className="form-control form-control-sm" 
+              value={formData.planDuration} 
+              readOnly 
+            />
+          </div>
+
+          <div className="col-12">
+            <label className="form-label fs-6">Description *</label>
+            <textarea
+              name="planDescription"
+              className="form-control form-control-sm"
+              rows="2"
+              value={formData.planDescription}
+              onChange={handleInputChange}
+              readOnly={isView}
+            ></textarea>
+          </div>
+        </div>
       </div>
 
       {/* Status Toggle */}
@@ -488,172 +572,6 @@ const AdminForm = ({ mode, admin, onCancel, onSubmit }) => {
         )}
       </div>
     </form>
-  );
-};
-
-/* --------------------------- PERSONAL INFO TAB COMPONENT -------------------------- */
-const PersonalInfoTab = ({ formData, handleInputChange, isView, isAdd }) => {
-  return (
-    <div className="tab-pane fade show active" id="personal" role="tabpanel" aria-labelledby="personal-tab">
-      <div className="row g-2 mb-3">
-        <div className="col-12 col-md-6">
-          <label className="form-label fs-6">Admin Name *</label>
-          <input 
-            name="name" 
-            className="form-control form-control-sm" 
-            value={formData.name} 
-            onChange={handleInputChange} 
-            readOnly={isView} 
-          />
-        </div>
-
-        {isAdd ? (
-          <div className="col-12 col-md-6">
-            <label className="form-label fs-6">Gym Name *</label>
-            <input 
-              name="gymName" 
-              className="form-control form-control-sm" 
-              value={formData.gymName}
-              onChange={handleInputChange}
-              placeholder="Enter Gym Name" 
-              readOnly={isView} 
-            />
-          </div>
-        ) : (
-          <div className="col-12 col-md-6">
-            <label className="form-label fs-6">Admin ID *</label>
-            <input 
-              name="adminId" 
-              className="form-control form-control-sm" 
-              value={formData.adminId} 
-              onChange={handleInputChange}
-              readOnly={isView} 
-            />
-          </div>
-        )}
-
-        <div className="col-12">
-          <label className="form-label fs-6">Address *</label>
-          <input 
-            name="address" 
-            className="form-control form-control-sm" 
-            value={formData.address} 
-            onChange={handleInputChange}
-            readOnly={isView} 
-          />
-        </div>
-        
-        <div className="col-12 col-md-6">
-          <label className="form-label fs-6">Phone *</label>
-          <input 
-            name="phone" 
-            className="form-control form-control-sm" 
-            value={formData.phone} 
-            onChange={handleInputChange}
-            readOnly={isView} 
-          />
-        </div>
-
-        <div className="col-12 col-md-6">
-          <label className="form-label fs-6">Email *</label>
-          <input 
-            name="email" 
-            className="form-control form-control-sm" 
-            value={formData.email} 
-            onChange={handleInputChange}
-            readOnly={isView} 
-          />
-        </div>
-      </div>
-    </div>
-  );
-};
-
-/* --------------------------- LOGIN INFO TAB COMPONENT -------------------------- */
-const LoginInfoTab = ({ formData, handleInputChange, isView }) => {
-  return (
-    <div className="tab-pane fade" id="login" role="tabpanel" aria-labelledby="login-tab">
-      <div className="row g-2 mb-3">
-        <div className="col-12 col-md-6">
-          <label className="form-label fs-6">Username *</label>
-          <input 
-            name="username" 
-            className="form-control form-control-sm" 
-            value={formData.username} 
-            onChange={handleInputChange}
-            readOnly={isView} 
-          />
-        </div>
-
-        {!isView && (
-          <div className="col-12 col-md-6">
-            <label className="form-label fs-6">Password *</label>
-            <input 
-              name="password" 
-              type="password" 
-              className="form-control form-control-sm" 
-              value={formData.password}
-              onChange={handleInputChange}
-            />
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-/* --------------------------- PLANS INFO TAB COMPONENT -------------------------- */
-const PlansInfoTab = ({ formData, handleInputChange, handlePlanChange, isView }) => {
-  return (
-    <div className="tab-pane fade" id="plans" role="tabpanel" aria-labelledby="plans-tab">
-      <div className="row g-2 mb-3">
-        <div className="col-12 col-md-6">
-          <label className="form-label fs-6">Plan Name *</label>
-          <select
-            name="planName"
-            className="form-select form-select-sm"
-            value={formData.planName}
-            onChange={(e) => handlePlanChange(e.target.value)}
-            disabled={isView}
-          >
-            <option value="">Select Plan</option>
-            <option value="Gold">Gold</option>
-            <option value="Silver">Silver</option>
-            <option value="Basic">Basic</option>
-          </select>
-        </div>
-
-        <div className="col-12 col-md-6">
-          <label className="form-label fs-6">Price *</label>
-          <input 
-            className="form-control form-control-sm" 
-            value={formData.planPrice} 
-            readOnly 
-          />
-        </div>
-
-        <div className="col-12 col-md-6">
-          <label className="form-label fs-6">Duration *</label>
-          <input 
-            className="form-control form-control-sm" 
-            value={formData.planDuration} 
-            readOnly 
-          />
-        </div>
-
-        <div className="col-12">
-          <label className="form-label fs-6">Description *</label>
-          <textarea
-            name="planDescription"
-            className="form-control form-control-sm"
-            rows="2"
-            value={formData.planDescription}
-            onChange={handleInputChange}
-            readOnly={isView}
-          ></textarea>
-        </div>
-      </div>
-    </div>
   );
 };
 

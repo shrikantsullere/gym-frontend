@@ -4,13 +4,10 @@ import {
   RiTaskLine, 
   RiToolsLine, 
   RiUserLine,
-<<<<<<< HEAD
   RiArrowRightSLine,
   RiAddLine,
-  RiMore2Fill
-=======
+  RiMore2Fill,
   RiBarChartLine
->>>>>>> abe5303ff415cbfb2b10608f3e74aaf6e58dc305
 } from 'react-icons/ri';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import * as echarts from 'echarts';
@@ -18,10 +15,8 @@ import * as echarts from 'echarts';
 const HouseKeepingDashboard = () => {
   const barChartRef = useRef(null);
   const pieChartRef = useRef(null);
-<<<<<<< HEAD
   const [activeDay, setActiveDay] = useState(null);
   const [showMore, setShowMore] = useState(false);
-=======
   const [selectedDay, setSelectedDay] = useState(null);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [filterStatus, setFilterStatus] = useState('all'); // all, completed, pending, upcoming
@@ -145,7 +140,6 @@ const HouseKeepingDashboard = () => {
         };
     }
   };
->>>>>>> abe5303ff415cbfb2b10608f3e74aaf6e58dc305
 
   useEffect(() => {
     // Initialize Bar Chart
@@ -240,15 +234,18 @@ const HouseKeepingDashboard = () => {
     };
   }, []);
 
-  const weekDays = [
-    { day: 'Mon', date: 'Sep 2', time: '8:00 AM - 4:00 PM', area: 'Locker Area', status: 'completed', color: 'success' },
-    { day: 'Tue', date: 'Sep 3', time: '8:00 AM - 4:00 PM', area: 'Cardio Zone', status: 'completed', color: 'success' },
-    { day: 'Wed', date: 'Sep 4', time: '8:00 AM - 4:00 PM', area: 'Reception Area', status: 'in-progress', color: 'primary' },
-    { day: 'Thu', date: 'Sep 5', time: '2:00 PM - 10:00 PM', area: 'Weight Room', status: 'upcoming', color: 'secondary' },
-    { day: 'Fri', date: 'Sep 6', time: '6:00 AM - 2:00 PM', area: 'Pool Area', status: 'overtime', color: 'warning' },
-    { day: 'Sat', date: 'Sep 7', time: '8:00 AM - 4:00 PM', area: 'Full Facility', status: 'upcoming', color: 'secondary' },
-    { day: 'Sun', date: 'Sep 8', time: 'Day Off', area: 'Rest Day', status: 'off', color: 'light' }
-  ];
+  // Use the dynamic weekDays instead of the hardcoded array
+  const displayWeekDays = weekDays.map(day => ({
+    day: day.dayName,
+    date: day.date,
+    time: day.time,
+    area: day.area,
+    status: day.status,
+    color: day.status === 'completed' ? 'success' : 
+           day.status === 'in-progress' ? 'primary' : 
+           day.status === 'overtime' ? 'warning' : 
+           day.status === 'off' ? 'light' : 'secondary'
+  }));
 
   const getStatusIcon = (status) => {
     switch(status) {
@@ -384,7 +381,6 @@ const HouseKeepingDashboard = () => {
         </div>
         
         {/* Weekly Duty Roster */}
-<<<<<<< HEAD
         <div className="card shadow-sm border-0 mb-4 mb-md-5">
           <div className="card-header bg-white border-0 py-3 px-4">
             <div className="d-flex justify-content-between align-items-center">
@@ -401,7 +397,7 @@ const HouseKeepingDashboard = () => {
             {/* Desktop View */}
             <div className="d-none d-md-block p-4">
               <div className="d-flex gap-3" style={{ overflowX: 'auto', paddingBottom: '1rem' }}>
-                {weekDays.map((day, index) => (
+                {displayWeekDays.map((day, index) => (
                   <div 
                     key={index} 
                     className="flex-shrink-0 day-card" 
@@ -435,7 +431,7 @@ const HouseKeepingDashboard = () => {
             <div className="d-md-none">
               {showMore ? (
                 <div className="p-3">
-                  {weekDays.map((day, index) => (
+                  {displayWeekDays.map((day, index) => (
                     <div 
                       key={index} 
                       className="d-flex justify-content-between align-items-center p-3 border-bottom"
@@ -458,7 +454,7 @@ const HouseKeepingDashboard = () => {
                 </div>
               ) : (
                 <div className="p-3">
-                  {weekDays.slice(0, 3).map((day, index) => (
+                  {displayWeekDays.slice(0, 3).map((day, index) => (
                     <div 
                       key={index} 
                       className="d-flex justify-content-between align-items-center p-3 border-bottom"
@@ -483,100 +479,6 @@ const HouseKeepingDashboard = () => {
             </div>
           </div>
         </div>
-=======
-        {/* <div className="card shadow-sm mb-4">
-          <div className="card-body">
-            <h2 className="h5 fw-semibold mb-4">Weekly Duty Roster</h2>
-            <div className="overflow-auto">
-              <div className="d-flex gap-3 pb-3" style={{ minWidth: 'max-content' }}>
-                <div className="flex-shrink-0" style={{ width: '128px' }}>
-                  <div className="text-center mb-3">
-                    <div className="fw-medium">Mon</div>
-                    <div className="text-muted small">Sep 2</div>
-                  </div>
-                  <div className="bg-success bg-opacity-10 border-start border-success border-4 p-3 rounded">
-                    <div className="fw-medium text-success small">8:00 AM - 4:00 PM</div>
-                    <div className="text-success small mt-1">Locker Area</div>
-                    <div className="text-success small mt-1">✅ Completed</div>
-                  </div>
-                </div>
-                
-                <div className="flex-shrink-0" style={{ width: '128px' }}>
-                  <div className="text-center mb-3">
-                    <div className="fw-medium">Tue</div>
-                    <div className="text-muted small">Sep 3</div>
-                  </div>
-                  <div className="bg-success bg-opacity-10 border-start border-success border-4 p-3 rounded">
-                    <div className="fw-medium text-success small">8:00 AM - 4:00 PM</div>
-                    <div className="text-success small mt-1">Cardio Zone</div>
-                    <div className="text-success small mt-1">✅ Completed</div>
-                  </div>
-                </div>
-                
-                <div className="flex-shrink-0" style={{ width: '128px' }}>
-                  <div className="text-center mb-3">
-                    <div className="fw-medium">Wed</div>
-                    <div className="text-muted small">Sep 4</div>
-                  </div>
-                  <div className="bg-primary bg-opacity-10 border-start border-primary border-4 p-3 rounded">
-                    <div className="fw-medium text-primary small">8:00 AM - 4:00 PM</div>
-                    <div className="text-primary small mt-1">Reception Area</div>
-                    <div className="text-primary small mt-1">🔄 In Progress</div>
-                  </div>
-                </div>
-                
-                <div className="flex-shrink-0" style={{ width: '128px' }}>
-                  <div className="text-center mb-3">
-                    <div className="fw-medium">Thu</div>
-                    <div className="text-muted small">Sep 5</div>
-                  </div>
-                  <div className="bg-light border-start border-secondary border-4 p-3 rounded">
-                    <div className="fw-medium text-secondary small">2:00 PM - 10:00 PM</div>
-                    <div className="text-muted small mt-1">Weight Room</div>
-                    <div className="text-muted small mt-1">⏳ Upcoming</div>
-                  </div>
-                </div>
-                
-                <div className="flex-shrink-0" style={{ width: '128px' }}>
-                  <div className="text-center mb-3">
-                    <div className="fw-medium">Fri</div>
-                    <div className="text-muted small">Sep 6</div>
-                  </div>
-                  <div className="bg-warning bg-opacity-10 border-start border-warning border-4 p-3 rounded">
-                    <div className="fw-medium text-warning small">6:00 AM - 2:00 PM</div>
-                    <div className="text-warning small mt-1">Pool Area</div>
-                    <div className="text-warning small mt-1">⚡ Overtime</div>
-                  </div>
-                </div>
-                
-                <div className="flex-shrink-0" style={{ width: '128px' }}>
-                  <div className="text-center mb-3">
-                    <div className="fw-medium">Sat</div>
-                    <div className="text-muted small">Sep 7</div>
-                  </div>
-                  <div className="bg-light border-start border-secondary border-4 p-3 rounded">
-                    <div className="fw-medium text-secondary small">8:00 AM - 4:00 PM</div>
-                    <div className="text-muted small mt-1">Full Facility</div>
-                    <div className="text-muted small mt-1">⏳ Upcoming</div>
-                  </div>
-                </div>
-                
-                <div className="flex-shrink-0" style={{ width: '128px' }}>
-                  <div className="text-center mb-3">
-                    <div className="fw-medium">Sun</div>
-                    <div className="text-muted small">Sep 8</div>
-                  </div>
-                  <div className="bg-white border-start border-light border-4 p-3 rounded">
-                    <div className="fw-medium text-muted small">Day Off</div>
-                    <div className="text-muted small mt-1">Rest Day</div>
-                    <div className="text-muted small mt-1">🏠 Off</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div> */}
->>>>>>> abe5303ff415cbfb2b10608f3e74aaf6e58dc305
         
         {/* Charts Section */}
         <div className="row g-3 g-md-4">
