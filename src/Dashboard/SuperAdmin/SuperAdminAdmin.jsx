@@ -6,6 +6,33 @@ const SuperAdminAdmin = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [modalType, setModalType] = useState('add');
   const [selectedAdmin, setSelectedAdmin] = useState(null);
+  // Move admins to state so we can update it
+  const [admins, setAdmins] = useState([
+    {
+      id: 1,
+      name: "John Anderson",
+      adminId: "ADM01",
+      address: "123 Main Street",
+      role: "Primary Admin",
+      phone: "+1 555-123-4567",
+      email: "john@admin.com",
+      status: "Active",
+      username: "john_admin",
+      plans: [{ planName: "Gold", price: "1200", duration: "12 Months", description: "Full access plan" }]
+    },
+    {
+      id: 2,
+      name: "Emma Watson",
+      adminId: "ADM02",
+      address: "456 Park Avenue",
+      role: "Co-Admin",
+      phone: "+1 555-987-6543",
+      email: "emma@admin.com",
+      status: "Inactive",
+      username: "emma_admin",
+      plans: []
+    }
+  ]);
 
   const handleAddNew = () => {
     setModalType('add');
@@ -32,6 +59,8 @@ const SuperAdminAdmin = () => {
 
   const confirmDelete = () => {
     if (selectedAdmin) {
+      // Update the admins state by filtering out the deleted admin
+      setAdmins(admins.filter(admin => admin.id !== selectedAdmin.id));
       alert(`Admin "${selectedAdmin.name}" has been deleted.`);
     }
     setIsDeleteModalOpen(false);
@@ -52,33 +81,6 @@ const SuperAdminAdmin = () => {
     document.body.style.overflow = (isModalOpen || isDeleteModalOpen) ? 'hidden' : 'unset';
     return () => { document.body.style.overflow = 'unset'; };
   }, [isModalOpen, isDeleteModalOpen]);
-
-  const admins = [
-    {
-      id: 1,
-      name: "John Anderson",
-      adminId: "ADM01",
-      address: "123 Main Street",
-      role: "Primary Admin",
-      phone: "+1 555-123-4567",
-      email: "john@admin.com",
-      status: "Active",
-      username: "john_admin",
-      plans: [{ planName: "Gold", price: "1200", duration: "12 Months", description: "Full access plan" }]
-    },
-    {
-      id: 2,
-      name: "Emma Watson",
-      adminId: "ADM02",
-      address: "456 Park Avenue",
-      role: "Co-Admin",
-      phone: "+1 555-987-6543",
-      email: "emma@admin.com",
-      status: "Inactive",
-      username: "emma_admin",
-      plans: []
-    }
-  ];
 
   const getStatusBadge = (status) => {
     return (
@@ -103,6 +105,65 @@ const SuperAdminAdmin = () => {
       case 'view': return 'Admin Details';
       default: return 'Admin Management';
     }
+  };
+
+  // Function to handle form submission for add/edit
+  const handleFormSubmit = (payload) => {
+    if (modalType === 'add') {
+      // Generate a new unique ID (simple approach)
+      const newId = Math.max(...admins.map(admin => admin.id), 0) + 1;
+      
+      // Create a new admin object with the form data
+      const newAdmin = {
+        id: newId,
+        name: payload.name,
+        adminId: payload.adminId || `ADM${newId.toString().padStart(2, '0')}`,
+        address: payload.address,
+        role: "Primary Admin", // Default role
+        phone: payload.phone,
+        email: payload.email,
+        status: payload.status,
+        username: payload.username,
+        plans: payload.planName ? [{
+          planName: payload.planName,
+          price: payload.planPrice,
+          duration: payload.planDuration,
+          description: payload.planDescription
+        }] : []
+      };
+      
+      // Add the new admin to the state
+      setAdmins([...admins, newAdmin]);
+      alert('New admin added successfully!');
+    } else if (modalType === 'edit' && selectedAdmin) {
+      // Update existing admin
+      const updatedAdmins = admins.map(admin => {
+        if (admin.id === selectedAdmin.id) {
+          return {
+            ...admin,
+            name: payload.name,
+            adminId: payload.adminId,
+            address: payload.address,
+            phone: payload.phone,
+            email: payload.email,
+            status: payload.status,
+            username: payload.username,
+            plans: payload.planName ? [{
+              planName: payload.planName,
+              price: payload.planPrice,
+              duration: payload.planDuration,
+              description: payload.planDescription
+            }] : []
+          };
+        }
+        return admin;
+      });
+      
+      setAdmins(updatedAdmins);
+      alert('Admin updated successfully!');
+    }
+    
+    closeModal();
   };
 
   return (
@@ -256,10 +317,7 @@ const SuperAdminAdmin = () => {
             mode={modalType}
             admin={selectedAdmin}
             onCancel={closeModal}
-            onSubmit={(payload) => {
-              alert(`${modalType === 'add' ? 'New admin added' : 'Admin updated'} successfully!`);
-              closeModal();
-            }}
+            onSubmit={handleFormSubmit} // Use the new handler function
           />
         </ModalWrapper>
       )}
@@ -401,6 +459,7 @@ const AdminForm = ({ mode, admin, onCancel, onSubmit }) => {
               value={formData.name} 
               onChange={handleInputChange} 
               readOnly={isView} 
+              required
             />
           </div>
 
@@ -414,6 +473,7 @@ const AdminForm = ({ mode, admin, onCancel, onSubmit }) => {
                 onChange={handleInputChange}
                 placeholder="Enter Gym Name" 
                 readOnly={isView} 
+                required
               />
             </div>
           ) : (
@@ -425,6 +485,7 @@ const AdminForm = ({ mode, admin, onCancel, onSubmit }) => {
                 value={formData.adminId} 
                 onChange={handleInputChange}
                 readOnly={isView} 
+                required
               />
             </div>
           )}
@@ -437,6 +498,7 @@ const AdminForm = ({ mode, admin, onCancel, onSubmit }) => {
               value={formData.address} 
               onChange={handleInputChange}
               readOnly={isView} 
+              required
             />
           </div>
           
@@ -448,6 +510,7 @@ const AdminForm = ({ mode, admin, onCancel, onSubmit }) => {
               value={formData.phone} 
               onChange={handleInputChange}
               readOnly={isView} 
+              required
             />
           </div>
 
@@ -455,10 +518,12 @@ const AdminForm = ({ mode, admin, onCancel, onSubmit }) => {
             <label className="form-label fs-6">Email *</label>
             <input 
               name="email" 
+              type="email"
               className="form-control form-control-sm" 
               value={formData.email} 
               onChange={handleInputChange}
               readOnly={isView} 
+              required
             />
           </div>
         </div>
@@ -476,6 +541,7 @@ const AdminForm = ({ mode, admin, onCancel, onSubmit }) => {
               value={formData.username} 
               onChange={handleInputChange}
               readOnly={isView} 
+              required
             />
           </div>
 
@@ -488,6 +554,7 @@ const AdminForm = ({ mode, admin, onCancel, onSubmit }) => {
                 className="form-control form-control-sm" 
                 value={formData.password}
                 onChange={handleInputChange}
+                required={isAdd}
               />
             </div>
           )}
@@ -506,6 +573,7 @@ const AdminForm = ({ mode, admin, onCancel, onSubmit }) => {
               value={formData.planName}
               onChange={(e) => handlePlanChange(e.target.value)}
               disabled={isView}
+              required
             >
               <option value="">Select Plan</option>
               <option value="Gold">Gold</option>
@@ -541,6 +609,7 @@ const AdminForm = ({ mode, admin, onCancel, onSubmit }) => {
               value={formData.planDescription}
               onChange={handleInputChange}
               readOnly={isView}
+              required
             ></textarea>
           </div>
         </div>
@@ -566,7 +635,7 @@ const AdminForm = ({ mode, admin, onCancel, onSubmit }) => {
           Close
         </button>
         {!isView && (
-          <button className="btn btn-sm px-3" style={{ background: "#6EB2CC", color: "#fff" }}>
+          <button type="submit" className="btn btn-sm px-3" style={{ background: "#6EB2CC", color: "#fff" }}>
             {mode === "add" ? "Save Admin" : "Update Admin"}
           </button>
         )}
