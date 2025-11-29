@@ -462,41 +462,41 @@ const Payments = () => {
         </div>
       )}
 
-      {/* VIEW DETAILS MODAL */}
+      {/* VIEW DETAILS MODAL - COMPACT SIZE */}
       {showModal && selectedTransaction && (
         <div className="modal fade show" style={{ display: "block", backgroundColor: "rgba(0,0,0,0.5)" }}>
-          <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: "90%" }}>
+          <div className="modal-dialog modal-dialog-centered modal-compact">
             <div className="modal-content">
-              <div className="modal-header">
+              <div className="modal-header py-2">
                 <h5 className="modal-title">Transaction Details</h5>
                 <button className="btn-close" onClick={() => setShowModal(false)}></button>
               </div>
-              <div className="modal-body">
+              <div className="modal-body py-3">
                 <div className="card border-0 bg-light mb-3">
-                  <div className="card-body">
-                    <div className="row g-3">
+                  <div className="card-body p-3">
+                    <div className="row g-2">
                       <div className="col-12 col-md-6">
-                        <label className="form-label text-muted">Transaction ID</label>
+                        <label className="form-label text-muted small mb-1">Transaction ID</label>
                         <p className="fw-bold mb-0">{selectedTransaction.id}</p>
                       </div>
                       <div className="col-12 col-md-6">
-                        <label className="form-label text-muted">Date</label>
+                        <label className="form-label text-muted small mb-1">Date</label>
                         <p className="fw-bold mb-0">{selectedTransaction.date}</p>
                       </div>
                       <div className="col-12 col-md-6">
-                        <label className="form-label text-muted">Customer Name</label>
+                        <label className="form-label text-muted small mb-1">Customer Name</label>
                         <p className="fw-bold mb-0">{selectedTransaction.customer}</p>
                       </div>
                       <div className="col-12 col-md-6">
-                        <label className="form-label text-muted">Payment Method</label>
+                        <label className="form-label text-muted small mb-1">Payment Method</label>
                         <p className="fw-bold mb-0">{selectedTransaction.method.name}</p>
                       </div>
                       <div className="col-12 col-md-6">
-                        <label className="form-label text-muted">Amount</label>
+                        <label className="form-label text-muted small mb-1">Amount</label>
                         <p className="fw-bold mb-0 text-success">{selectedTransaction.amount}</p>
                       </div>
                       <div className="col-12 col-md-6">
-                        <label className="form-label text-muted">Status</label>
+                        <label className="form-label text-muted small mb-1">Status</label>
                         <div>
                           {selectedTransaction.status === "Success" && <span className="badge bg-success">Success</span>}
                           {selectedTransaction.status === "Failed" && <span className="badge bg-danger">Failed</span>}
@@ -505,7 +505,7 @@ const Payments = () => {
                       </div>
                       {selectedTransaction.reason && (
                         <div className="col-12">
-                          <label className="form-label text-muted">Reason</label>
+                          <label className="form-label text-muted small mb-1">Reason</label>
                           <p className="fw-bold mb-0 text-danger">{selectedTransaction.reason}</p>
                         </div>
                       )}
@@ -514,49 +514,49 @@ const Payments = () => {
                 </div>
               </div>
 
-              <div className="modal-footer">
-                <button className="btn btn-secondary" onClick={() => setShowModal(false)}>Close</button>
+              <div className="modal-footer py-2">
+                <button className="btn btn-secondary btn-sm" onClick={() => setShowModal(false)}>Close</button>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* EDIT TRANSACTION MODAL */}
+      {/* EDIT TRANSACTION MODAL - COMPACT SIZE */}
       {showEditModal && selectedTransaction && (
         <div className="modal fade show" style={{ display: "block", backgroundColor: "rgba(0,0,0,0.5)" }}>
-          <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: "90%" }}>
+          <div className="modal-dialog modal-dialog-centered modal-compact">
             <div className="modal-content">
-              <div className="modal-header">
+              <div className="modal-header py-2">
                 <h5 className="modal-title">Edit Transaction</h5>
                 <button className="btn-close" onClick={() => setShowEditModal(false)}></button>
               </div>
               <form onSubmit={handleEditSubmit}>
-                <div className="modal-body">
-                  <div className="row g-3">
+                <div className="modal-body py-3">
+                  <div className="row g-2">
                     <div className="col-12">
-                      <label className="form-label fw-semibold">Transaction ID</label>
+                      <label className="form-label fw-semibold small">Transaction ID</label>
                       <input 
                         type="text" 
-                        className="form-control" 
+                        className="form-control form-control-sm" 
                         value={editForm.id} 
                         disabled
                       />
                     </div>
                     <div className="col-12 col-md-6">
-                      <label className="form-label fw-semibold">Customer Name</label>
+                      <label className="form-label fw-semibold small">Customer Name</label>
                       <input 
                         type="text" 
-                        className="form-control" 
+                        className="form-control form-control-sm" 
                         value={editForm.customer} 
                         onChange={(e) => setEditForm({...editForm, customer: e.target.value})}
                         required
                       />
                     </div>
                     <div className="col-12 col-md-6">
-                      <label className="form-label fw-semibold">Payment Method</label>
+                      <label className="form-label fw-semibold small">Payment Method</label>
                       <select 
-                        className="form-select" 
+                        className="form-select form-select-sm" 
                         value={editForm.method} 
                         onChange={(e) => setEditForm({...editForm, method: e.target.value})}
                         required
@@ -568,19 +568,19 @@ const Payments = () => {
                       </select>
                     </div>
                     <div className="col-12 col-md-6">
-                      <label className="form-label fw-semibold">Amount</label>
+                      <label className="form-label fw-semibold small">Amount</label>
                       <input 
                         type="text" 
-                        className="form-control" 
+                        className="form-control form-control-sm" 
                         value={editForm.amount} 
                         onChange={(e) => setEditForm({...editForm, amount: e.target.value})}
                         required
                       />
                     </div>
                     <div className="col-12 col-md-6">
-                      <label className="form-label fw-semibold">Status</label>
+                      <label className="form-label fw-semibold small">Status</label>
                       <select 
-                        className="form-select" 
+                        className="form-select form-select-sm" 
                         value={editForm.status} 
                         onChange={(e) => setEditForm({...editForm, status: e.target.value})}
                         required
@@ -592,10 +592,10 @@ const Payments = () => {
                     </div>
                     {editForm.status === "Failed" && (
                       <div className="col-12">
-                        <label className="form-label fw-semibold">Reason</label>
+                        <label className="form-label fw-semibold small">Reason</label>
                         <input 
                           type="text" 
-                          className="form-control" 
+                          className="form-control form-control-sm" 
                           value={editForm.reason} 
                           onChange={(e) => setEditForm({...editForm, reason: e.target.value})}
                           placeholder="Enter reason for failure"
@@ -605,9 +605,9 @@ const Payments = () => {
                   </div>
                 </div>
 
-                <div className="modal-footer">
-                  <button type="button" className="btn btn-secondary" onClick={() => setShowEditModal(false)}>Cancel</button>
-                  <button type="submit" className="btn btn-custom">Save Changes</button>
+                <div className="modal-footer py-2">
+                  <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowEditModal(false)}>Cancel</button>
+                  <button type="submit" className="btn btn-custom btn-sm">Save Changes</button>
                 </div>
               </form>
             </div>
@@ -615,32 +615,32 @@ const Payments = () => {
         </div>
       )}
 
-      {/* DELETE CONFIRMATION MODAL */}
+      {/* DELETE CONFIRMATION MODAL - COMPACT SIZE */}
       {showDeleteModal && transactionToDelete && (
         <div className="modal fade show" style={{ display: "block", backgroundColor: "rgba(0,0,0,0.5)" }}>
-          <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: "90%" }}>
+          <div className="modal-dialog modal-dialog-centered modal-compact">
             <div className="modal-content">
-              <div className="modal-header">
+              <div className="modal-header py-2">
                 <h5 className="modal-title">Confirm Delete</h5>
                 <button className="btn-close" onClick={() => setShowDeleteModal(false)}></button>
               </div>
-              <div className="modal-body">
-                <div className="text-center py-3">
-                  <div className="mb-3">
-                    <FaTrash size={48} className="text-danger" />
+              <div className="modal-body py-3">
+                <div className="text-center py-2">
+                  <div className="mb-2">
+                    <FaTrash size={36} className="text-danger" />
                   </div>
-                  <h5>Are you sure?</h5>
-                  <p className="text-muted">This action cannot be undone. This will permanently delete the transaction.</p>
-                  <div className="alert alert-danger">
+                  <h6>Are you sure?</h6>
+                  <p className="text-muted small">This action cannot be undone. This will permanently delete the transaction.</p>
+                  <div className="alert alert-danger py-2">
                     <strong>Transaction ID:</strong> {transactionToDelete.id}<br />
                     <strong>Customer:</strong> {transactionToDelete.customer}<br />
                     <strong>Amount:</strong> {transactionToDelete.amount}
                   </div>
                 </div>
               </div>
-              <div className="modal-footer">
-                <button className="btn btn-secondary" onClick={() => setShowDeleteModal(false)}>Cancel</button>
-                <button className="btn btn-danger" onClick={handleConfirmDelete}>Delete Transaction</button>
+              <div className="modal-footer py-2">
+                <button className="btn btn-secondary btn-sm" onClick={() => setShowDeleteModal(false)}>Cancel</button>
+                <button className="btn btn-danger btn-sm" onClick={handleConfirmDelete}>Delete Transaction</button>
               </div>
             </div>
           </div>
@@ -759,7 +759,18 @@ const Payments = () => {
           background-color: #f8f9fa;
         }
 
-        /* Modal enhancements */
+        /* Modal enhancements - COMPACT SIZE */
+        .modal-compact {
+          max-width: 500px;
+        }
+        
+        @media (max-width: 576px) {
+          .modal-compact {
+            max-width: 95%;
+            margin: 10px;
+          }
+        }
+
         .modal-content {
           border-radius: 12px;
           border: none;
@@ -768,16 +779,16 @@ const Payments = () => {
 
         .modal-header {
           border-bottom: 1px solid #e9ecef;
-          padding: 1.5rem;
+          padding: 1rem 1.5rem;
         }
 
         .modal-body {
-          padding: 1.5rem;
+          padding: 1rem 1.5rem;
         }
 
         .modal-footer {
           border-top: 1px solid #e9ecef;
-          padding: 1.5rem;
+          padding: 1rem 1.5rem;
         }
       `}</style>
 
