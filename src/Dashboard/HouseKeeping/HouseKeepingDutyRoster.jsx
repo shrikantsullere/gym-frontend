@@ -169,7 +169,7 @@ const DutyRoster = () => {
   const [swapRequests, setSwapRequests] = useState(mockSwapRequests);
   const [notifications, setNotifications] = useState(mockNotifications);
   const [staffList, setStaffList] = useState(mockStaff);
-  const [viewType, setViewType] = useState('calendar'); // 'calendar' or 'list'
+  // Removed viewType state and set default to list
   const [calendarView, setCalendarView] = useState('week'); // 'day', 'week', or 'month'
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showSwapModal, setShowSwapModal] = useState(false);
@@ -179,8 +179,9 @@ const DutyRoster = () => {
   const [swapForm, setSwapForm] = useState({ targetStaffId: '', reason: '' });
   const [activeTab, setActiveTab] = useState('myShifts');
   const [unreadNotifications, setUnreadNotifications] = useState(0);
-  const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'confirmed', 'pending', 'completed', 'cancelled', 'no-show'
+  const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'confirmed', 'pending', 'completed', 'cancelled'
   const [searchQuery, setSearchQuery] = useState('');
+  const [newStatus, setNewStatus] = useState('');
 
   // Initialize
   useEffect(() => {
@@ -368,7 +369,7 @@ const DutyRoster = () => {
       'confirmed': { bg: 'success', icon: <FaCheckCircle /> },
       'pending': { bg: 'warning', icon: <FaExclamationTriangle /> },
       'completed': { bg: 'info', icon: <FaCheckCircle /> },
-      'cancelled': { bg: 'danger', icon: <FaBan /> },
+      'cancelled': { bg: 'danger', icon: <FaBan /> }, // Red color for cancelled
       'no-show': { bg: 'dark', icon: <FaTimes /> }
     };
     
@@ -378,198 +379,6 @@ const DutyRoster = () => {
       <Badge bg={config.bg} className="d-flex align-items-center">
         {config.icon} <span className="ms-1">{status.charAt(0).toUpperCase() + status.slice(1)}</span>
       </Badge>
-    );
-  };
-
-  // Render calendar view
-  const renderCalendarView = () => {
-    // This is a simplified calendar view for demonstration
-    // In a real application, you would use a library like FullCalendar
-    return (
-      <div className="calendar-container">
-        <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-3">
-          <div className="d-flex mb-2 mb-md-0">
-            <Button 
-              variant="outline-primary" 
-              onClick={() => setCalendarView('day')} 
-              className={`me-2 ${calendarView === 'day' ? 'active' : ''}`}
-              style={{ 
-                backgroundColor: calendarView === 'day' ? customStyles.primaryColor : 'transparent',
-                borderColor: customStyles.primaryColor,
-                color: calendarView === 'day' ? 'white' : customStyles.primaryColor
-              }}
-            >
-              Day
-            </Button>
-            <Button 
-              variant="outline-primary" 
-              onClick={() => setCalendarView('week')} 
-              className={`me-2 ${calendarView === 'week' ? 'active' : ''}`}
-              style={{ 
-                backgroundColor: calendarView === 'week' ? customStyles.primaryColor : 'transparent',
-                borderColor: customStyles.primaryColor,
-                color: calendarView === 'week' ? 'white' : customStyles.primaryColor
-              }}
-            >
-              Week
-            </Button>
-            <Button 
-              variant="outline-primary" 
-              onClick={() => setCalendarView('month')} 
-              className={calendarView === 'month' ? 'active' : ''}
-              style={{ 
-                backgroundColor: calendarView === 'month' ? customStyles.primaryColor : 'transparent',
-                borderColor: customStyles.primaryColor,
-                color: calendarView === 'month' ? 'white' : customStyles.primaryColor
-              }}
-            >
-              Month
-            </Button>
-          </div>
-          <div className="d-flex align-items-center">
-            <Button variant="outline-secondary" className="me-2">
-              <FaChevronLeft />
-            </Button>
-            <span className="fw-bold">June 2023</span>
-            <Button variant="outline-secondary" className="ms-2">
-              <FaChevronRight />
-            </Button>
-          </div>
-        </div>
-        
-        <Card>
-          <Card.Body>
-            {/* Desktop View */}
-            <div className="d-none d-md-block">
-              <Row className="mb-2">
-                <Col className="text-center fw-bold">Sun</Col>
-                <Col className="text-center fw-bold">Mon</Col>
-                <Col className="text-center fw-bold">Tue</Col>
-                <Col className="text-center fw-bold">Wed</Col>
-                <Col className="text-center fw-bold">Thu</Col>
-                <Col className="text-center fw-bold">Fri</Col>
-                <Col className="text-center fw-bold">Sat</Col>
-              </Row>
-              
-              <Row>
-                {[...Array(7)].map((_, index) => {
-                  const day = index + 1;
-                  const dayShifts = shifts.filter(s => parseInt(s.date.split('-')[2]) === day);
-                  
-                  return (
-                    <Col key={index} className="border p-2 min-h-100">
-                      <div className="text-center mb-2">{day}</div>
-                      {dayShifts.map(shift => {
-                        const staff = staffList.find(s => s.id === shift.staffId);
-                        const isUpcoming = new Date(shift.date) > new Date();
-                        const isMyShift = shift.staffId === user.id;
-                        
-                        return (
-                          <div 
-                            key={shift.id} 
-                            className={`p-2 mb-2 rounded ${isUpcoming ? 'text-white' : 'bg-light'} ${isMyShift ? 'border border-2 border-success' : ''}`}
-                            style={{ backgroundColor: isUpcoming ? customStyles.primaryColor : '' }}
-                          >
-                            <div className="fw-bold">{staff.name}</div>
-                            <div className="small">
-                              <FaClock className="me-1" /> {shift.startTime} - {shift.endTime}
-                            </div>
-                            <div className="small">
-                              <FaMapMarkerAlt className="me-1" /> {shift.location}
-                            </div>
-                            <div className="small">
-                              <FaIdBadge className="me-1" /> {shift.role}
-                            </div>
-                            {isMyShift && !shift.confirmed && (
-                              <Button 
-                                size="sm" 
-                                variant="success" 
-                                className="mt-1 w-100"
-                                onClick={() => {
-                                  setSelectedShift(shift);
-                                  setShowConfirmModal(true);
-                                }}
-                              >
-                                Confirm
-                              </Button>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </Col>
-                  );
-                })}
-              </Row>
-            </div>
-            
-            {/* Mobile View - List style like the screenshot */}
-            <div className="d-md-none">
-              {getMyShifts().map(shift => {
-                const staff = staffList.find(s => s.id === shift.staffId);
-                const isUpcoming = new Date(shift.date) > new Date();
-                const isMyShift = shift.staffId === user.id;
-                
-                return (
-                  <Card key={shift.id} className="mb-3">
-                    <Card.Body>
-                      <div className="d-flex justify-content-between align-items-start mb-2">
-                        <div>
-                          <Card.Title className="mb-1">{formatDate(shift.date)}</Card.Title>
-                          <Card.Subtitle className="mb-2 text-muted">
-                            <FaClock className="me-1" /> {shift.startTime} - {shift.endTime}
-                          </Card.Subtitle>
-                        </div>
-                        {getStatusBadge(shift.status)}
-                      </div>
-                      
-                      <div className="mb-2">
-                        <FaMapMarkerAlt className="me-2" /> {shift.location}
-                      </div>
-                      
-                      <div className="mb-3">
-                        <FaIdBadge className="me-2" /> {shift.role}
-                      </div>
-                      
-                      {isMyShift && (
-                        <div className="d-flex">
-                          {!shift.confirmed && (
-                            <Button 
-                              size="sm" 
-                              variant="success" 
-                              className="me-2 flex-grow-1"
-                              onClick={() => {
-                                setSelectedShift(shift);
-                                setShowConfirmModal(true);
-                              }}
-                            >
-                              Confirm
-                            </Button>
-                          )}
-                          <Button 
-                            size="sm" 
-                            variant="primary"
-                            className="flex-grow-1"
-                            style={{ 
-                              backgroundColor: customStyles.primaryColor,
-                              borderColor: customStyles.primaryColor
-                            }}
-                            onClick={() => {
-                              setSelectedShift(shift);
-                              setShowSwapModal(true);
-                            }}
-                          >
-                            <FaExchangeAlt /> Swap
-                          </Button>
-                        </div>
-                      )}
-                    </Card.Body>
-                  </Card>
-                );
-              })}
-            </div>
-          </Card.Body>
-        </Card>
-      </div>
     );
   };
 
@@ -696,9 +505,7 @@ const DutyRoster = () => {
                                   <Dropdown.Item onClick={() => handleStatusChange(shift.id, 'cancelled')}>
                                     <FaBan className="me-1 text-danger" /> Cancelled
                                   </Dropdown.Item>
-                                  <Dropdown.Item onClick={() => handleStatusChange(shift.id, 'no-show')}>
-                                    <FaTimes className="me-1 text-dark" /> No-Show
-                                  </Dropdown.Item>
+                                  {/* No-Show option removed */}
                                 </DropdownButton>
                               )}
                             </div>
@@ -1103,17 +910,7 @@ const DutyRoster = () => {
           >
             Cancelled
           </Button>
-          <Button 
-            variant={statusFilter === 'no-show' ? 'primary' : 'outline-primary'}
-            onClick={() => setStatusFilter('no-show')}
-            style={{ 
-              backgroundColor: statusFilter === 'no-show' ? customStyles.primaryColor : 'transparent',
-              borderColor: customStyles.primaryColor,
-              color: statusFilter === 'no-show' ? 'white' : customStyles.primaryColor
-            }}
-          >
-            No-Show
-          </Button>
+          {/* Removed No-Show filter button as requested */}
         </div>
       </div>
     );
@@ -1197,28 +994,16 @@ const DutyRoster = () => {
       {/* View Toggle - Mobile View */}
       <div className="d-md-none d-flex justify-content-between align-items-center mb-3">
         <div className="d-flex">
+          {/* Removed calendar view toggle buttons */}
           <Button 
-            variant={viewType === 'calendar' ? 'primary' : 'outline-primary'} 
-            className="me-2"
+            variant="primary" 
+            disabled
             style={{ 
-              backgroundColor: viewType === 'calendar' ? customStyles.primaryColor : 'transparent',
-              borderColor: customStyles.primaryColor,
-              color: viewType === 'calendar' ? 'white' : customStyles.primaryColor
+              backgroundColor: customStyles.primaryColor,
+              borderColor: customStyles.primaryColor
             }}
-            onClick={() => setViewType('calendar')}
           >
-            <FaTh className="me-1" />
-          </Button>
-          <Button 
-            variant={viewType === 'list' ? 'primary' : 'outline-primary'} 
-            style={{ 
-              backgroundColor: viewType === 'list' ? customStyles.primaryColor : 'transparent',
-              borderColor: customStyles.primaryColor,
-              color: viewType === 'list' ? 'white' : customStyles.primaryColor
-            }}
-            onClick={() => setViewType('list')}
-          >
-            <FaList className="me-1" />
+            <FaList className="me-1" /> List View
           </Button>
         </div>
         <DropdownButton variant="outline-secondary" title="Filter">
@@ -1232,28 +1017,16 @@ const DutyRoster = () => {
       {/* View Toggle - Desktop View */}
       <div className="d-none d-md-flex justify-content-between align-items-center mb-3">
         <div className="d-flex">
+          {/* Removed calendar view toggle buttons */}
           <Button 
-            variant={viewType === 'calendar' ? 'primary' : 'outline-primary'} 
-            className="me-2"
+            variant="primary" 
+            disabled
             style={{ 
-              backgroundColor: viewType === 'calendar' ? customStyles.primaryColor : 'transparent',
-              borderColor: customStyles.primaryColor,
-              color: viewType === 'calendar' ? 'white' : customStyles.primaryColor
+              backgroundColor: customStyles.primaryColor,
+              borderColor: customStyles.primaryColor
             }}
-            onClick={() => setViewType('calendar')}
           >
-            <FaTh className="me-1" /> Calendar
-          </Button>
-          <Button 
-            variant={viewType === 'list' ? 'primary' : 'outline-primary'} 
-            style={{ 
-              backgroundColor: viewType === 'list' ? customStyles.primaryColor : 'transparent',
-              borderColor: customStyles.primaryColor,
-              color: viewType === 'list' ? 'white' : customStyles.primaryColor
-            }}
-            onClick={() => setViewType('list')}
-          >
-            <FaList className="me-1" /> List
+            <FaList className="me-1" /> List View
           </Button>
         </div>
         <div className="d-flex">
@@ -1280,7 +1053,8 @@ const DutyRoster = () => {
       <Tabs activeKey={activeTab} onSelect={(k) => setActiveTab(k)} className="mb-4">
         <Tab eventKey="myShifts" title="My Shifts">
           {renderStatusFilter()}
-          {viewType === 'calendar' ? renderCalendarView() : renderListView()}
+          {/* Removed calendar view conditional rendering */}
+          {renderListView()}
         </Tab>
         
         {user.role === 'manager' && (
