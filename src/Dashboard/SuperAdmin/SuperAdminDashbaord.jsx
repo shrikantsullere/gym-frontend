@@ -12,11 +12,17 @@ import {
 import { FaArrowUp, FaArrowDown } from "react-icons/fa";
 
 export default function DashboardHomePage() {
-  // ----------- UPDATED KPIs (3 Only) -----------
+  // ----------- UPDATED KPIs (4 Only) -----------
   const kpis = [
     { title: "Total Revenue", value: 3500000, delta: +12 },
+
+    // NEW KPI → Monthly Revenue
+    { title: "Monthly Revenue", value: 420000, delta: +9 },
+
     { title: "New Admins", value: 12, delta: +8 },
-    { title: "Total Branches", value: 18, delta: +3 },
+
+    // CHANGED: Total Branches → Total Admins
+    { title: "Total Admins", value: 48, delta: +3 },
   ];
 
   // ----------- Revenue Chart -----------
@@ -67,9 +73,8 @@ export default function DashboardHomePage() {
                 </div>
 
                 <div
-                  className={`small mt-1 d-inline-flex align-items-center ${
-                    k.delta >= 0 ? "text-success" : "text-danger"
-                  }`}
+                  className={`small mt-1 d-inline-flex align-items-center ${k.delta >= 0 ? "text-success" : "text-danger"
+                    }`}
                 >
                   {k.delta >= 0 ? (
                     <FaArrowUp className="me-1" />

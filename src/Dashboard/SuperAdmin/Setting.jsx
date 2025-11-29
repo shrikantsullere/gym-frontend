@@ -1,187 +1,235 @@
 import React, { useState } from "react";
 
-// ===== INLINE CSS (Professional Gym SaaS Style) =====
 const styles = {
   page: {
-    padding: "25px",
+    padding: "20px",
     fontFamily: "Inter, sans-serif",
+    maxWidth: "1000px",
+    margin: "0 auto",
   },
-  header: {
+
+  header: { marginBottom: "25px" },
+  title: { fontSize: "28px", fontWeight: "600", margin: 0 },
+  subtitle: { margin: 0, color: "#666" },
+
+  section: {
     marginBottom: "25px",
   },
-  title: {
-    fontSize: "28px",
+
+  sectionTitle: {
+    fontSize: "20px",
     fontWeight: "600",
-    margin: 0,
+    marginBottom: "12px",
   },
-  subtitle: {
-    margin: 0,
-    color: "#666",
-  },
-  navTabs: {
+
+  formRow: {
     display: "flex",
-    gap: "18px",
-    marginBottom: "25px",
-    borderBottom: "1px solid #e5e5e5",
-    paddingBottom: "10px",
+    gap: "20px",
+    flexWrap: "wrap",
+    marginBottom: "12px",
   },
-  tabBtn: (active) => ({
-    padding: "10px 18px",
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontWeight: "500",
-    background: active ? "#6EB2CC" : "#f5f5f5",
-    color: active ? "#fff" : "#333",
-  }),
-  card: {
-    background: "#fff",
-    padding: "25px",
-    borderRadius: "14px",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.07)",
+
+  formCol: {
+    flex: "1 1 300px",
+    minWidth: "250px",
   },
-  inputGroup: { display: "flex", flexDirection: "column", marginBottom: "18px" },
-  label: { marginBottom: "6px", fontSize: "14px", fontWeight: "500" },
-  input: {
-    padding: "12px",
-    borderRadius: "8px",
-    border: "1px solid #dcdcdc",
+
+  label: {
+    display: "block",
+    marginBottom: "6px",
     fontSize: "14px",
-    outline: "none",
+    fontWeight: "500",
   },
+
+  input: {
+    width: "100%",
+    padding: "12px",
+    fontSize: "14px",
+    borderRadius: "6px",
+    border: "1px solid #ccc",
+    boxSizing: "border-box",
+  },
+
   saveBtn: {
-    marginTop: "20px",
-    padding: "12px 22px",
-    background: "#6EB2CC", // UPDATED BUTTON COLOR
+    marginTop: "25px",
+    padding: "14px 22px",
+    background: "#6EB2CC",
     color: "#fff",
-    borderRadius: "8px",
+    borderRadius: "6px",
     border: "none",
-    fontSize: "15px",
+    fontSize: "16px",
     cursor: "pointer",
+    width: "100%",
+    maxWidth: "250px",
   },
+
+  responsive: `
+    @media(max-width:768px){
+      .formRow {
+        flex-direction: column !important;
+      }
+    }
+  `,
 };
 
-// ==================== MAIN COMPONENT ====================
 const AdminSettings = () => {
-  const [activeTab, setActiveTab] = useState("account");
+  const [settings, setSettings] = useState({
+    adminName: "",
+    email: "",
+    phone: "",
+    branchName: "",
+    timings: "",
+    gstNumber: "",
+    gstPercent: "",
+    stripeKey: "",
+    razorKey: "",
+    razorSecret: "",
+  });
+
+  const handleChange = (field, value) => setSettings({ ...settings, [field]: value });
+  const handleSave = () => {
+    console.log("Saved Settings:", settings);
+    alert("✅ All Settings Saved!");
+  };
 
   return (
     <div style={styles.page}>
-      {/* PAGE TITLE */}
+      <style>{styles.responsive}</style>
+
       <div style={styles.header}>
         <h2 style={styles.title}>Settings</h2>
-        <p style={styles.subtitle}>Manage your gym system configurations.</p>
+        <p style={styles.subtitle}>Update all gym configurations.</p>
       </div>
 
-      {/* TABS */}
-      <div style={styles.navTabs}>
-        <div style={styles.tabBtn(activeTab === "account")} onClick={() => setActiveTab("account")}>
-          Account Info
-        </div>
-        <div style={styles.tabBtn(activeTab === "branding")} onClick={() => setActiveTab("branding")}>
-          Branch Branding
-        </div>
-        <div style={styles.tabBtn(activeTab === "gst")} onClick={() => setActiveTab("gst")}>
-          Taxes (GST)
-        </div>
-        <div style={styles.tabBtn(activeTab === "payment")} onClick={() => setActiveTab("payment")}>
-          Payment Gateway Keys
-        </div>
-      </div>
-
-      {/* ===================== ACCOUNT INFO ===================== */}
-      {activeTab === "account" && (
-        <div style={styles.card}>
-          <h3>Account Information</h3>
-
-          <div style={styles.inputGroup}>
+      {/* Account Info */}
+      <div style={styles.section}>
+        <div style={styles.sectionTitle}>Account Information</div>
+        <div style={styles.formRow} className="formRow">
+          <div style={styles.formCol}>
             <label style={styles.label}>Admin Name</label>
-            <input style={styles.input} placeholder="Enter admin name" />
+            <input
+              style={styles.input}
+              value={settings.adminName}
+              onChange={(e) => handleChange("adminName", e.target.value)}
+              placeholder="Enter admin name"
+            />
           </div>
 
-          <div style={styles.inputGroup}>
+          <div style={styles.formCol}>
             <label style={styles.label}>Email</label>
-            <input style={styles.input} placeholder="Enter email" type="email" />
+            <input
+              style={styles.input}
+              type="email"
+              value={settings.email}
+              onChange={(e) => handleChange("email", e.target.value)}
+              placeholder="Enter email"
+            />
           </div>
 
-          <div style={styles.inputGroup}>
+          <div style={styles.formCol}>
             <label style={styles.label}>Phone</label>
-            <input style={styles.input} placeholder="Enter phone number" />
+            <input
+              style={styles.input}
+              value={settings.phone}
+              onChange={(e) => handleChange("phone", e.target.value)}
+              placeholder="Enter phone number"
+            />
           </div>
-
-          <button style={styles.saveBtn}>Save Changes</button>
         </div>
-      )}
+      </div>
 
-      {/* ===================== BRANCH BRANDING ===================== */}
-      {activeTab === "branding" && (
-        <div style={styles.card}>
-          <h3>Branch Branding</h3>
-
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Gym Logo</label>
-            <input style={styles.input} type="file" />
-          </div>
-
-          <div style={styles.inputGroup}>
+      {/* Branch Branding */}
+      {/* <div style={styles.section}>
+        <div style={styles.sectionTitle}>Branch Branding</div>
+        <div style={styles.formRow} className="formRow">
+          <div style={styles.formCol}>
             <label style={styles.label}>Branch Name</label>
-            <input style={styles.input} placeholder="Enter branch name" />
+            <input
+              style={styles.input}
+              value={settings.branchName}
+              onChange={(e) => handleChange("branchName", e.target.value)}
+              placeholder="Enter branch name"
+            />
           </div>
 
-          <div style={styles.inputGroup}>
+          <div style={styles.formCol}>
             <label style={styles.label}>Gym Timings</label>
-            <input style={styles.input} placeholder="6AM - 10PM" />
+            <input
+              style={styles.input}
+              value={settings.timings}
+              onChange={(e) => handleChange("timings", e.target.value)}
+              placeholder="6AM - 10PM"
+            />
           </div>
-
-          <button style={styles.saveBtn}>Save Branding</button>
         </div>
-      )}
+      </div> */}
 
-      {/* ===================== GST SETTINGS ===================== */}
-      {activeTab === "gst" && (
-        <div style={styles.card}>
-          <h3>Taxes (GST)</h3>
-
-          <div style={styles.inputGroup}>
+      {/* GST */}
+      {/* <div style={styles.section}>
+        <div style={styles.sectionTitle}>Taxes (GST)</div>
+        <div style={styles.formRow} className="formRow">
+          <div style={styles.formCol}>
             <label style={styles.label}>GST Number</label>
-            <input style={styles.input} placeholder="Enter GST Number" />
+            <input
+              style={styles.input}
+              value={settings.gstNumber}
+              onChange={(e) => handleChange("gstNumber", e.target.value)}
+              placeholder="Enter GST Number"
+            />
           </div>
 
-          <div style={styles.inputGroup}>
+          <div style={styles.formCol}>
             <label style={styles.label}>GST %</label>
             <input
               style={styles.input}
               type="number"
-              placeholder="Enter GST percentage (ex: 18)"
+              value={settings.gstPercent}
+              onChange={(e) => handleChange("gstPercent", e.target.value)}
+              placeholder="18"
+            />
+          </div>
+        </div>
+      </div> */}
+
+      {/* Payment Keys */}
+      <div style={styles.section}>
+        <div style={styles.sectionTitle}>Payment Gateway Keys</div>
+        <div style={styles.formRow} className="formRow">
+          <div style={styles.formCol}>
+            <label style={styles.label}>Stripe API Key</label>
+            <input
+              style={styles.input}
+              value={settings.stripeKey}
+              onChange={(e) => handleChange("stripeKey", e.target.value)}
+              placeholder="Enter Stripe key"
             />
           </div>
 
-          <button style={styles.saveBtn}>Save GST Settings</button>
-        </div>
-      )}
-
-      {/* ===================== PAYMENT GATEWAY KEYS ===================== */}
-      {activeTab === "payment" && (
-        <div style={styles.card}>
-          <h3>Payment Gateway Keys</h3>
-
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Stripe API Key</label>
-            <input style={styles.input} placeholder="Enter Stripe key" />
-          </div>
-
-          <div style={styles.inputGroup}>
+          <div style={styles.formCol}>
             <label style={styles.label}>Razorpay Key ID</label>
-            <input style={styles.input} placeholder="Enter Razorpay Key ID" />
+            <input
+              style={styles.input}
+              value={settings.razorKey}
+              onChange={(e) => handleChange("razorKey", e.target.value)}
+              placeholder="Enter Razorpay Key ID"
+            />
           </div>
 
-          <div style={styles.inputGroup}>
+          <div style={styles.formCol}>
             <label style={styles.label}>Razorpay Secret</label>
-            <input style={styles.input} placeholder="Enter Razorpay Secret" />
+            <input
+              style={styles.input}
+              value={settings.razorSecret}
+              onChange={(e) => handleChange("razorSecret", e.target.value)}
+              placeholder="Enter Razorpay Secret"
+            />
           </div>
-
-          <button style={styles.saveBtn}>Save Payment Keys</button>
         </div>
-      )}
+      </div>
+
+      <button style={styles.saveBtn} onClick={handleSave}>
+        Save All Settings
+      </button>
     </div>
   );
 };
