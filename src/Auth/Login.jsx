@@ -1,77 +1,92 @@
+// src/pages/Login.js
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axiosInstance from "../../src/Api/axiosInstance";
 
 const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // Define credentials for each role
-  const roleCredentials = {
-    superadmin: {
-      email: "superadmin@fit.com",
-      password: "superadmin123",
-      redirect: "/superadmin/dashboard",
-    },
-    admin: {
-      email: "admin@fit.com",
-      password: "admin123",
-      redirect: "/admin/dashboard",
-    },
-    generaltrainer: {
-      email: "trainer@fit.com",
-      password: "trainer123",
-      redirect: "/generaltrainer/dashboard",
-    },
-    personaltrainer: {
-      email: "ptrainer@fit.com",
-      password: "ptrainer123",
-      redirect: "/personaltrainer/dashboard",
-    },
-    member: {
-      email: "member@fit.com",
-      password: "member123",
-      redirect: "/member/dashboard",
-    },
-    housekeeping: {
-      email: "house@fit.com",
-      password: "house123",
-      redirect: "/housekeeping/dashboard",
-    },
-    receptionist: {
-      email: "reception@fit.com",
-      password: "reception123",
-      redirect: "/receptionist/dashboard",
-    },
+  const roleRedirectMap = {
+    SUPERADMIN: "/superadmin/dashboard",
+    ADMIN: "/admin/dashboard",
+    GENERALTRAINER: "/generaltrainer/dashboard",
+    PERSONALTRAINER: "/personaltrainer/dashboard",
+    MEMBER: "/member/dashboard",
+    HOUSEKEEPING: "/housekeeping/dashboard",
+    RECEPTIONIST: "/receptionist/dashboard",
   };
 
-  // Auto-fill login details when clicking a role button
-  const autoFillCredentials = (roleKey) => {
-    const role = roleCredentials[roleKey];
-    if (role) {
-      setEmail(role.email);
-      setPassword(role.password);
-    }
+  // Dummy user data for non-superadmin roles (DEV ONLY)
+  const dummyUsers = {
+    ADMIN: { id: 101, email: "admin@fit.com", role: "ADMIN" },
+    GENERALTRAINER: { id: 102, email: "trainer@fit.com", role: "GENERALTRAINER" },
+    PERSONALTRAINER: { id: 103, email: "ptrainer@fit.com", role: "PERSONALTRAINER" },
+    MEMBER: { id: 104, email: "member@fit.com", role: "MEMBER" },
+    HOUSEKEEPING: { id: 105, email: "house@fit.com", role: "HOUSEKEEPING" },
+    RECEPTIONIST: { id: 106, email: "reception@fit.com", role: "RECEPTIONIST" },
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
-    const matchedRole = Object.values(roleCredentials).find(
-      (role) => role.email === email && role.password === password
+    // ✅ Special case: ONLY superadmin uses real API
+    if (email === "superadmin@example.com" && password === "superadmin123") {
+      try {
+        const response = await axiosInstance.post("/auth/login", { email, password });
+        const { token, user } = response.data;
+
+        localStorage.setItem("authToken", token);
+        localStorage.setItem("userRole", user.role);
+        localStorage.setItem("userEmail", user.email);
+        localStorage.setItem("userId", user.id);
+
+        navigate(roleRedirectMap[user.role] || "/");
+      } catch (error) {
+        alert("Superadmin login failed: " + (error.response?.data?.message || "Check network or credentials"));
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    // 🔁 For ALL other roles: simulate login (NO API CALL)
+    const matchedRole = Object.values(dummyUsers).find(
+      (user) => user.email === email && password === "123456"
     );
 
     if (matchedRole) {
-      localStorage.setItem(
-        "userRole",
-        Object.keys(roleCredentials).find((key) => roleCredentials[key].email === email)
-      );
-      localStorage.setItem("userEmail", email);
+      // Use a fake but consistent token for dev
+      const fakeToken = `dev_fake_token_${matchedRole.role.toLowerCase()}_${Date.now()}`;
 
-      navigate(matchedRole.redirect);
+      localStorage.setItem("authToken", fakeToken);
+      localStorage.setItem("userRole", matchedRole.role);
+      localStorage.setItem("userEmail", matchedRole.email);
+      localStorage.setItem("userId", matchedRole.id);
+
+      navigate(roleRedirectMap[matchedRole.role] || "/");
     } else {
-      alert("Invalid email or password. Please try again.");
+      alert("Invalid credentials.\n\nFor dev testing:\n- Superadmin: superadmin@example.com / superadmin123\n- Others: use email from buttons + password '123456'");
+    }
+
+    setLoading(false);
+  };
+
+  // Auto-fill for any role
+  const autoFill = (role) => {
+    if (role === "SUPERADMIN") {
+      setEmail("superadmin@example.com");
+      setPassword("superadmin123");
+    } else {
+      const user = dummyUsers[role];
+      if (user) {
+        setEmail(user.email);
+        setPassword("123456"); // universal dev password
+      }
     }
   };
 
@@ -79,8 +94,6 @@ const Login = () => {
     <div className="container-fluid min-vh-100 d-flex align-items-center justify-content-center bg-light px-3">
       <div className="card shadow w-100" style={{ maxWidth: "950px", borderRadius: "1.5rem" }}>
         <div className="row g-0">
-          
-          {/* Image Side */}
           <div className="col-md-6 d-none d-md-block">
             <img
               src="https://hips.hearstapps.com/hmg-prod/images/muscular-man-doing-pushup-exercise-with-dumbbell-royalty-free-image-1728661212.jpg?crop=0.668xw:1.00xh;0.00680xw,0&resize=640:*"
@@ -90,30 +103,29 @@ const Login = () => {
             />
           </div>
 
-          {/* Form Side */}
           <div className="col-md-6 d-flex align-items-center p-5">
             <div className="w-100">
               <h2 className="fw-bold mb-3 text-center">Welcome Back!</h2>
               <p className="text-muted text-center mb-4">Please login to your account</p>
 
-              {/* Role Autofill Buttons */}
+              {/* Quick-fill buttons for ALL roles */}
               <div className="mb-4">
-                <p className="mb-2"><strong>Quick Login:</strong></p>
+                <p className="mb-2"><strong>Quick Login (Dev Mode):</strong></p>
                 <div className="d-flex flex-wrap gap-2">
-                  {Object.keys(roleCredentials).map((role) => (
+                  {Object.keys(roleRedirectMap).map((role) => (
                     <button
                       key={role}
                       type="button"
                       className="btn btn-outline-primary btn-sm"
-                      onClick={() => autoFillCredentials(role)}
+                      onClick={() => autoFill(role)}
                     >
-                      {role}
+                      {role.replace(/([A-Z])/g, " $1").trim()}
                     </button>
                   ))}
                 </div>
+             
               </div>
 
-              {/* Login Form */}
               <form onSubmit={handleSubmit}>
                 <div className="mb-3">
                   <label className="form-label">Email address</label>
@@ -136,11 +148,10 @@ const Login = () => {
                       onChange={(e) => setPassword(e.target.value)}
                       required
                     />
-
                     <span
                       className="position-absolute top-50 end-0 translate-middle-y pe-3"
-                      style={{ cursor: "pointer", zIndex: 10 }}
                       onClick={() => setShowPassword(!showPassword)}
+                      style={{ cursor: "pointer", zIndex: 10 }}
                     >
                       {showPassword ? (
                         <i className="bi bi-eye-slash-fill"></i>
@@ -151,11 +162,14 @@ const Login = () => {
                   </div>
                 </div>
 
-                <button type="submit" className="btn btn-warning w-100 py-2">
-                  Login
+                <button
+                  type="submit"
+                  className="btn btn-warning w-100 py-2"
+                  disabled={loading}
+                >
+                  {loading ? "Logging in..." : "Login"}
                 </button>
               </form>
-
             </div>
           </div>
         </div>
