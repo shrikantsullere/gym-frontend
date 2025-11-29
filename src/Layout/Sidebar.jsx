@@ -64,7 +64,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
     //   //  { name: "Setting", icon: faMoneyBillAlt, path: "/superadmin/setting" },
       
     // ],
-   superadmin: [
+    SUPERADMIN: [
   { name: "Dashboard", icon: faChartBar, path: "/superadmin/dashboard" },
   { name: "Admin", icon: faUsers, path: "/superadmin/Admin" },
   { name: "Request Plan", icon:  faClipboardCheck, path: "/superadmin/request-plan" },

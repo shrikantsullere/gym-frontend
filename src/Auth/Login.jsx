@@ -12,7 +12,7 @@ const Login = () => {
 
   const roleRedirectMap = {
     SUPERADMIN: "/superadmin/dashboard",
-    ADMIN: "/admin/dashboard",
+    ADMIN: "/admin/admin-dashboard",
     GENERALTRAINER: "/generaltrainer/dashboard",
     PERSONALTRAINER: "/personaltrainer/dashboard",
     MEMBER: "/member/dashboard",
