@@ -54,8 +54,17 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
     if (window.innerWidth <= 768) setCollapsed(true);
   };
 
+  // ------------------ MENUS ------------------
   const allMenus = {
-    SUPERADMIN: [
+    // superadmin: [
+    //   { name: "Dashboard", icon: faChartBar, path: "/superadmin/dashboard" },
+    //   { name: "Owner", icon: faUsers, path: "/superadmin/Owner" },
+    //   { name: "Plans & Pricing", icon: faStarOfDavid, path: "/superadmin/Plans&Pricing" },
+    //   { name: "Payments", icon: faMoneyBillAlt, path: "/superadmin/payments" }
+    //   //  { name: "Setting", icon: faMoneyBillAlt, path: "/superadmin/setting" },
+      
+    // ],
+   superadmin: [
   { name: "Dashboard", icon: faChartBar, path: "/superadmin/dashboard" },
   { name: "Admin", icon: faUsers, path: "/superadmin/Admin" },
   { name: "Request Plan", icon:  faClipboardCheck, path: "/superadmin/request-plan" },
@@ -65,13 +74,17 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
   
 ],
 
-    ADMIN: [
+
+
+    admin: [
       { name: "Dashboard", icon: faChartBar, path: "/admin/admin-dashboard" },
       { name: "Branches", icon: faGear, path: "/admin/AdminBranches" },
       { name: "Members", icon: faUsers, path: "/admin/AdminMember" },
       { name: "Create Plan", icon: faUsers, path: "/admin/createplan" },
+
       { name: "Classes Schedule", icon: faUsers, path: "/admin/classesSchedule" },
       { name: "Session Bookings", icon: faCalendarAlt, path: "/admin/bookings" },
+
       {
         name: "Staff",
         icon: faUsers,
@@ -82,17 +95,20 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
           { label: "Salary Calculator", path: "/admin/staff/salary-calculator" }
         ]
       },
+
       {
         name: "Personal Training Details",
         icon: faFileAlt,
         path: "/admin/booking/personal-training"
       },
+
       {
         name: "Payments",
         icon: faCalculator,
         path: "/admin/payments/membership",
         // subItems: [{ label: "Membership Payment", path: "/admin/payments/membership" }]
       },
+
       {
         name: "Reports",
         icon: faChartLine,
@@ -102,6 +118,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
           { label: "Attendance Report", path: "/admin/reports/AttendanceReport" }
         ]
       },
+
       {
         name: "Settings",
         icon: faGear,
@@ -109,7 +126,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
       }
     ],
 
-    HOUSEKEEPING: [
+    housekeeping: [
       { name: "Dashboard", icon: faChartBar, path: "/housekeeping/dashboard" },
       { name: "QR Check-in", icon: faGear, path: "/housekeeping/qrcheckin" },
       { name: "Duty Roster", icon: faUsers, path: "/housekeeping/members" },
@@ -118,21 +135,22 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
       { name: "Notifications", icon: faCalendarDays, path: "/housekeeping/class-schedule" }
     ],
 
-    GENERALTRAINER: [
+    generaltrainer: [
       { name: "Dashboard", icon: faChartBar, path: "/generaltrainer/dashboard" },
       { name: "Qr Check-in", icon: faGear, path: "/generaltrainer/qrcheckin" },
       { name: "GroupPlans & Bookings", icon: faUserGroup, path: "/generaltrainer/groupplansbookings" },
+      // { name: "Daily Schedule", icon: faChartArea, path: "/generaltrainer/DailyScedule" },
       { name: "Attendance", icon: faClipboardCheck, path: "/generaltrainer/attendance" },
       { name: "Reports Classes", icon: faFileAlt, path: "/generaltrainer/Reports" }
     ],
 
-    PERSONALTRAINER: [
+    personaltrainer: [
       { name: "Dashboard", icon: faChartBar, path: "/personaltrainer/dashboard" },
       { name: "QR Check-in", icon: faGear, path: "/personaltrainer/qrcheckin" },
       { name: "Plans & Bookings", icon: faBookAtlas, path: "/personaltrainer/PersonalPlansBookings" }
     ],
 
-    RECEPTIONIST: [
+    receptionist: [
       { name: "Dashboard", icon: faChartBar, path: "/receptionist/dashboard" },
       { name: "QR Check-in", icon: faGear, path: "/receptionist/qrcheckin" },
       { name: "Walk-in Registration", icon: faFileAlt, path: "/receptionist/walk-in-registration" },
@@ -142,7 +160,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
       { name: "Payment", icon: faFileAlt, path: "/receptionist/payemnet" }
     ],
 
-    MEMBER: [
+    member: [
       { name: "Dashboard", icon: faChartBar, path: "/member/dashboard" },
       { name: "QR Check-in", icon: faGear, path: "/member/qrcheckin" },
       { name: "View Plan", icon: faEye, path: "/member/viewplan" },
