@@ -12,22 +12,23 @@ const Login = () => {
 
   const roleRedirectMap = {
     SUPERADMIN: "/superadmin/dashboard",
-    ADMIN: "/admin/dashboard",
+    ADMIN: "/admin/admin-dashboard",
     GENERALTRAINER: "/generaltrainer/dashboard",
     PERSONALTRAINER: "/personaltrainer/dashboard",
     MEMBER: "/member/dashboard",
     HOUSEKEEPING: "/housekeeping/dashboard",
-    RECEPTIONIST: "/receptionist/dashboard",
+    RECEPTIONIST: "/receptionist/dashboard"
   };
 
   // Dummy user data for non-superadmin roles (DEV ONLY)
   const dummyUsers = {
-    ADMIN: { id: 101, email: "admin@fit.com", role: "ADMIN" },
-    GENERALTRAINER: { id: 102, email: "trainer@fit.com", role: "GENERALTRAINER" },
-    PERSONALTRAINER: { id: 103, email: "ptrainer@fit.com", role: "PERSONALTRAINER" },
-    MEMBER: { id: 104, email: "member@fit.com", role: "MEMBER" },
-    HOUSEKEEPING: { id: 105, email: "house@fit.com", role: "HOUSEKEEPING" },
-    RECEPTIONIST: { id: 106, email: "reception@fit.com", role: "RECEPTIONIST" },
+    SUPERADMIN: { id: 101, email: "admin@fit.com", role: "SUPERADMIN" },
+    ADMIN: { id: 102, email: "trainer@fit.com", role: "ADMIN" },
+    GENERALTRAINER: { id: 103, email: "ptrainer@fit.com", role: "GENERALTRAINER" },
+    PERSONALTRAINER: { id: 104, email: "member@fit.com", role: "PERSONALTRAINER" },
+    MEMBER: { id: 105, email: "house@fit.com", role: "MEMBER" },
+    HOUSEKEEPING: { id: 106, email: "reception@fit.com", role: "HOUSEKEEPING" },
+    RECEPTIONIST: { id: 107, email: "receptionist@fit.com", role: "RECEPTIONIST" }
   };
 
   const handleSubmit = async (e) => {

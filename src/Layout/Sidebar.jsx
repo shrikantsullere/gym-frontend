@@ -36,11 +36,27 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [activeMenu, setActiveMenu] = useState(null);
-  const [userRole, setUserRole] = useState("admin");
+  const [userRole, setUserRole] = useState(null); // Initialize as null instead of "admin"
 
   useEffect(() => {
-    const role = localStorage.getItem("userRole") || "admin";
-    setUserRole(role);
+    // Get role from localStorage and ensure it's uppercase to match our keys
+    const role = localStorage.getItem("userRole");
+    if (role) {
+      setUserRole(role.toUpperCase()); // Convert to uppercase to match our keys
+    }
+  }, []); // Add empty dependency array to run only once on mount
+
+  // Listen for storage changes to update role when it changes
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const role = localStorage.getItem("userRole");
+      if (role) {
+        setUserRole(role.toUpperCase());
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   const toggleMenu = (menuKey) => {
@@ -56,27 +72,16 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
 
   // ------------------ MENUS ------------------
   const allMenus = {
-    // superadmin: [
-    //   { name: "Dashboard", icon: faChartBar, path: "/superadmin/dashboard" },
-    //   { name: "Owner", icon: faUsers, path: "/superadmin/Owner" },
-    //   { name: "Plans & Pricing", icon: faStarOfDavid, path: "/superadmin/Plans&Pricing" },
-    //   { name: "Payments", icon: faMoneyBillAlt, path: "/superadmin/payments" }
-    //   //  { name: "Setting", icon: faMoneyBillAlt, path: "/superadmin/setting" },
-      
-    // ],
-   superadmin: [
-  { name: "Dashboard", icon: faChartBar, path: "/superadmin/dashboard" },
-  { name: "Admin", icon: faUsers, path: "/superadmin/Admin" },
-  { name: "Request Plan", icon:  faClipboardCheck, path: "/superadmin/request-plan" },
-  { name: "Plans & Pricing", icon: faChartLine, path: "/superadmin/Plans&Pricing" },
-  { name: "Payments", icon: faMoneyBillAlt, path: "/superadmin/payments" },
-  { name: "Setting", icon:  faCogs, path: "/superadmin/setting" },
-  
-],
+    SUPERADMIN: [
+      { name: "Dashboard", icon: faChartBar, path: "/superadmin/dashboard" },
+      { name: "Admin", icon: faUsers, path: "/superadmin/Admin" },
+      { name: "Request Plan", icon:  faClipboardCheck, path: "/superadmin/request-plan" },
+      { name: "Plans & Pricing", icon: faChartLine, path: "/superadmin/Plans&Pricing" },
+      { name: "Payments", icon: faMoneyBillAlt, path: "/superadmin/payments" },
+      { name: "Setting", icon:  faCogs, path: "/superadmin/setting" },
+    ],
 
-
-
-    admin: [
+    ADMIN: [
       { name: "Dashboard", icon: faChartBar, path: "/admin/admin-dashboard" },
       { name: "Branches", icon: faGear, path: "/admin/AdminBranches" },
       { name: "Members", icon: faUsers, path: "/admin/AdminMember" },
@@ -106,7 +111,6 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
         name: "Payments",
         icon: faCalculator,
         path: "/admin/payments/membership",
-        // subItems: [{ label: "Membership Payment", path: "/admin/payments/membership" }]
       },
 
       {
@@ -126,7 +130,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
       }
     ],
 
-    housekeeping: [
+    HOUSEKEEPING: [
       { name: "Dashboard", icon: faChartBar, path: "/housekeeping/dashboard" },
       { name: "QR Check-in", icon: faGear, path: "/housekeeping/qrcheckin" },
       { name: "Duty Roster", icon: faUsers, path: "/housekeeping/members" },
@@ -135,22 +139,21 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
       { name: "Notifications", icon: faCalendarDays, path: "/housekeeping/class-schedule" }
     ],
 
-    generaltrainer: [
+    GENERALTRAINER: [
       { name: "Dashboard", icon: faChartBar, path: "/generaltrainer/dashboard" },
       { name: "Qr Check-in", icon: faGear, path: "/generaltrainer/qrcheckin" },
       { name: "GroupPlans & Bookings", icon: faUserGroup, path: "/generaltrainer/groupplansbookings" },
-      // { name: "Daily Schedule", icon: faChartArea, path: "/generaltrainer/DailyScedule" },
       { name: "Attendance", icon: faClipboardCheck, path: "/generaltrainer/attendance" },
       { name: "Reports Classes", icon: faFileAlt, path: "/generaltrainer/Reports" }
     ],
 
-    personaltrainer: [
+    PERSONALTRAINER: [
       { name: "Dashboard", icon: faChartBar, path: "/personaltrainer/dashboard" },
       { name: "QR Check-in", icon: faGear, path: "/personaltrainer/qrcheckin" },
       { name: "Plans & Bookings", icon: faBookAtlas, path: "/personaltrainer/PersonalPlansBookings" }
     ],
 
-    receptionist: [
+    RECEPTIONIST: [
       { name: "Dashboard", icon: faChartBar, path: "/receptionist/dashboard" },
       { name: "QR Check-in", icon: faGear, path: "/receptionist/qrcheckin" },
       { name: "Walk-in Registration", icon: faFileAlt, path: "/receptionist/walk-in-registration" },
@@ -160,7 +163,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
       { name: "Payment", icon: faFileAlt, path: "/receptionist/payemnet" }
     ],
 
-    member: [
+    MEMBER: [
       { name: "Dashboard", icon: faChartBar, path: "/member/dashboard" },
       { name: "QR Check-in", icon: faGear, path: "/member/qrcheckin" },
       { name: "View Plan", icon: faEye, path: "/member/viewplan" },
@@ -169,7 +172,21 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
     ]
   };
 
-  const userMenus = allMenus[userRole] || allMenus.admin;
+  // Default to ADMIN if no role is found
+  const userMenus = userRole ? allMenus[userRole] : allMenus.ADMIN;
+
+  // Add a loading state or fallback if userRole is still null
+  if (!userRole) {
+    return <div className="sidebar-container">
+      <div className="sidebar">
+        <div className="p-3 text-center">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      </div>
+    </div>;
+  }
 
   return (
     <div className={`sidebar-container ${collapsed ? "collapsed" : ""}`}>
