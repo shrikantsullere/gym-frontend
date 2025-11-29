@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { 
   RiUserLine, 
   RiMoneyDollarCircleLine, 
@@ -14,6 +14,7 @@ import * as echarts from 'echarts';
 const AdminDashboard = () => {
   const memberGrowthChartRef = useRef(null);
   const revenueChartRef = useRef(null);
+  const [showAllActivities, setShowAllActivities] = useState(false);
 
   useEffect(() => {
     // Initialize Member Growth Chart
@@ -106,6 +107,46 @@ const AdminDashboard = () => {
     };
   }, []);
 
+  // Additional activities to show when "View All" is clicked
+  const additionalActivities = [
+    {
+      id: 5,
+      type: 'equipment-maintenance',
+      icon: <RiStoreLine className="text-secondary" />,
+      title: 'Equipment maintenance',
+      description: 'Treadmill #5 scheduled for maintenance',
+      time: '2 hours ago'
+    },
+    {
+      id: 6,
+      type: 'membership-renewal',
+      icon: <RiCalendarCheckLine className="text-success" />,
+      title: 'Membership renewal',
+      description: 'David Williams renewed annual membership',
+      time: '3 hours ago'
+    },
+    {
+      id: 7,
+      type: 'class-cancellation',
+      icon: <RiCalendarLine className="text-danger" />,
+      title: 'Class cancellation',
+      description: 'Evening Yoga class cancelled due to instructor illness',
+      time: '4 hours ago'
+    },
+    {
+      id: 8,
+      type: 'new-staff',
+      icon: <RiUserAddLine className="text-primary" />,
+      title: 'New staff member',
+      description: 'James Smith joined as Personal Trainer',
+      time: '5 hours ago'
+    }
+  ];
+
+  const handleViewAllActivities = () => {
+    setShowAllActivities(!showAllActivities);
+  };
+
   return (
     <div className="w-100 min-vh-100 p-0">
       <div className="">
@@ -115,7 +156,7 @@ const AdminDashboard = () => {
         </div>
 
         {/* Stats Cards - Responsive Grid */}
-    <div className="row g-3 mb-4">
+        <div className="row g-3 mb-4">
           {/* Total Branches Card */}
           <div className="col-6 col-md-4 col-lg">
             <div className="card shadow-sm h-100" data-testid="total-branches-card">
@@ -202,13 +243,6 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-
-        {/* Second Row of Stats */}
-        <div className="row g-3 mb-4">
-          {/* Active Staff Card */}
-          
-        </div>
-
         {/* Charts Section */}
         <div className="row g-3 mb-4">
           <div className="col-12 col-lg-6">
@@ -245,11 +279,18 @@ const AdminDashboard = () => {
               <div className="card-header bg-white border-0 pt-4 pb-0">
                 <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3">
                   <h3 className="h5 fw-semibold mb-2 mb-md-0">Recent Activities</h3>
-                  <button className="btn btn-sm btn-link text-primary p-0" data-testid="view-all-activities-btn">View All</button>
+                  <button 
+                    className="btn btn-sm btn-link text-primary p-0" 
+                    data-testid="view-all-activities-btn"
+                    onClick={handleViewAllActivities}
+                  >
+                    {showAllActivities ? 'Show Less' : 'View All'}
+                  </button>
                 </div>
               </div>
               <div className="card-body">
                 <div className="d-flex flex-column gap-3">
+                  {/* Original activities */}
                   <div className="d-flex align-items-center p-3 border rounded" data-testid="activity-new-member">
                     <div className="bg-success bg-opacity-10 p-2 rounded-circle me-3">
                       <RiUserAddLine className="text-success" />
@@ -293,6 +334,20 @@ const AdminDashboard = () => {
                     </div>
                     <span className="text-muted small">1 hour ago</span>
                   </div>
+
+                  {/* Additional activities shown when "View All" is clicked */}
+                  {showAllActivities && additionalActivities.map(activity => (
+                    <div key={activity.id} className="d-flex align-items-center p-3 border rounded">
+                      <div className="bg-secondary bg-opacity-10 p-2 rounded-circle me-3">
+                        {activity.icon}
+                      </div>
+                      <div className="flex-grow-1">
+                        <p className="fw-medium mb-0">{activity.title}</p>
+                        <p className="text-muted small mb-0">{activity.description}</p>
+                      </div>
+                      <span className="text-muted small">{activity.time}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -304,4 +359,3 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
-

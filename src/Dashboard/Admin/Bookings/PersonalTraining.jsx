@@ -86,7 +86,13 @@ const PersonalTraining = () => {
   };
 
   const handleDelete = (username) => {
-    if (window.confirm(`Are you sure you want to delete the booking for ${username}?`)) {
+    // Fixed the delete function
+    if (window.confirm(`Are you sure you want to delete booking for ${username}?`)) {
+      // Remove the item from the array
+      const updatedData = trainingData.filter(item => item.username !== username);
+      setTrainingData(updatedData);
+      
+      // Show success message
       alert(`Booking for ${username} has been deleted`);
     }
   };
@@ -176,16 +182,28 @@ const PersonalTraining = () => {
           </div>
           <div className="d-flex gap-1">
             <button
-              className="btn btn-sm btn-primary"
+              className="btn btn-sm"
               onClick={() => handleMobileShow(booking)}
-              style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem' }}
+              style={{ 
+                fontSize: '0.75rem', 
+                padding: '0.25rem 0.5rem',
+                color: customColor,
+                background: 'none',
+                border: 'none'
+              }}
             >
               <i className="bi bi-eye"></i>
             </button>
             <button
-              className="btn btn-sm btn-danger"
+              className="btn btn-sm"
               onClick={() => handleDelete(booking.username)}
-              style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem' }}
+              style={{ 
+                fontSize: '0.75rem', 
+                padding: '0.25rem 0.5rem',
+                color: '#dc3545',
+                background: 'none',
+                border: 'none'
+              }}
             >
               <i className="bi bi-trash"></i>
             </button>
@@ -256,16 +274,26 @@ const PersonalTraining = () => {
                   <td>
                     <div className="btn-group" role="group">
                       <button 
-                        className="btn btn-sm btn-info" 
+                        className="btn btn-sm" 
                         title="Show"
                         onClick={() => handleShow(data)}
+                        style={{ 
+                          color: customColor,
+                          background: 'none',
+                          border: 'none'
+                        }}
                       >
                         <i className="bi bi-eye"></i>
                       </button>
                       <button 
-                        className="btn btn-sm btn-danger" 
+                        className="btn btn-sm" 
                         title="Delete"
                         onClick={() => handleDelete(data.username)}
+                        style={{ 
+                          color: '#dc3545',
+                          background: 'none',
+                          border: 'none'
+                        }}
                       >
                         <i className="bi bi-trash"></i>
                       </button>

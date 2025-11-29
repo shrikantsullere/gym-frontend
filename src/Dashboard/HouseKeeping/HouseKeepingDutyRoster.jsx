@@ -417,12 +417,12 @@ const DutyRoster = () => {
                   </div>
                   
                   {isMyShift && (
-                    <div className="d-flex">
+                    <div className="d-flex flex-column">
                       {!shift.confirmed && (
                         <Button 
                           size="sm" 
                           variant="success" 
-                          className="me-2 flex-grow-1"
+                          className="mb-2"
                           onClick={() => {
                             setSelectedShift(shift);
                             setShowConfirmModal(true);
@@ -431,21 +431,62 @@ const DutyRoster = () => {
                           Confirm
                         </Button>
                       )}
-                      <Button 
+                      <div className="d-flex mb-2">
+                        <Button 
+                          size="sm" 
+                          variant="primary"
+                          className="flex-grow-1 me-2"
+                          style={{ 
+                            backgroundColor: customStyles.primaryColor,
+                            borderColor: customStyles.primaryColor
+                          }}
+                          onClick={() => {
+                            setSelectedShift(shift);
+                            setShowSwapModal(true);
+                          }}
+                        >
+                          <FaExchangeAlt /> Swap
+                        </Button>
+                        
+                        {/* Status dropdown for mobile */}
+                        <DropdownButton 
+                          variant="outline-secondary" 
+                          size="sm" 
+                          title="Status"
+                        >
+                          <Dropdown.Item onClick={() => handleStatusChange(shift.id, 'confirmed')}>
+                            <FaCheckCircle className="me-1 text-success" /> Confirmed
+                          </Dropdown.Item>
+                          <Dropdown.Item onClick={() => handleStatusChange(shift.id, 'completed')}>
+                            <FaCheckCircle className="me-1 text-info" /> Completed
+                          </Dropdown.Item>
+                          <Dropdown.Item onClick={() => handleStatusChange(shift.id, 'cancelled')}>
+                            <FaBan className="me-1 text-danger" /> Cancelled
+                          </Dropdown.Item>
+                        </DropdownButton>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Manager status change options for mobile */}
+                  {user.role === 'manager' && !isMyShift && (
+                    <div className="d-flex">
+                      <DropdownButton 
+                        variant="outline-secondary" 
                         size="sm" 
-                        variant="primary"
+                        title="Change Status"
                         className="flex-grow-1"
-                        style={{ 
-                          backgroundColor: customStyles.primaryColor,
-                          borderColor: customStyles.primaryColor
-                        }}
-                        onClick={() => {
-                          setSelectedShift(shift);
-                          setShowSwapModal(true);
-                        }}
                       >
-                        <FaExchangeAlt /> Swap
-                      </Button>
+                        <Dropdown.Item onClick={() => handleStatusChange(shift.id, 'confirmed')}>
+                          <FaCheckCircle className="me-1 text-success" /> Confirmed
+                        </Dropdown.Item>
+                        <Dropdown.Item onClick={() => handleStatusChange(shift.id, 'completed')}>
+                          <FaCheckCircle className="me-1 text-info" /> Completed
+                        </Dropdown.Item>
+                        <Dropdown.Item onClick={() => handleStatusChange(shift.id, 'cancelled')}>
+                          <FaBan className="me-1 text-danger" /> Cancelled
+                        </Dropdown.Item>
+                      </DropdownButton>
                     </div>
                   )}
                 </Card.Body>
@@ -1172,7 +1213,7 @@ const DutyRoster = () => {
         <Modal.Body>
           {selectedShift && (
             <div>
-              <p>Are you sure you want to change the status of this shift to <strong>{newStatus}</strong>?</p>
+              <p>Are you sure you want to change status of this shift to <strong>{newStatus}</strong>?</p>
               <div className="p-3 bg-light rounded">
                 <p className="mb-1"><strong>Date:</strong> {formatDate(selectedShift.date)}</p>
                 <p className="mb-1"><strong>Time:</strong> {selectedShift.startTime} - {selectedShift.endTime}</p>
