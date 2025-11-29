@@ -309,24 +309,19 @@ const ReceptionistQRCode = () => {
     }
   };
 
-  // Attendance Card Component - Removed device info section
+  // Attendance Card Component - Modified to put name and edit button on same line
   const AttendanceCard = ({ record }) => (
     <div className="card attendance-card shadow-sm h-100">
       <div className="card-body d-flex flex-column">
-        {/* Card Header */}
-        <div className="d-flex justify-content-between align-items-start mb-3">
-          <div className="flex-grow-1">
-            <h5 className="card-title mb-1">{record.member_name}</h5>
-            <p className="card-text text-muted small mb-0">{record.member_code}</p>
+        {/* Card Header - Name and Edit Button on Same Line */}
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <div className="d-flex align-items-center">
+            <div className="me-2">
+              <h5 className="card-title mb-0">{record.member_name}</h5>
+              <p className="card-text text-muted small mb-0">{record.member_code}</p>
+            </div>
           </div>
           <div className="d-flex gap-1">
-            <button
-              className="btn btn-sm btn-outline-secondary action-btn"
-              title="View"
-              onClick={() => handleView(record)}
-            >
-              <FaEye size={14} />
-            </button>
             <button
               className="btn btn-sm btn-outline-primary action-btn"
               title="Edit"
@@ -340,6 +335,13 @@ const ReceptionistQRCode = () => {
               onClick={() => handleDeleteClick(record)}
             >
               <FaTrashAlt size={14} />
+            </button>
+            <button
+              className="btn btn-sm btn-outline-secondary action-btn"
+              title="View"
+              onClick={() => handleView(record)}
+            >
+              <FaEye size={14} />
             </button>
           </div>
         </div>
