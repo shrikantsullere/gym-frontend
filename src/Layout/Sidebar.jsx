@@ -36,27 +36,11 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [activeMenu, setActiveMenu] = useState(null);
-  const [userRole, setUserRole] = useState(null); // Initialize as null instead of "admin"
+  const [userRole, setUserRole] = useState("admin");
 
   useEffect(() => {
-    // Get role from localStorage and ensure it's uppercase to match our keys
-    const role = localStorage.getItem("userRole");
-    if (role) {
-      setUserRole(role.toUpperCase()); // Convert to uppercase to match our keys
-    }
-  }, []); // Add empty dependency array to run only once on mount
-
-  // Listen for storage changes to update role when it changes
-  useEffect(() => {
-    const handleStorageChange = () => {
-      const role = localStorage.getItem("userRole");
-      if (role) {
-        setUserRole(role.toUpperCase());
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    const role = localStorage.getItem("userRole") || "admin";
+    setUserRole(role);
   }, []);
 
   const toggleMenu = (menuKey) => {
@@ -70,26 +54,24 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
     if (window.innerWidth <= 768) setCollapsed(true);
   };
 
-  // ------------------ MENUS ------------------
   const allMenus = {
     SUPERADMIN: [
-      { name: "Dashboard", icon: faChartBar, path: "/superadmin/dashboard" },
-      { name: "Admin", icon: faUsers, path: "/superadmin/Admin" },
-      { name: "Request Plan", icon:  faClipboardCheck, path: "/superadmin/request-plan" },
-      { name: "Plans & Pricing", icon: faChartLine, path: "/superadmin/Plans&Pricing" },
-      { name: "Payments", icon: faMoneyBillAlt, path: "/superadmin/payments" },
-      { name: "Setting", icon:  faCogs, path: "/superadmin/setting" },
-    ],
+  { name: "Dashboard", icon: faChartBar, path: "/superadmin/dashboard" },
+  { name: "Admin", icon: faUsers, path: "/superadmin/Admin" },
+  { name: "Request Plan", icon:  faClipboardCheck, path: "/superadmin/request-plan" },
+  { name: "Plans & Pricing", icon: faChartLine, path: "/superadmin/Plans&Pricing" },
+  { name: "Payments", icon: faMoneyBillAlt, path: "/superadmin/payments" },
+  { name: "Setting", icon:  faCogs, path: "/superadmin/setting" },
+  
+],
 
     ADMIN: [
       { name: "Dashboard", icon: faChartBar, path: "/admin/admin-dashboard" },
       { name: "Branches", icon: faGear, path: "/admin/AdminBranches" },
       { name: "Members", icon: faUsers, path: "/admin/AdminMember" },
       { name: "Create Plan", icon: faUsers, path: "/admin/createplan" },
-
       { name: "Classes Schedule", icon: faUsers, path: "/admin/classesSchedule" },
       { name: "Session Bookings", icon: faCalendarAlt, path: "/admin/bookings" },
-
       {
         name: "Staff",
         icon: faUsers,
@@ -100,19 +82,17 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
           { label: "Salary Calculator", path: "/admin/staff/salary-calculator" }
         ]
       },
-
       {
         name: "Personal Training Details",
         icon: faFileAlt,
         path: "/admin/booking/personal-training"
       },
-
       {
         name: "Payments",
         icon: faCalculator,
         path: "/admin/payments/membership",
+        // subItems: [{ label: "Membership Payment", path: "/admin/payments/membership" }]
       },
-
       {
         name: "Reports",
         icon: faChartLine,
@@ -122,7 +102,6 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
           { label: "Attendance Report", path: "/admin/reports/AttendanceReport" }
         ]
       },
-
       {
         name: "Settings",
         icon: faGear,
@@ -172,21 +151,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
     ]
   };
 
-  // Default to ADMIN if no role is found
-  const userMenus = userRole ? allMenus[userRole] : allMenus.ADMIN;
-
-  // Add a loading state or fallback if userRole is still null
-  if (!userRole) {
-    return <div className="sidebar-container">
-      <div className="sidebar">
-        <div className="p-3 text-center">
-          <div className="spinner-border text-primary" role="status">
-            <span className="visually-hidden">Loading...</span>
-          </div>
-        </div>
-      </div>
-    </div>;
-  }
+  const userMenus = allMenus[userRole] || allMenus.admin;
 
   return (
     <div className={`sidebar-container ${collapsed ? "collapsed" : ""}`}>
