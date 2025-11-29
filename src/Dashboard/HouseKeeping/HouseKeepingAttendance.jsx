@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   FaCalendarAlt, 
   FaCheckCircle, 
@@ -11,7 +11,11 @@ import {
   FaFileAlt,
   FaDownload,
   FaCalendarCheck,
-  FaCalendarTimes
+  FaCalendarTimes,
+  FaEdit,
+  FaSave,
+  FaTimes,
+  FaExclamationTriangle
 } from 'react-icons/fa';
 import { 
   Button, 
@@ -27,7 +31,9 @@ import {
   Dropdown,
   DropdownButton,
   Modal,
-  Pagination
+  Pagination,
+  Spinner,
+  Collapse  // Added this import
 } from 'react-bootstrap';
 
 // Mock data for housekeeping staff
@@ -147,8 +153,17 @@ const HouseKeepingAttendance = () => {
     staffId: '',
     status: ''
   });
+  const [searchTerm, setSearchTerm] = useState('');
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedAttendance, setSelectedAttendance] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingAttendance, setEditingAttendance] = useState(null);
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+  const [alertVariant, setAlertVariant] = useState('success');
+  const [isSaving, setIsSaving] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
   // Pagination states for Daily Attendance table
   const [dailyCurrentPage, setDailyCurrentPage] = useState(1);
@@ -176,6 +191,14 @@ const HouseKeepingAttendance = () => {
     setAttendanceForm(formState);
   }, [selectedDate, attendanceData, staffList]);
 
+  // Show alert message
+  const showAlertMessage = (message, variant = 'success') => {
+    setAlertMessage(message);
+    setAlertVariant(variant);
+    setShowAlert(true);
+    setTimeout(() => setShowAlert(false), 5000);
+  };
+
   // Handle form input changes
   const handleFormChange = (staffId, field, value) => {
     setAttendanceForm(prev => ({
@@ -187,50 +210,189 @@ const HouseKeepingAttendance = () => {
     }));
   };
 
-  // Submit attendance
-  const handleSubmitAttendance = () => {
-    // Create new attendance records
-    const newAttendance = [];
+  // Calculate work hours
+  const calculateWorkHours = (checkIn, checkOut) => {
+    if (!checkIn || !checkOut) return '0:00';
     
+    const [inHour, inMinute] = checkIn.split(':').map(Number);
+    const [outHour, outMinute] = checkOut.split(':').map(Number);
+    
+    const totalMinutes = (outHour * 60 + outMinute) - (inHour * 60 + inMinute);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    
+    return `${hours}:${minutes.toString().padStart(2, '0')}`;
+  };
+
+  // Validate attendance form
+  const validateAttendanceForm = () => {
+    let isValid = true;
+    let errorMessage = '';
+    
+    // Check if at least one staff has attendance marked
+    const hasMarkedAttendance = Object.values(attendanceForm).some(
+      staff => staff.status
+    );
+    
+    if (!hasMarkedAttendance) {
+      isValid = false;
+      errorMessage = 'Please mark attendance for at least one staff member';
+      return { isValid, errorMessage };
+    }
+    
+    // Validate check-in and check-out times
     Object.keys(attendanceForm).forEach(staffId => {
       const staffAttendance = attendanceForm[staffId];
       
-      // Only add if status is set
-      if (staffAttendance.status) {
-        // Check if attendance record already exists for this staff and date
-        const existingIndex = attendanceData.findIndex(
-          att => att.staffId === parseInt(staffId) && att.date === selectedDate
-        );
+      if (staffAttendance.status && staffAttendance.status !== 'absent') {
+        if (!staffAttendance.checkIn) {
+          isValid = false;
+          errorMessage = `Check-in time is required for ${staffList.find(s => s.id === parseInt(staffId))?.name}`;
+        }
         
-        const attendanceRecord = {
-          id: existingIndex >= 0 ? attendanceData[existingIndex].id : attendanceData.length + 1,
-          staffId: parseInt(staffId),
-          date: selectedDate,
-          checkIn: staffAttendance.checkIn || '',
-          checkOut: staffAttendance.checkOut || '',
-          status: staffAttendance.status,
-          notes: staffAttendance.notes || ''
-        };
-        
-        if (existingIndex >= 0) {
-          // Update existing record
-          attendanceData[existingIndex] = attendanceRecord;
-        } else {
-          // Add new record
-          newAttendance.push(attendanceRecord);
+        if (staffAttendance.checkIn && staffAttendance.checkOut) {
+          const [inHour, inMinute] = staffAttendance.checkIn.split(':').map(Number);
+          const [outHour, outMinute] = staffAttendance.checkOut.split(':').map(Number);
+          
+          if (inHour > outHour || (inHour === outHour && inMinute >= outMinute)) {
+            isValid = false;
+            errorMessage = `Check-out time must be after check-in time for ${staffList.find(s => s.id === parseInt(staffId))?.name}`;
+          }
         }
       }
     });
     
-    // Update state
-    setAttendanceData([...attendanceData, ...newAttendance]);
-    
-    // Show success message
-    alert('Attendance has been saved successfully!');
+    return { isValid, errorMessage };
   };
 
-  // Filter attendance data
-  const getFilteredAttendance = () => {
+  // Submit attendance
+  const handleSubmitAttendance = async () => {
+    const validation = validateAttendanceForm();
+    
+    if (!validation.isValid) {
+      showAlertMessage(validation.errorMessage, 'danger');
+      return;
+    }
+    
+    setIsSaving(true);
+    
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    try {
+      // Create new attendance records
+      const newAttendance = [];
+      
+      Object.keys(attendanceForm).forEach(staffId => {
+        const staffAttendance = attendanceForm[staffId];
+        
+        // Only add if status is set
+        if (staffAttendance.status) {
+          // Check if attendance record already exists for this staff and date
+          const existingIndex = attendanceData.findIndex(
+            att => att.staffId === parseInt(staffId) && att.date === selectedDate
+          );
+          
+          const attendanceRecord = {
+            id: existingIndex >= 0 ? attendanceData[existingIndex].id : attendanceData.length + 1,
+            staffId: parseInt(staffId),
+            date: selectedDate,
+            checkIn: staffAttendance.checkIn || '',
+            checkOut: staffAttendance.checkOut || '',
+            status: staffAttendance.status,
+            notes: staffAttendance.notes || ''
+          };
+          
+          if (existingIndex >= 0) {
+            // Update existing record
+            attendanceData[existingIndex] = attendanceRecord;
+          } else {
+            // Add new record
+            newAttendance.push(attendanceRecord);
+          }
+        }
+      });
+      
+      // Update state
+      setAttendanceData([...attendanceData, ...newAttendance]);
+      
+      // Show success message
+      showAlertMessage('Attendance has been saved successfully!', 'success');
+    } catch (error) {
+      showAlertMessage('Failed to save attendance. Please try again.', 'danger');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Edit attendance record
+  const handleEditAttendance = (attendance) => {
+    setEditingAttendance({...attendance});
+    setShowEditModal(true);
+  };
+
+  // Save edited attendance
+  const handleSaveEdit = async () => {
+    if (!editingAttendance) return;
+    
+    // Validate check-in and check-out times
+    if (editingAttendance.status && editingAttendance.status !== 'absent') {
+      if (!editingAttendance.checkIn) {
+        showAlertMessage('Check-in time is required', 'danger');
+        return;
+      }
+      
+      if (editingAttendance.checkIn && editingAttendance.checkOut) {
+        const [inHour, inMinute] = editingAttendance.checkIn.split(':').map(Number);
+        const [outHour, outMinute] = editingAttendance.checkOut.split(':').map(Number);
+        
+        if (inHour > outHour || (inHour === outHour && inMinute >= outMinute)) {
+          showAlertMessage('Check-out time must be after check-in time', 'danger');
+          return;
+        }
+      }
+    }
+    
+    setIsSaving(true);
+    
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    try {
+      // Update attendance record
+      const updatedAttendanceData = attendanceData.map(att => 
+        att.id === editingAttendance.id ? editingAttendance : att
+      );
+      
+      setAttendanceData(updatedAttendanceData);
+      setShowEditModal(false);
+      showAlertMessage('Attendance record updated successfully!', 'success');
+    } catch (error) {
+      showAlertMessage('Failed to update attendance. Please try again.', 'danger');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Export attendance data
+  const handleExportAttendance = async () => {
+    setIsExporting(true);
+    
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    try {
+      // In a real app, this would generate and download a file
+      showAlertMessage('Attendance report exported successfully!', 'success');
+    } catch (error) {
+      showAlertMessage('Failed to export report. Please try again.', 'danger');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  // Filter attendance data with search
+  const getFilteredAttendance = useMemo(() => {
     return attendanceData.filter(att => {
       // Date filter
       if (filter.startDate && att.date < filter.startDate) return false;
@@ -242,14 +404,39 @@ const HouseKeepingAttendance = () => {
       // Status filter
       if (filter.status && att.status !== filter.status) return false;
       
+      // Search filter
+      if (searchTerm) {
+        const staff = staffList.find(s => s.id === att.staffId);
+        const searchLower = searchTerm.toLowerCase();
+        
+        if (
+          !staff.name.toLowerCase().includes(searchLower) &&
+          !staff.position.toLowerCase().includes(searchLower) &&
+          !att.status.toLowerCase().includes(searchLower) &&
+          !att.date.includes(searchTerm) &&
+          !att.notes.toLowerCase().includes(searchLower)
+        ) {
+          return false;
+        }
+      }
+      
       return true;
     });
-  };
+  }, [attendanceData, filter, searchTerm, staffList]);
 
   // Format date for display
   const formatDate = (dateString) => {
     const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
     return new Date(dateString).toLocaleDateString(undefined, options);
+  };
+
+  // Format date for form input
+  const formatDateForInput = (dateString) => {
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
   // Get status badge
@@ -276,7 +463,7 @@ const HouseKeepingAttendance = () => {
 
   // Calculate attendance statistics
   const getAttendanceStats = () => {
-    const filtered = getFilteredAttendance();
+    const filtered = getFilteredAttendance;
     const total = filtered.length;
     const present = filtered.filter(att => att.status === 'present').length;
     const absent = filtered.filter(att => att.status === 'absent').length;
@@ -295,19 +482,29 @@ const HouseKeepingAttendance = () => {
   const totalDailyPages = Math.ceil(staffList.length / dailyEntriesPerPage);
 
   // Get current attendance records for history table
-  const filteredAttendance = getFilteredAttendance();
   const indexOfLastHistoryRecord = historyCurrentPage * historyEntriesPerPage;
   const indexOfFirstHistoryRecord = indexOfLastHistoryRecord - historyEntriesPerPage;
-  const currentHistoryRecords = filteredAttendance.slice(indexOfFirstHistoryRecord, indexOfLastHistoryRecord);
-  const totalHistoryPages = Math.ceil(filteredAttendance.length / historyEntriesPerPage);
+  const currentHistoryRecords = getFilteredAttendance.slice(indexOfFirstHistoryRecord, indexOfLastHistoryRecord);
+  const totalHistoryPages = Math.ceil(getFilteredAttendance.length / historyEntriesPerPage);
 
   // Pagination change handlers
   const paginateDaily = (pageNumber) => setDailyCurrentPage(pageNumber);
   const paginateHistory = (pageNumber) => setHistoryCurrentPage(pageNumber);
 
+  // Reset filters
+  const resetFilters = () => {
+    setFilter({
+      startDate: '',
+      endDate: '',
+      staffId: '',
+      status: ''
+    });
+    setSearchTerm('');
+  };
+
   return (
-    <div className="housekeeping-attendance-container">
-      {/* Custom styles for blue color replacement */}
+    <div className="housekeeping-attendance-container p-2 p-md-4">
+      {/* Custom styles for blue color replacement and responsive design */}
       <style>
         {`
           .btn-primary {
@@ -337,72 +534,159 @@ const HouseKeepingAttendance = () => {
             background-color: #6EB2CC !important;
             color: white !important;
           }
+          
+          /* Responsive styles */
+          .mobile-filter-toggle {
+            display: none;
+          }
+          
+          @media (max-width: 768px) {
+            .mobile-filter-toggle {
+              display: flex !important;
+            }
+            .desktop-filter {
+              display: none !important;
+            }
+            .table-responsive {
+              font-size: 0.85rem;
+            }
+            .btn-sm {
+              padding: 0.25rem 0.4rem;
+            }
+            .pagination {
+              flex-wrap: wrap;
+              justify-content: center;
+            }
+            .stats-card h5 {
+              font-size: 0.9rem !important;
+            }
+            .stats-card h3 {
+              font-size: 1.2rem !important;
+            }
+            .mobile-attendance-form .form-control {
+              font-size: 0.85rem;
+            }
+            .mobile-attendance-form .form-select {
+              font-size: 0.85rem;
+            }
+            .mobile-table-header {
+              font-size: 0.8rem;
+            }
+            .action-buttons-mobile {
+              display: flex;
+              justify-content: center;
+              margin-top: 0.5rem;
+            }
+            .action-buttons-desktop {
+              display: none;
+            }
+            .date-selector-mobile {
+              margin-bottom: 1rem;
+            }
+          }
+          
+          @media (min-width: 769px) {
+            .action-buttons-mobile {
+              display: none;
+            }
+            .action-buttons-desktop {
+              display: flex;
+            }
+            .date-selector-mobile {
+              margin-bottom: 0;
+            }
+          }
         `}
       </style>
 
+      {/* Alert */}
+      {showAlert && (
+        <Alert 
+          variant={alertVariant} 
+          dismissible 
+          onClose={() => setShowAlert(false)}
+          className="mb-4"
+        >
+          {alertMessage}
+        </Alert>
+      )}
+
       {/* Header */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <div>
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4">
+        <div className="text-center text-md-start mb-3 mb-md-0">
           <h2 className="mb-0">Housekeeping Attendance</h2>
           <p className="text-muted">Mark and track daily attendance</p>
         </div>
-        <div>
-          <Button variant="outline-primary">
-            <FaDownload className="me-2" /> Export Report
+        <div className="d-flex justify-content-center">
+          <Button 
+            variant="outline-primary" 
+            onClick={handleExportAttendance}
+            disabled={isExporting}
+          >
+            {isExporting ? (
+              <>
+                <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+                <span className="ms-2">Exporting...</span>
+              </>
+            ) : (
+              <>
+                <FaDownload className="me-2" /> Export Report
+              </>
+            )}
           </Button>
         </div>
       </div>
 
       {/* Stats Cards */}
       <Row className="mb-4">
-        <Col md={3} sm={6}>
-          <Card className="mb-3">
-            <Card.Body className="d-flex align-items-center">
-              <div className="me-3">
-                <FaUserAlt size={30} style={{ color: '#6EB2CC' }} />
+        <Col xs={6} md={3} className="mb-3">
+          <Card className="h-100 stats-card">
+            <Card.Body className="d-flex align-items-center p-2 p-md-3">
+              <div className="me-2 me-md-3">
+                <FaUserAlt size={20} style={{ color: '#6EB2CC' }} />
               </div>
-              <div>
-                <h5>Total Staff</h5>
-                <h3>{staffList.length}</h3>
-              </div>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={3} sm={6}>
-          <Card className="mb-3">
-            <Card.Body className="d-flex align-items-center">
-              <div className="me-3">
-                <FaCalendarCheck size={30} className="text-success" />
-              </div>
-              <div>
-                <h5>Present</h5>
-                <h3>{stats.present}</h3>
+              <div className="flex-grow-1 min-w-0">
+                <h5 className="mb-0 text-truncate">Total Staff</h5>
+                <h3 className="mb-0">{staffList.length}</h3>
               </div>
             </Card.Body>
           </Card>
         </Col>
-        <Col md={3} sm={6}>
-          <Card className="mb-3">
-            <Card.Body className="d-flex align-items-center">
-              <div className="me-3">
-                <FaCalendarTimes size={30} className="text-danger" />
+        <Col xs={6} md={3} className="mb-3">
+          <Card className="h-100 stats-card">
+            <Card.Body className="d-flex align-items-center p-2 p-md-3">
+              <div className="me-2 me-md-3">
+                <FaCalendarCheck size={20} className="text-success" />
               </div>
-              <div>
-                <h5>Absent</h5>
-                <h3>{stats.absent}</h3>
+              <div className="flex-grow-1 min-w-0">
+                <h5 className="mb-0 text-truncate">Present</h5>
+                <h3 className="mb-0">{stats.present}</h3>
               </div>
             </Card.Body>
           </Card>
         </Col>
-        <Col md={3} sm={6}>
-          <Card className="mb-3">
-            <Card.Body className="d-flex align-items-center">
-              <div className="me-3">
-                <FaClock size={30} className="text-warning" />
+        <Col xs={6} md={3} className="mb-3">
+          <Card className="h-100 stats-card">
+            <Card.Body className="d-flex align-items-center p-2 p-md-3">
+              <div className="me-2 me-md-3">
+                <FaCalendarTimes size={20} className="text-danger" />
               </div>
-              <div>
-                <h5>Late</h5>
-                <h3>{stats.late}</h3>
+              <div className="flex-grow-1 min-w-0">
+                <h5 className="mb-0 text-truncate">Absent</h5>
+                <h3 className="mb-0">{stats.absent}</h3>
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col xs={6} md={3} className="mb-3">
+          <Card className="h-100 stats-card">
+            <Card.Body className="d-flex align-items-center p-2 p-md-3">
+              <div className="me-2 me-md-3">
+                <FaClock size={20} className="text-warning" />
+              </div>
+              <div className="flex-grow-1 min-w-0">
+                <h5 className="mb-0 text-truncate">Late</h5>
+                <h3 className="mb-0">{stats.late}</h3>
               </div>
             </Card.Body>
           </Card>
@@ -411,82 +695,104 @@ const HouseKeepingAttendance = () => {
 
       {/* Mark Daily Attendance Section */}
       <Card className="mb-4">
-        <Card.Header className="d-flex justify-content-between align-items-center">
-          <h5 className="mb-0">Mark Daily Attendance</h5>
-          <div className="d-flex align-items-center">
+        <Card.Header className="d-flex flex-column flex-md-row justify-content-between align-items-center">
+          <h5 className="mb-2 mb-md-0">Mark Daily Attendance</h5>
+          <div className="d-flex flex-column flex-md-row align-items-center date-selector-mobile">
+            <Form.Label className="me-2 mb-0">Date:</Form.Label>
             <Form.Control 
               type="date" 
               className="me-2" 
               style={{ width: 'auto' }}
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
+              max={formatDateForInput(new Date())}
             />
+            <div className="text-muted">
+              {formatDate(selectedDate)}
+            </div>
           </div>
         </Card.Header>
         <Card.Body>
-          <Table responsive>
-            <thead>
-              <tr>
-                <th>Staff Name</th>
-                <th>Position</th>
-                <th>Status</th>
-                <th>Check In</th>
-                <th>Check Out</th>
-                <th>Notes</th>
-              </tr>
-            </thead>
-            <tbody>
-              {currentDailyStaff.map(staff => (
-                <tr key={staff.id}>
-                  <td>{staff.name}</td>
-                  <td>{staff.position}</td>
-                  <td>
-                    <Form.Select 
-                      value={attendanceForm[staff.id]?.status || ''}
-                      onChange={(e) => handleFormChange(staff.id, 'status', e.target.value)}
-                    >
-                      <option value="">Select Status</option>
-                      <option value="present">Present</option>
-                      <option value="absent">Absent</option>
-                      <option value="late">Late</option>
-                      <option value="leave">On Leave</option>
-                    </Form.Select>
-                  </td>
-                  <td>
-                    <Form.Control 
-                      type="time" 
-                      value={attendanceForm[staff.id]?.checkIn || ''}
-                      onChange={(e) => handleFormChange(staff.id, 'checkIn', e.target.value)}
-                      disabled={!attendanceForm[staff.id]?.status || attendanceForm[staff.id]?.status === 'absent'}
-                    />
-                  </td>
-                  <td>
-                    <Form.Control 
-                      type="time" 
-                      value={attendanceForm[staff.id]?.checkOut || ''}
-                      onChange={(e) => handleFormChange(staff.id, 'checkOut', e.target.value)}
-                      disabled={!attendanceForm[staff.id]?.status || attendanceForm[staff.id]?.status === 'absent'}
-                    />
-                  </td>
-                  <td>
-                    <Form.Control 
-                      type="text" 
-                      placeholder="Notes"
-                      value={attendanceForm[staff.id]?.notes || ''}
-                      onChange={(e) => handleFormChange(staff.id, 'notes', e.target.value)}
-                    />
-                  </td>
+          <div className="table-responsive">
+            <Table responsive bordered className="mobile-attendance-form">
+              <thead>
+                <tr>
+                  <th className="mobile-table-header">Staff Name</th>
+                  <th className="mobile-table-header">Position</th>
+                  <th className="mobile-table-header">Status</th>
+                  <th className="mobile-table-header">Check In</th>
+                  <th className="mobile-table-header">Check Out</th>
+                  <th className="mobile-table-header">Work Hours</th>
+                  <th className="mobile-table-header">Notes</th>
                 </tr>
-              ))}
-            </tbody>
-          </Table>
+              </thead>
+              <tbody>
+                {currentDailyStaff.map(staff => {
+                  const staffAttendance = attendanceForm[staff.id] || {};
+                  const workHours = calculateWorkHours(staffAttendance.checkIn, staffAttendance.checkOut);
+                  
+                  return (
+                    <tr key={staff.id}>
+                      <td className="text-truncate" style={{ maxWidth: '120px' }}>{staff.name}</td>
+                      <td className="text-truncate" style={{ maxWidth: '120px' }}>{staff.position}</td>
+                      <td>
+                        <Form.Select 
+                          size="sm"
+                          value={staffAttendance.status || ''}
+                          onChange={(e) => handleFormChange(staff.id, 'status', e.target.value)}
+                        >
+                          <option value="">Select Status</option>
+                          <option value="present">Present</option>
+                          <option value="absent">Absent</option>
+                          <option value="late">Late</option>
+                          <option value="leave">On Leave</option>
+                        </Form.Select>
+                      </td>
+                      <td>
+                        <Form.Control 
+                          type="time" 
+                          size="sm"
+                          value={staffAttendance.checkIn || ''}
+                          onChange={(e) => handleFormChange(staff.id, 'checkIn', e.target.value)}
+                          disabled={!staffAttendance.status || staffAttendance.status === 'absent'}
+                        />
+                      </td>
+                      <td>
+                        <Form.Control 
+                          type="time" 
+                          size="sm"
+                          value={staffAttendance.checkOut || ''}
+                          onChange={(e) => handleFormChange(staff.id, 'checkOut', e.target.value)}
+                          disabled={!staffAttendance.status || staffAttendance.status === 'absent'}
+                        />
+                      </td>
+                      <td>
+                        <div className="form-control-plaintext">
+                          {workHours}
+                        </div>
+                      </td>
+                      <td>
+                        <Form.Control 
+                          type="text" 
+                          size="sm"
+                          placeholder="Notes"
+                          value={staffAttendance.notes || ''}
+                          onChange={(e) => handleFormChange(staff.id, 'notes', e.target.value)}
+                        />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </Table>
+          </div>
           
           {/* Pagination for Daily Attendance Table */}
-          <div className="d-flex justify-content-between align-items-center mt-3">
-            <div>
+          <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mt-3">
+            <div className="text-center text-md-start mb-2 mb-md-0">
               Showing {indexOfFirstDailyStaff + 1} to {Math.min(indexOfLastDailyStaff, staffList.length)} of {staffList.length} staff
             </div>
-            <Pagination className="mb-0">
+            <Pagination className="mb-0 justify-content-center">
               <Pagination.First onClick={() => paginateDaily(1)} disabled={dailyCurrentPage === 1} />
               <Pagination.Prev onClick={() => paginateDaily(dailyCurrentPage - 1)} disabled={dailyCurrentPage === 1} />
               {[...Array(totalDailyPages)].map((_, index) => (
@@ -503,9 +809,22 @@ const HouseKeepingAttendance = () => {
             </Pagination>
           </div>
           
-          <div className="d-flex justify-content-end mt-3">
-            <Button variant="primary" onClick={handleSubmitAttendance}>
-              <FaCheckCircle className="me-2" /> Save Attendance
+          <div className="d-flex justify-content-center mt-3">
+            <Button 
+              variant="primary" 
+              onClick={handleSubmitAttendance}
+              disabled={isSaving}
+            >
+              {isSaving ? (
+                <>
+                  <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+                  <span className="ms-2">Saving...</span>
+                </>
+              ) : (
+                <>
+                  <FaCheckCircle className="me-2" /> Save Attendance
+                </>
+              )}
             </Button>
           </div>
         </Card.Body>
@@ -513,151 +832,331 @@ const HouseKeepingAttendance = () => {
 
       {/* Attendance History Section */}
       <Card>
-        <Card.Header className="d-flex justify-content-between align-items-center">
-          <div className="d-flex align-items-center">
+        <Card.Header className="d-flex flex-column flex-md-row justify-content-between align-items-center">
+          <div className="d-flex align-items-center mb-2 mb-md-0">
             <FaHistory className="me-2" size={18} />
             <span className="fw-bold">Attendance History</span>
           </div>
-          <div className="d-flex align-items-center">
-            <InputGroup className="me-2" style={{ width: '250px' }}>
-              <FormControl placeholder="Search attendance..." />
+          <div className="d-flex flex-column flex-md-row align-items-center">
+            <InputGroup className="me-2 mb-2 mb-md-0" style={{ width: '250px' }}>
+              <FormControl 
+                placeholder="Search attendance..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
               <Button variant="outline-secondary">
-                {/* <FaSearch /> */}
+                <FaSearch />
               </Button>
             </InputGroup>
-            <DropdownButton variant="outline-secondary" title="Filter">
-              <Dropdown.Item onClick={() => setFilter({ startDate: '', endDate: '', staffId: '', status: '' })}>
-                Clear Filters
-              </Dropdown.Item>
-            </DropdownButton>
+            <div className="desktop-filter">
+              <DropdownButton variant="outline-secondary" title="Filter">
+                <Dropdown.Item onClick={resetFilters}>
+                  Clear Filters
+                </Dropdown.Item>
+                <Dropdown.Divider />
+                <Dropdown.Header>Quick Filters</Dropdown.Header>
+                <Dropdown.Item onClick={() => setFilter({...filter, status: 'present'})}>
+                  Present Only
+                </Dropdown.Item>
+                <Dropdown.Item onClick={() => setFilter({...filter, status: 'absent'})}>
+                  Absent Only
+                </Dropdown.Item>
+                <Dropdown.Item onClick={() => setFilter({...filter, status: 'late'})}>
+                  Late Only
+                </Dropdown.Item>
+                <Dropdown.Item onClick={() => setFilter({...filter, status: 'leave'})}>
+                  On Leave Only
+                </Dropdown.Item>
+              </DropdownButton>
+            </div>
+            <div className="mobile-filter-toggle">
+              <Button 
+                variant="outline-secondary" 
+                onClick={() => setMobileFilterOpen(!mobileFilterOpen)}
+              >
+                <FaFilter className="me-2" /> Filters
+              </Button>
+            </div>
           </div>
         </Card.Header>
         <Card.Body>
           {/* Filter Controls */}
-          <Row className="mb-3">
-            <Col xs={12} md={3} className="mb-3">
-              <Form.Group>
-                <Form.Label>From Date</Form.Label>
-                <Form.Control 
-                  type="date" 
-                  value={filter.startDate}
-                  onChange={(e) => setFilter({...filter, startDate: e.target.value})}
-                />
-              </Form.Group>
-            </Col>
-            <Col xs={12} md={3} className="mb-3">
-              <Form.Group>
-                <Form.Label>To Date</Form.Label>
-                <Form.Control 
-                  type="date" 
-                  value={filter.endDate}
-                  onChange={(e) => setFilter({...filter, endDate: e.target.value})}
-                />
-              </Form.Group>
-            </Col>
-            <Col xs={12} md={3} className="mb-3">
-              <Form.Group>
-                <Form.Label>Staff</Form.Label>
-                <Form.Select 
-                  value={filter.staffId}
-                  onChange={(e) => setFilter({...filter, staffId: e.target.value})}
-                >
-                  <option value="">All Staff</option>
-                  {staffList.map(staff => (
-                    <option key={staff.id} value={staff.id}>{staff.name}</option>
-                  ))}
-                </Form.Select>
-              </Form.Group>
-            </Col>
-            <Col xs={12} md={3} className="mb-3">
-              <Form.Group>
-                <Form.Label>Status</Form.Label>
-                <Form.Select 
-                  value={filter.status}
-                  onChange={(e) => setFilter({...filter, status: e.target.value})}
-                >
-                  <option value="">All Status</option>
-                  <option value="present">Present</option>
-                  <option value="absent">Absent</option>
-                  <option value="late">Late</option>
-                  <option value="leave">On Leave</option>
-                </Form.Select>
-              </Form.Group>
-            </Col>
-          </Row>
+          <div className="desktop-filter">
+            <Row className="mb-3">
+              <Col xs={12} md={3} className="mb-3">
+                <Form.Group>
+                  <Form.Label>From Date</Form.Label>
+                  <Form.Control 
+                    type="date" 
+                    value={filter.startDate}
+                    onChange={(e) => setFilter({...filter, startDate: e.target.value})}
+                  />
+                </Form.Group>
+              </Col>
+              <Col xs={12} md={3} className="mb-3">
+                <Form.Group>
+                  <Form.Label>To Date</Form.Label>
+                  <Form.Control 
+                    type="date" 
+                    value={filter.endDate}
+                    onChange={(e) => setFilter({...filter, endDate: e.target.value})}
+                  />
+                </Form.Group>
+              </Col>
+              <Col xs={12} md={3} className="mb-3">
+                <Form.Group>
+                  <Form.Label>Staff</Form.Label>
+                  <Form.Select 
+                    value={filter.staffId}
+                    onChange={(e) => setFilter({...filter, staffId: e.target.value})}
+                  >
+                    <option value="">All Staff</option>
+                    {staffList.map(staff => (
+                      <option key={staff.id} value={staff.id}>{staff.name}</option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+              <Col xs={12} md={3} className="mb-3">
+                <Form.Group>
+                  <Form.Label>Status</Form.Label>
+                  <Form.Select 
+                    value={filter.status}
+                    onChange={(e) => setFilter({...filter, status: e.target.value})}
+                  >
+                    <option value="">All Status</option>
+                    <option value="present">Present</option>
+                    <option value="absent">Absent</option>
+                    <option value="late">Late</option>
+                    <option value="leave">On Leave</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+            </Row>
+          </div>
+
+          {/* Mobile Filter Menu */}
+          <div className="mobile-filter-toggle">
+            <Collapse in={mobileFilterOpen}>
+              <div className="mb-3">
+                <Row>
+                  <Col xs={12} className="mb-2">
+                    <Form.Label>From Date</Form.Label>
+                    <Form.Control 
+                      type="date" 
+                      value={filter.startDate}
+                      onChange={(e) => setFilter({...filter, startDate: e.target.value})}
+                    />
+                  </Col>
+                  <Col xs={12} className="mb-2">
+                    <Form.Label>To Date</Form.Label>
+                    <Form.Control 
+                      type="date" 
+                      value={filter.endDate}
+                      onChange={(e) => setFilter({...filter, endDate: e.target.value})}
+                    />
+                  </Col>
+                  <Col xs={12} className="mb-2">
+                    <Form.Label>Staff</Form.Label>
+                    <Form.Select 
+                      value={filter.staffId}
+                      onChange={(e) => setFilter({...filter, staffId: e.target.value})}
+                    >
+                      <option value="">All Staff</option>
+                      {staffList.map(staff => (
+                        <option key={staff.id} value={staff.id}>{staff.name}</option>
+                      ))}
+                    </Form.Select>
+                  </Col>
+                  <Col xs={12} className="mb-2">
+                    <Form.Label>Status</Form.Label>
+                    <Form.Select 
+                      value={filter.status}
+                      onChange={(e) => setFilter({...filter, status: e.target.value})}
+                    >
+                      <option value="">All Status</option>
+                      <option value="present">Present</option>
+                      <option value="absent">Absent</option>
+                      <option value="late">Late</option>
+                      <option value="leave">On Leave</option>
+                    </Form.Select>
+                  </Col>
+                  <Col xs={12} className="mb-2">
+                    <div className="d-flex flex-wrap gap-2">
+                      <Button 
+                        variant="outline-secondary" 
+                        size="sm"
+                        onClick={() => setFilter({...filter, status: 'present'})}
+                      >
+                        Present Only
+                      </Button>
+                      <Button 
+                        variant="outline-secondary" 
+                        size="sm"
+                        onClick={() => setFilter({...filter, status: 'absent'})}
+                      >
+                        Absent Only
+                      </Button>
+                      <Button 
+                        variant="outline-secondary" 
+                        size="sm"
+                        onClick={() => setFilter({...filter, status: 'late'})}
+                      >
+                        Late Only
+                      </Button>
+                      <Button 
+                        variant="outline-secondary" 
+                        size="sm"
+                        onClick={() => setFilter({...filter, status: 'leave'})}
+                      >
+                        On Leave Only
+                      </Button>
+                    </div>
+                  </Col>
+                  <Col xs={12}>
+                    <Button 
+                      variant="outline-primary" 
+                      size="sm"
+                      onClick={resetFilters}
+                    >
+                      Clear All Filters
+                    </Button>
+                  </Col>
+                </Row>
+              </div>
+            </Collapse>
+          </div>
+
+          {/* Active Filters Display */}
+          {(filter.startDate || filter.endDate || filter.staffId || filter.status || searchTerm) && (
+            <div className="mb-3">
+              <span className="fw-bold">Active Filters: </span>
+              {filter.startDate && <Badge className="me-1">From: {formatDate(filter.startDate)}</Badge>}
+              {filter.endDate && <Badge className="me-1">To: {formatDate(filter.endDate)}</Badge>}
+              {filter.staffId && (
+                <Badge className="me-1">
+                  Staff: {staffList.find(s => s.id === parseInt(filter.staffId))?.name}
+                </Badge>
+              )}
+              {filter.status && <Badge className="me-1">Status: {filter.status}</Badge>}
+              {searchTerm && <Badge className="me-1">Search: {searchTerm}</Badge>}
+              <Button variant="link" size="sm" onClick={resetFilters}>Clear All</Button>
+            </div>
+          )}
 
           {/* Attendance Table */}
-          <Table responsive>
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Staff Name</th>
-                <th>Position</th>
-                <th>Status</th>
-                <th>Check In</th>
-                <th>Check Out</th>
-                <th>Notes</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {currentHistoryRecords.map(attendance => {
-                const staff = staffList.find(s => s.id === attendance.staffId);
-                return (
-                  <tr key={attendance.id}>
-                    <td>{formatDate(attendance.date)}</td>
-                    <td>{staff.name}</td>
-                    <td>{staff.position}</td>
-                    <td>{getStatusBadge(attendance.status)}</td>
-                    <td>{attendance.checkIn || '-'}</td>
-                    <td>{attendance.checkOut || '-'}</td>
-                    <td style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>
-                      {attendance.notes || '-'}
-                    </td>
-                    <td>
-                      {/* ✅ Enhanced for Mobile: Wrap button in flex container */}
-                      <div className="d-flex justify-content-center">
-                        <Button 
-                          size="sm" 
-                          variant="outline-primary"
-                          onClick={() => showAttendanceDetails(attendance)}
-                        >
-                          <FaFileAlt />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </Table>
+          <div className="table-responsive">
+            <Table responsive bordered>
+              <thead>
+                <tr>
+                  <th className="mobile-table-header">Date</th>
+                  <th className="mobile-table-header">Staff Name</th>
+                  <th className="mobile-table-header">Position</th>
+                  <th className="mobile-table-header">Status</th>
+                  <th className="mobile-table-header">Check In</th>
+                  <th className="mobile-table-header">Check Out</th>
+                  <th className="mobile-table-header">Work Hours</th>
+                  <th className="mobile-table-header">Notes</th>
+                  <th className="mobile-table-header">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentHistoryRecords.map(attendance => {
+                  const staff = staffList.find(s => s.id === attendance.staffId);
+                  const workHours = calculateWorkHours(attendance.checkIn, attendance.checkOut);
+                  
+                  return (
+                    <tr key={attendance.id}>
+                      <td className="text-truncate" style={{ maxWidth: '100px' }}>{formatDate(attendance.date)}</td>
+                      <td className="text-truncate" style={{ maxWidth: '120px' }}>{staff.name}</td>
+                      <td className="text-truncate" style={{ maxWidth: '120px' }}>{staff.position}</td>
+                      <td>{getStatusBadge(attendance.status)}</td>
+                      <td>{attendance.checkIn || '-'}</td>
+                      <td>{attendance.checkOut || '-'}</td>
+                      <td>{workHours}</td>
+                      <td style={{ maxWidth: '150px', wordBreak: 'break-word' }}>
+                        {attendance.notes || '-'}
+                      </td>
+                      <td>
+                        <div className="action-buttons-desktop justify-content-center">
+                          <Button 
+                            size="sm" 
+                            variant="outline-primary"
+                            className="me-1"
+                            onClick={() => showAttendanceDetails(attendance)}
+                          >
+                            <FaFileAlt />
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="outline-secondary"
+                            onClick={() => handleEditAttendance(attendance)}
+                          >
+                            <FaEdit />
+                          </Button>
+                        </div>
+                        <div className="action-buttons-mobile">
+                          <Button 
+                            size="sm" 
+                            variant="outline-primary"
+                            className="me-1"
+                            onClick={() => showAttendanceDetails(attendance)}
+                          >
+                            <FaFileAlt />
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="outline-secondary"
+                            onClick={() => handleEditAttendance(attendance)}
+                          >
+                            <FaEdit />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </Table>
+          </div>
+          
+          {/* No Results Message */}
+          {currentHistoryRecords.length === 0 && (
+            <div className="text-center py-4">
+              <FaExclamationTriangle size={48} className="text-muted mb-3" />
+              <h5>No attendance records found</h5>
+              <p className="text-muted">Try adjusting your filters or search terms</p>
+            </div>
+          )}
           
           {/* Pagination for Attendance History Table */}
-          <div className="d-flex justify-content-between align-items-center mt-3">
-            <div>
-              Showing {indexOfFirstHistoryRecord + 1} to {Math.min(indexOfLastHistoryRecord, filteredAttendance.length)} of {filteredAttendance.length} records
+          {currentHistoryRecords.length > 0 && (
+            <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mt-3">
+              <div className="text-center text-md-start mb-2 mb-md-0">
+                Showing {indexOfFirstHistoryRecord + 1} to {Math.min(indexOfLastHistoryRecord, getFilteredAttendance.length)} of {getFilteredAttendance.length} records
+              </div>
+              <Pagination className="mb-0 justify-content-center">
+                <Pagination.First onClick={() => paginateHistory(1)} disabled={historyCurrentPage === 1} />
+                <Pagination.Prev onClick={() => paginateHistory(historyCurrentPage - 1)} disabled={historyCurrentPage === 1} />
+                {[...Array(totalHistoryPages)].map((_, index) => (
+                  <Pagination.Item
+                    key={index + 1}
+                    active={index + 1 === historyCurrentPage}
+                    onClick={() => paginateHistory(index + 1)}
+                  >
+                    {index + 1}
+                  </Pagination.Item>
+                ))}
+                <Pagination.Next onClick={() => paginateHistory(historyCurrentPage + 1)} disabled={historyCurrentPage === totalHistoryPages} />
+                <Pagination.Last onClick={() => paginateHistory(totalHistoryPages)} disabled={historyCurrentPage === totalHistoryPages} />
+              </Pagination>
             </div>
-            <Pagination className="mb-0">
-              <Pagination.First onClick={() => paginateHistory(1)} disabled={historyCurrentPage === 1} />
-              <Pagination.Prev onClick={() => paginateHistory(historyCurrentPage - 1)} disabled={historyCurrentPage === 1} />
-              {[...Array(totalHistoryPages)].map((_, index) => (
-                <Pagination.Item
-                  key={index + 1}
-                  active={index + 1 === historyCurrentPage}
-                  onClick={() => paginateHistory(index + 1)}
-                >
-                  {index + 1}
-                </Pagination.Item>
-              ))}
-              <Pagination.Next onClick={() => paginateHistory(historyCurrentPage + 1)} disabled={historyCurrentPage === totalHistoryPages} />
-              <Pagination.Last onClick={() => paginateHistory(totalHistoryPages)} disabled={historyCurrentPage === totalHistoryPages} />
-            </Pagination>
-          </div>
+          )}
         </Card.Body>
       </Card>
 
       {/* Attendance Details Modal */}
-      <Modal show={showDetailsModal} onHide={() => setShowDetailsModal(false)}>
+      <Modal show={showDetailsModal} onHide={() => setShowDetailsModal(false)} size="lg" centered>
         <Modal.Header closeButton>
           <Modal.Title>Attendance Details</Modal.Title>
         </Modal.Header>
@@ -665,23 +1164,31 @@ const HouseKeepingAttendance = () => {
           {selectedAttendance && (
             <div>
               <Row className="mb-3">
-                <Col md={6}>
+                <Col xs={12} md={6}>
                   <p><strong>Date:</strong> {formatDate(selectedAttendance.date)}</p>
                 </Col>
-                <Col md={6}>
+                <Col xs={12} md={6}>
                   <p><strong>Status:</strong> {getStatusBadge(selectedAttendance.status)}</p>
                 </Col>
               </Row>
               <Row className="mb-3">
-                <Col md={6}>
+                <Col xs={12} md={6}>
                   <p><strong>Check In:</strong> {selectedAttendance.checkIn || 'Not recorded'}</p>
                 </Col>
-                <Col md={6}>
+                <Col xs={12} md={6}>
                   <p><strong>Check Out:</strong> {selectedAttendance.checkOut || 'Not recorded'}</p>
                 </Col>
               </Row>
               <Row className="mb-3">
-                <Col md={12}>
+                <Col xs={12} md={6}>
+                  <p><strong>Work Hours:</strong> {calculateWorkHours(selectedAttendance.checkIn, selectedAttendance.checkOut)}</p>
+                </Col>
+                <Col xs={12} md={6}>
+                  <p><strong>Staff:</strong> {staffList.find(s => s.id === selectedAttendance.staffId)?.name}</p>
+                </Col>
+              </Row>
+              <Row className="mb-3">
+                <Col xs={12}>
                   <p><strong>Notes:</strong> {selectedAttendance.notes || 'No notes'}</p>
                 </Col>
               </Row>
@@ -691,6 +1198,104 @@ const HouseKeepingAttendance = () => {
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowDetailsModal(false)}>
             Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Edit Attendance Modal */}
+      <Modal show={showEditModal} onHide={() => setShowEditModal(false)} size="lg" centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Edit Attendance</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {editingAttendance && (
+            <div>
+              <Row className="mb-3">
+                <Col xs={12} md={6}>
+                  <Form.Group>
+                    <Form.Label>Date</Form.Label>
+                    <Form.Control 
+                      type="date" 
+                      value={editingAttendance.date}
+                      onChange={(e) => setEditingAttendance({...editingAttendance, date: e.target.value})}
+                    />
+                  </Form.Group>
+                </Col>
+                <Col xs={12} md={6}>
+                  <Form.Group>
+                    <Form.Label>Status</Form.Label>
+                    <Form.Select 
+                      value={editingAttendance.status}
+                      onChange={(e) => setEditingAttendance({...editingAttendance, status: e.target.value})}
+                    >
+                      <option value="">Select Status</option>
+                      <option value="present">Present</option>
+                      <option value="absent">Absent</option>
+                      <option value="late">Late</option>
+                      <option value="leave">On Leave</option>
+                    </Form.Select>
+                  </Form.Group>
+                </Col>
+              </Row>
+              <Row className="mb-3">
+                <Col xs={12} md={6}>
+                  <Form.Group>
+                    <Form.Label>Check In</Form.Label>
+                    <Form.Control 
+                      type="time" 
+                      value={editingAttendance.checkIn}
+                      onChange={(e) => setEditingAttendance({...editingAttendance, checkIn: e.target.value})}
+                      disabled={!editingAttendance.status || editingAttendance.status === 'absent'}
+                    />
+                  </Form.Group>
+                </Col>
+                <Col xs={12} md={6}>
+                  <Form.Group>
+                    <Form.Label>Check Out</Form.Label>
+                    <Form.Control 
+                      type="time" 
+                      value={editingAttendance.checkOut}
+                      onChange={(e) => setEditingAttendance({...editingAttendance, checkOut: e.target.value})}
+                      disabled={!editingAttendance.status || editingAttendance.status === 'absent'}
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+              <Row className="mb-3">
+                <Col xs={12}>
+                  <Form.Group>
+                    <Form.Label>Notes</Form.Label>
+                    <Form.Control 
+                      as="textarea"
+                      rows={3}
+                      value={editingAttendance.notes}
+                      onChange={(e) => setEditingAttendance({...editingAttendance, notes: e.target.value})}
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowEditModal(false)}>
+            Cancel
+          </Button>
+          <Button 
+            variant="primary" 
+            onClick={handleSaveEdit}
+            disabled={isSaving}
+          >
+            {isSaving ? (
+              <>
+                <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+                <span className="ms-2">Saving...</span>
+              </>
+            ) : (
+              <>
+                <FaSave className="me-2" /> Save Changes
+              </>
+            )}
           </Button>
         </Modal.Footer>
       </Modal>

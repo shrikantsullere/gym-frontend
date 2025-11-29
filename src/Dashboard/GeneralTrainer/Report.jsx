@@ -65,8 +65,8 @@ const Report = () => {
 
   return (
     <div className="trainer-dashboard">
-      <div className="dashboard-header ">
-        
+      <div className="dashboard-header">
+        <h1 className="text-center fw-bold mb-2">Student Performance Report</h1>
         <p className="text-center text-muted">
           Student Performance Overview
         </p>
@@ -74,20 +74,22 @@ const Report = () => {
       
       {/* Filters Section */}
       <Card className="mb-4 shadow-sm">
-        <Card.Body>
+        <Card.Body className="p-3 p-md-4">
           <Row className="align-items-center mb-3">
-            <Col>
+            <Col xs={8}>
               <h5 className="mb-0"><FaFilter className="me-2" />Filter Reports</h5>
             </Col>
-            <Col className="text-end">
-              <Button variant="outline-primary" size="sm">
-                <FaDownload className="me-1" /> Export
+            <Col xs={4} className="text-end">
+              <Button variant="outline-primary" size="sm" className="w-100">
+                <FaDownload className="me-1 d-none d-md-inline" /> 
+                <span className="d-md-none">Export</span>
+                <span className="d-none d-md-inline"> Export</span>
               </Button>
             </Col>
           </Row>
           
           <Row>
-            <Col md={4}>
+            <Col xs={12} md={4}>
               <Form.Group className="mb-3">
                 <Form.Label>Class Type</Form.Label>
                 <Form.Select
@@ -103,7 +105,7 @@ const Report = () => {
                 </Form.Select>
               </Form.Group>
             </Col>
-            <Col md={4}>
+            <Col xs={12} md={4}>
               <Form.Group className="mb-3">
                 <Form.Label>From Date</Form.Label>
                 <Form.Control
@@ -114,7 +116,7 @@ const Report = () => {
                 />
               </Form.Group>
             </Col>
-            <Col md={4}>
+            <Col xs={12} md={4}>
               <Form.Group className="mb-3">
                 <Form.Label>To Date</Form.Label>
                 <Form.Control
@@ -127,11 +129,11 @@ const Report = () => {
             </Col>
           </Row>
           
-          <div className="d-flex gap-2">
-            <Button variant="primary" onClick={handleGenerateReport}>
+          <div className="d-flex gap-2 flex-wrap">
+            <Button variant="primary" onClick={handleGenerateReport} className="flex-fill flex-md-grow-0">
               Apply Filters
             </Button>
-            <Button variant="outline-secondary" onClick={handleReset}>
+            <Button variant="outline-secondary" onClick={handleReset} className="flex-fill flex-md-grow-0">
               Reset
             </Button>
           </div>
@@ -139,48 +141,48 @@ const Report = () => {
       </Card>
       
       {/* Summary Cards */}
-      <Row className="mb-4">
-        <Col md={3}>
+      <Row className="mb-4 g-3">
+        <Col xs={6} md={3}>
           <Card className="h-100 border-0 shadow-sm text-center">
-            <Card.Body>
+            <Card.Body className="p-3">
               <div className="icon-circle bg-primary bg-opacity-10 text-primary mb-3">
-                <FaUsers className="fs-2" />
+                <FaUsers className="fs-4" />
               </div>
-              <Card.Title>Total Students</Card.Title>
+              <Card.Title className="fs-6">Total Students</Card.Title>
               <h2 className="my-2">{totalStudents}</h2>
             </Card.Body>
           </Card>
         </Col>
-        <Col md={3}>
+        <Col xs={6} md={3}>
           <Card className="h-100 border-0 shadow-sm text-center">
-            <Card.Body>
+            <Card.Body className="p-3">
               <div className="icon-circle bg-success bg-opacity-10 text-success mb-3">
-                <FaUsers className="fs-2" />
+                <FaUsers className="fs-4" />
               </div>
-              <Card.Title>Present Students</Card.Title>
+              <Card.Title className="fs-6">Present Students</Card.Title>
               <h2 className="my-2">{totalPresent}</h2>
             </Card.Body>
           </Card>
         </Col>
-        <Col md={3}>
+        <Col xs={6} md={3}>
           <Card className="h-100 border-0 shadow-sm text-center">
-            <Card.Body>
+            <Card.Body className="p-3">
               <div className="icon-circle bg-info bg-opacity-10 text-info mb-3">
-                <FaChartBar className="fs-2" />
+                <FaChartBar className="fs-4" />
               </div>
-              <Card.Title>Avg. Attendance</Card.Title>
+              <Card.Title className="fs-6">Avg. Attendance</Card.Title>
               <h2 className="my-2">{avgAttendance}%</h2>
               <ProgressBar now={avgAttendance} variant="info" className="mt-2" />
             </Card.Body>
           </Card>
         </Col>
-        <Col md={3}>
+        <Col xs={6} md={3}>
           <Card className="h-100 border-0 shadow-sm text-center">
-            <Card.Body>
+            <Card.Body className="p-3">
               <div className="icon-circle bg-warning bg-opacity-10 text-warning mb-3">
-                <FaStar className="fs-2" />
+                <FaStar className="fs-4" />
               </div>
-              <Card.Title>Avg. Rating</Card.Title>
+              <Card.Title className="fs-6">Avg. Rating</Card.Title>
               <h2 className="my-2">{avgRating.toFixed(1)}</h2>
               <ProgressBar now={avgRating * 20} variant="warning" className="mt-2" />
             </Card.Body>
@@ -193,7 +195,7 @@ const Report = () => {
         <Card.Header as="h5" className="bg-primary text-white">
           <FaChartBar className="me-2" /> Class Performance Report
         </Card.Header>
-        <Card.Body>
+        <Card.Body className="p-3 p-md-4">
           <Row className="mb-3">
             <Col>
               <h5>Student Attendance by Class</h5>
@@ -202,25 +204,25 @@ const Report = () => {
           
           {classes.map((cls) => (
             <Card key={cls.id} className="mb-3 border-0 shadow-sm">
-              <Card.Body>
+              <Card.Body className="p-3">
                 <Row>
-                  <Col md={4}>
+                  <Col xs={12} md={4} className="mb-2 mb-md-0">
                     <h6>{cls.className}</h6>
                     <small className="text-muted">{cls.date}</small>
                   </Col>
-                  <Col md={8}>
-                    <div className="d-flex align-items-center">
-                      <div className="me-3" style={{ width: '120px' }}>
+                  <Col xs={12} md={8}>
+                    <div className="d-flex align-items-center flex-column flex-md-row">
+                      <div className="me-3 mb-2 mb-md-0" style={{ width: '120px' }}>
                         {cls.presentStudents}/{cls.totalStudents}
                       </div>
-                      <div className="flex-grow-1">
+                      <div className="flex-grow-1 mb-2 mb-md-0">
                         <ProgressBar 
                           now={(cls.presentStudents / cls.totalStudents) * 100} 
                           variant={(cls.presentStudents / cls.totalStudents) * 100 >= 80 ? "success" : 
                                  (cls.presentStudents / cls.totalStudents) * 100 >= 60 ? "warning" : "danger"}
                         />
                       </div>
-                      <div className="ms-3" style={{ width: '50px' }}>
+                      <div className="ms-md-3" style={{ width: '50px' }}>
                         {((cls.presentStudents / cls.totalStudents) * 100).toFixed(1)}%
                       </div>
                     </div>
@@ -238,25 +240,25 @@ const Report = () => {
           
           {classes.map((cls) => (
             <Card key={cls.id} className="mb-3 border-0 shadow-sm">
-              <Card.Body>
+              <Card.Body className="p-3">
                 <Row>
-                  <Col md={4}>
+                  <Col xs={12} md={4} className="mb-2 mb-md-0">
                     <h6>{cls.className}</h6>
                     <small className="text-muted">{cls.date}</small>
                   </Col>
-                  <Col md={8}>
-                    <div className="d-flex align-items-center">
-                      <div className="me-3" style={{ width: '50px' }}>
+                  <Col xs={12} md={8}>
+                    <div className="d-flex align-items-center flex-column flex-md-row">
+                      <div className="me-3 mb-2 mb-md-0" style={{ width: '50px' }}>
                         {cls.avgRating.toFixed(1)}
                       </div>
-                      <div className="flex-grow-1">
+                      <div className="flex-grow-1 mb-2 mb-md-0">
                         <ProgressBar 
                           now={cls.avgRating * 20} 
                           variant={cls.avgRating >= 4.5 ? "success" : 
                                  cls.avgRating >= 3.5 ? "warning" : "danger"}
                         />
                       </div>
-                      <div className="ms-3">
+                      <div className="ms-md-3">
                         {[...Array(5)].map((_, i) => (
                           <FaStar 
                             key={i} 
@@ -275,19 +277,26 @@ const Report = () => {
       
       <style jsx>{`
         .trainer-dashboard {
-          padding: 20px;
+          padding: 15px;
           background-color: #f8f9fa;
           min-height: 100vh;
         }
         
         .icon-circle {
-          width: 70px;
-          height: 70px;
+          width: 60px;
+          height: 60px;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
           margin: 0 auto;
+        }
+        
+        @media (max-width: 768px) {
+          .icon-circle {
+            width: 50px;
+            height: 50px;
+          }
         }
       `}</style>
     </div>

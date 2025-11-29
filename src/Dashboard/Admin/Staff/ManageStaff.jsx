@@ -15,6 +15,9 @@ const ManageStaff = () => {
   const [statusFilter, setStatusFilter] = useState('All');
   const [branchFilter, setBranchFilter] = useState('All');
   const fileInputRef = useRef(null);
+  
+  // State for status
+  const [staffStatus, setStaffStatus] = useState('Active');
 
   // Custom color for all blue elements
   const customColor = '#6EB2CC';
@@ -114,18 +117,24 @@ const ManageStaff = () => {
   const handleAddNew = () => {
     setModalType('add');
     setSelectedStaff(null);
+    // Reset form states
+    setStaffStatus('Active');
     setIsModalOpen(true);
   };
 
   const handleView = (staffMember) => {
     setModalType('view');
     setSelectedStaff(staffMember);
+    // Set form states from selected staff
+    setStaffStatus(staffMember.status || 'Active');
     setIsModalOpen(true);
   };
 
   const handleEdit = (staffMember) => {
     setModalType('edit');
     setSelectedStaff(staffMember);
+    // Set form states from selected staff
+    setStaffStatus(staffMember.status || 'Active');
     setIsModalOpen(true);
   };
 
@@ -291,6 +300,67 @@ const ManageStaff = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  // Handle form submission
+  const handleFormSubmit = () => {
+    if (modalType === 'add') {
+      // Create new staff object with form data
+      const newStaff = {
+        id: staff.length > 0 ? Math.max(...staff.map(s => s.id)) + 1 : 101,
+        staff_id: getNextStaffId(),
+        first_name: document.getElementById('firstName').value,
+        last_name: document.getElementById('lastName').value,
+        gender: document.getElementById('gender').value,
+        dob: document.getElementById('dob').value,
+        email: document.getElementById('email').value,
+        phone: document.getElementById('phone').value,
+        profile_photo: "",
+        status: staffStatus, // Use the status from state
+        role_id: document.getElementById('role').value,
+        branch_id: parseInt(document.getElementById('branch').value),
+        join_date: document.getElementById('joinDate').value,
+        exit_date: document.getElementById('exitDate').value || null,
+        salary_type: "Fixed", // Default salary type
+        fixed_salary: 0, // Default salary
+        login_enabled: document.getElementById('loginEnabled').checked,
+        username: document.getElementById('username').value,
+        password: document.getElementById('passwordField').value || 'auto-generated'
+      };
+      
+      // Add new staff to the array
+      setStaff([...staff, newStaff]);
+      alert('New staff member added successfully!');
+    } else if (modalType === 'edit') {
+      // Update existing staff
+      const updatedStaff = staff.map(member => {
+        if (member.id === selectedStaff.id) {
+          return {
+            ...member,
+            first_name: document.getElementById('firstName').value,
+            last_name: document.getElementById('lastName').value,
+            gender: document.getElementById('gender').value,
+            dob: document.getElementById('dob').value,
+            email: document.getElementById('email').value,
+            phone: document.getElementById('phone').value,
+            status: staffStatus, // Use the status from state
+            role_id: document.getElementById('role').value,
+            branch_id: parseInt(document.getElementById('branch').value),
+            join_date: document.getElementById('joinDate').value,
+            exit_date: document.getElementById('exitDate').value || null,
+            login_enabled: document.getElementById('loginEnabled').checked,
+            username: document.getElementById('username').value,
+            password: document.getElementById('passwordField').value || member.password
+          };
+        }
+        return member;
+      });
+      
+      setStaff(updatedStaff);
+      alert('Staff member updated successfully!');
+    }
+    
+    closeModal();
   };
 
   return (
@@ -705,15 +775,6 @@ const ManageStaff = () => {
                   <h6 className="fw-bold mb-3">Basic Information</h6>
                   <div className="row mb-3 g-3">
                     <div className="col-12 col-md-6">
-                      <label className="form-label">Staff ID</label>
-                      <input
-                        type="text"
-                        className="form-control rounded-3"
-                        defaultValue={selectedStaff?.staff_id || (modalType === 'add' ? getNextStaffId() : '')}
-                        readOnly
-                      />
-                    </div>
-                    <div className="col-12 col-md-6">
                       <label className="form-label">Profile Photo</label>
                       <input
                         type="file"
@@ -729,6 +790,7 @@ const ManageStaff = () => {
                         type="text"
                         className="form-control rounded-3"
                         placeholder="Enter first name"
+                        id="firstName"
                         defaultValue={selectedStaff?.first_name || ''}
                         readOnly={modalType === 'view'}
                         required
@@ -740,6 +802,7 @@ const ManageStaff = () => {
                           type="text"
                           className="form-control rounded-3"
                           placeholder="Enter last name"
+                          id="lastName"
                           defaultValue={selectedStaff?.last_name || ''}
                           readOnly={modalType === 'view'}
                           required
@@ -749,6 +812,7 @@ const ManageStaff = () => {
                       <label className="form-label">Gender <span className="text-danger">*</span></label>
                       <select
                         className="form-select rounded-3"
+                        id="gender"
                         defaultValue={selectedStaff?.gender || 'Male'}
                         disabled={modalType === 'view'}
                         required
@@ -763,6 +827,7 @@ const ManageStaff = () => {
                       <input
                         type="date"
                         className="form-control rounded-3"
+                        id="dob"
                         defaultValue={selectedStaff?.dob || ''}
                         readOnly={modalType === 'view'}
                         required
@@ -774,6 +839,7 @@ const ManageStaff = () => {
                         type="email"
                         className="form-control rounded-3"
                         placeholder="example@email.com"
+                        id="email"
                         defaultValue={selectedStaff?.email || ''}
                         readOnly={modalType === 'view'}
                         required
@@ -785,6 +851,7 @@ const ManageStaff = () => {
                         type="tel"
                         className="form-control rounded-3 "
                         placeholder="+1 555-123-4567"
+                        id="phone"
                         defaultValue={selectedStaff?.phone || ''}
                         readOnly={modalType === 'view'}
                         required
@@ -794,7 +861,9 @@ const ManageStaff = () => {
                       <label className="form-label">Status</label>
                       <select
                         className="form-select rounded-3"
-                        defaultValue={selectedStaff?.status || 'Active'}
+                        id="status"
+                        value={staffStatus}
+                        onChange={(e) => setStaffStatus(e.target.value)}
                         disabled={modalType === 'view'}
                       >
                         <option value="Active">Active</option>
@@ -810,6 +879,7 @@ const ManageStaff = () => {
                       <label className="form-label">Role <span className="text-danger">*</span></label>
                       <select
                         className="form-select rounded-3"
+                        id="role"
                         defaultValue={selectedStaff?.role_id || 'Receptionist'}
                         disabled={modalType === 'view'}
                         required
@@ -824,6 +894,7 @@ const ManageStaff = () => {
                       <label className="form-label">Branch <span className="text-danger">*</span></label>
                       <select
                         className="form-select rounded-3"
+                        id="branch"
                         defaultValue={selectedStaff?.branch_id || 1}
                         disabled={modalType === 'view'}
                         required
@@ -838,6 +909,7 @@ const ManageStaff = () => {
                       <input
                         type="date"
                         className="form-control rounded-3"
+                        id="joinDate"
                         defaultValue={selectedStaff?.join_date || new Date().toISOString().split('T')[0]}
                         readOnly={modalType === 'view'}
                         required
@@ -848,40 +920,14 @@ const ManageStaff = () => {
                       <input
                         type="date"
                         className="form-control rounded-3"
+                        id="exitDate"
                         defaultValue={selectedStaff?.exit_date || ''}
                         readOnly={modalType === 'view'}
                       />
                     </div>
                   </div>
 
-                  {/* SECTION 3: Compensation */}
-                  <h6 className="fw-bold mb-3">Compensation</h6>
-                  <div className="row mb-3 g-3">
-                    <div className="col-12 col-md-6">
-                      <label className="form-label">Salary Type <span className="text-danger">*</span></label>
-                      <select
-                        className="form-select rounded-3"
-                        defaultValue={selectedStaff?.salary_type || 'Fixed'}
-                        disabled={modalType === 'view'}
-                        required
-                      >
-                        <option value="Fixed">Fixed Salary</option>
-                      </select>
-                    </div>
-                    <div className="col-12 col-md-6">
-                      <label className="form-label">Fixed Salary ($)</label>
-                      <input
-                        type="number"
-                        className="form-control rounded-3"
-                        placeholder="e.g., 50000"
-                        defaultValue={selectedStaff?.fixed_salary || ''}
-                        readOnly={modalType === 'view'}
-                        min="0"
-                      />
-                    </div>
-                  </div>
-
-                  {/* SECTION 4: System Access */}
+                  {/* SECTION 3: System Access */}
                   <h6 className="fw-bold mb-3">System Access</h6>
                   <div className="row mb-3 g-3">
                     <div className="col-12">
@@ -904,6 +950,7 @@ const ManageStaff = () => {
                         type="text"
                         className="form-control rounded-3"
                         placeholder="Enter username"
+                        id="username"
                         defaultValue={selectedStaff?.username || ''}
                         readOnly={modalType === 'view'}
                       />
@@ -974,15 +1021,7 @@ const ManageStaff = () => {
                           padding: '10px 20px',
                           fontWeight: '500',
                         }}
-                        onClick={() => {
-                          // In real app, you'd collect all form data here
-                          if (modalType === 'add') {
-                            alert('New staff member added successfully!');
-                          } else {
-                            alert('Staff member updated successfully!');
-                          }
-                          closeModal();
-                        }}
+                        onClick={handleFormSubmit}
                       >
                         {modalType === 'add' ? 'Add Staff' : 'Update Staff'}
                       </button>

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { 
   RiUserLine, 
   RiMoneyDollarCircleLine, 
@@ -6,8 +6,7 @@ import {
   RiTeamLine,
   RiUserAddLine,
   RiCalendarLine,
-  RiBarChartLine,
-  RiMegaphoneLine
+  RiStoreLine
 } from 'react-icons/ri';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import * as echarts from 'echarts';
@@ -15,6 +14,7 @@ import * as echarts from 'echarts';
 const AdminDashboard = () => {
   const memberGrowthChartRef = useRef(null);
   const revenueChartRef = useRef(null);
+  const [showAllActivities, setShowAllActivities] = useState(false);
 
   useEffect(() => {
     // Initialize Member Growth Chart
@@ -107,78 +107,135 @@ const AdminDashboard = () => {
     };
   }, []);
 
+  // Additional activities to show when "View All" is clicked
+  const additionalActivities = [
+    {
+      id: 5,
+      type: 'equipment-maintenance',
+      icon: <RiStoreLine className="text-secondary" />,
+      title: 'Equipment maintenance',
+      description: 'Treadmill #5 scheduled for maintenance',
+      time: '2 hours ago'
+    },
+    {
+      id: 6,
+      type: 'membership-renewal',
+      icon: <RiCalendarCheckLine className="text-success" />,
+      title: 'Membership renewal',
+      description: 'David Williams renewed annual membership',
+      time: '3 hours ago'
+    },
+    {
+      id: 7,
+      type: 'class-cancellation',
+      icon: <RiCalendarLine className="text-danger" />,
+      title: 'Class cancellation',
+      description: 'Evening Yoga class cancelled due to instructor illness',
+      time: '4 hours ago'
+    },
+    {
+      id: 8,
+      type: 'new-staff',
+      icon: <RiUserAddLine className="text-primary" />,
+      title: 'New staff member',
+      description: 'James Smith joined as Personal Trainer',
+      time: '5 hours ago'
+    }
+  ];
+
+  const handleViewAllActivities = () => {
+    setShowAllActivities(!showAllActivities);
+  };
+
   return (
-    <div className="w-100 min-vh-100  p-0">
+    <div className="w-100 min-vh-100 p-0">
       <div className="">
         <div className="mb-4">
-          <h1 className="fw-bold " >Dashboard Overview</h1>
+          <h1 className="fw-bold">Dashboard Overview</h1>
           <p className="text-muted">Welcome back, John! Here's what's happening at your gym today.</p>
         </div>
 
         {/* Stats Cards - Responsive Grid */}
         <div className="row g-3 mb-4">
-          <div className="col-6 col-md-6 col-lg-3">
-            <div className="card shadow-sm h-100">
+          {/* Total Branches Card */}
+          <div className="col-6 col-md-4 col-lg">
+            <div className="card shadow-sm h-100" data-testid="total-branches-card">
+              <div className="card-body d-flex justify-content-between align-items-start">
+                <div>
+                  <div className="d-flex align-items-center mb-3">
+                    <div className="bg-danger bg-opacity-10 p-2 rounded me-2">
+                      <RiStoreLine className="text-danger fs-4 fs-md-5" />
+                    </div>
+                  </div>
+                  <h3 className="h2 fw-bold mb-1" data-testid="total-branches-value">5</h3>
+                  <p className="text-muted small mb-0">Total Branches</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Total Members Card */}
+          <div className="col-6 col-md-4 col-lg">
+            <div className="card shadow-sm h-100" data-testid="total-members-card">
               <div className="card-body d-flex justify-content-between align-items-start">
                 <div>
                   <div className="d-flex align-items-center mb-3">
                     <div className="bg-primary bg-opacity-10 p-2 rounded me-2">
                       <RiUserLine className="text-primary fs-4 fs-md-5" />
                     </div>
-                   
                   </div>
-                  <h3 className="h2 fw-bold mb-1"> ₹1,247</h3>
+                  <h3 className="h2 fw-bold mb-1" data-testid="total-members-value">1,247</h3>
                   <p className="text-muted small mb-0">Total Members</p>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="col-6 col-md-6 col-lg-3">
-            <div className="card shadow-sm h-100">
+          {/* Monthly Revenue Card */}
+          <div className="col-6 col-md-4 col-lg">
+            <div className="card shadow-sm h-100" data-testid="monthly-revenue-card">
               <div className="card-body d-flex justify-content-between align-items-start">
                 <div>
                   <div className="d-flex align-items-center mb-3">
                     <div className="bg-success bg-opacity-10 p-2 rounded me-2">
                       <RiMoneyDollarCircleLine className="text-success fs-4 fs-md-5" />
                     </div>
-                 
                   </div>
-                  <h3 className="h2 fw-bold mb-1">₹24,580</h3>
+                  <h3 className="h2 fw-bold mb-1" data-testid="monthly-revenue-value">₹24,580</h3>
                   <p className="text-muted small mb-0">Monthly Revenue</p>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="col-6 col-md-6 col-lg-3">
-            <div className="card shadow-sm h-100">
+          {/* Today's Check-ins Card */}
+          <div className="col-6 col-md-4 col-lg">
+            <div className="card shadow-sm h-100" data-testid="today-checkins-card">
               <div className="card-body d-flex justify-content-between align-items-start">
                 <div>
                   <div className="d-flex align-items-center mb-3">
                     <div className="bg-warning bg-opacity-10 p-2 rounded me-2">
                       <RiCalendarCheckLine className="text-warning fs-4 fs-md-5" />
                     </div>
-                   
                   </div>
-                  <h3 className="h2 fw-bold mb-1">₹89</h3>
+                  <h3 className="h2 fw-bold mb-1" data-testid="today-checkins-value">89</h3>
                   <p className="text-muted small mb-0">Today's Check-ins</p>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="col-6 col-md-6 col-lg-3">
-            <div className="card shadow-sm h-100">
+          {/* Active Staff Card */}
+          <div className="col-6 col-md-4 col-lg">
+            <div className="card shadow-sm h-100" data-testid="active-staff-card">
               <div className="card-body d-flex justify-content-between align-items-start">
                 <div>
                   <div className="d-flex align-items-center mb-3">
                     <div className="bg-info bg-opacity-10 p-2 rounded me-2">
                       <RiTeamLine className="text-info fs-4 fs-md-5" />
                     </div>
-                  
                   </div>
-                  <h3 className="h2 fw-bold mb-1">₹24</h3>
+                  <h3 className="h2 fw-bold mb-1" data-testid="active-staff-value">24</h3>
                   <p className="text-muted small mb-0">Active Staff</p>
                 </div>
               </div>
@@ -189,11 +246,10 @@ const AdminDashboard = () => {
         {/* Charts Section */}
         <div className="row g-3 mb-4">
           <div className="col-12 col-lg-6">
-            <div className="card shadow-sm h-100">
+            <div className="card shadow-sm h-100" data-testid="member-growth-chart">
               <div className="card-header bg-white border-0 pt-4 pb-0">
                 <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3">
                   <h3 className="h5 fw-semibold mb-2 mb-md-0">Member Growth</h3>
-                
                 </div>
               </div>
               <div className="card-body">
@@ -203,11 +259,10 @@ const AdminDashboard = () => {
           </div>
 
           <div className="col-12 col-lg-6">
-            <div className="card shadow-sm h-100">
+            <div className="card shadow-sm h-100" data-testid="revenue-distribution-chart">
               <div className="card-header bg-white border-0 pt-4 pb-0">
                 <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3">
                   <h3 className="h5 fw-semibold mb-2 mb-md-0">Revenue Distribution</h3>
-                
                 </div>
               </div>
               <div className="card-body">
@@ -217,19 +272,26 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        {/* Activities and Quick Actions */}
+        {/* Activities Section */}
         <div className="row g-3">
           <div className="col-12 col-lg-12">
-            <div className="card shadow-sm h-100">
+            <div className="card shadow-sm h-100" data-testid="recent-activities-section">
               <div className="card-header bg-white border-0 pt-4 pb-0">
                 <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3">
                   <h3 className="h5 fw-semibold mb-2 mb-md-0">Recent Activities</h3>
-                  <button className="btn btn-sm btn-link text-primary p-0">View All</button>
+                  <button 
+                    className="btn btn-sm btn-link text-primary p-0" 
+                    data-testid="view-all-activities-btn"
+                    onClick={handleViewAllActivities}
+                  >
+                    {showAllActivities ? 'Show Less' : 'View All'}
+                  </button>
                 </div>
               </div>
               <div className="card-body">
                 <div className="d-flex flex-column gap-3">
-                  <div className="d-flex align-items-center p-3 border rounded">
+                  {/* Original activities */}
+                  <div className="d-flex align-items-center p-3 border rounded" data-testid="activity-new-member">
                     <div className="bg-success bg-opacity-10 p-2 rounded-circle me-3">
                       <RiUserAddLine className="text-success" />
                     </div>
@@ -240,7 +302,7 @@ const AdminDashboard = () => {
                     <span className="text-muted small">2 min ago</span>
                   </div>
 
-                  <div className="d-flex align-items-center p-3 border rounded">
+                  <div className="d-flex align-items-center p-3 border rounded" data-testid="activity-payment-received">
                     <div className="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
                       <RiMoneyDollarCircleLine className="text-primary" />
                     </div>
@@ -251,7 +313,7 @@ const AdminDashboard = () => {
                     <span className="text-muted small">15 min ago</span>
                   </div>
 
-                  <div className="d-flex align-items-center p-3 border rounded">
+                  <div className="d-flex align-items-center p-3 border rounded" data-testid="activity-class-booking">
                     <div className="bg-warning bg-opacity-10 p-2 rounded-circle me-3">
                       <RiCalendarLine className="text-warning" />
                     </div>
@@ -262,7 +324,7 @@ const AdminDashboard = () => {
                     <span className="text-muted small">32 min ago</span>
                   </div>
 
-                  <div className="d-flex align-items-center p-3 border rounded">
+                  <div className="d-flex align-items-center p-3 border rounded" data-testid="activity-staff-checkin">
                     <div className="bg-info bg-opacity-10 p-2 rounded-circle me-3">
                       <RiUserLine className="text-info" />
                     </div>
@@ -272,14 +334,24 @@ const AdminDashboard = () => {
                     </div>
                     <span className="text-muted small">1 hour ago</span>
                   </div>
+
+                  {/* Additional activities shown when "View All" is clicked */}
+                  {showAllActivities && additionalActivities.map(activity => (
+                    <div key={activity.id} className="d-flex align-items-center p-3 border rounded">
+                      <div className="bg-secondary bg-opacity-10 p-2 rounded-circle me-3">
+                        {activity.icon}
+                      </div>
+                      <div className="flex-grow-1">
+                        <p className="fw-medium mb-0">{activity.title}</p>
+                        <p className="text-muted small mb-0">{activity.description}</p>
+                      </div>
+                      <span className="text-muted small">{activity.time}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
           </div>
-
-
-          
-
         </div>
       </div>
     </div>

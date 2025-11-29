@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from "react-router-dom";
-import { FaDumbbell, FaUsers, FaChartLine, FaCalendarAlt, FaCreditCard, FaMobileAlt, FaStar, FaQuoteLeft, FaQuoteRight, FaFacebook, FaTwitter, FaInstagram, FaYoutube, FaArrowRight, FaPlay, FaMedal, FaTrophy, FaFire, FaHeartbeat, FaRunning, FaCrown } from 'react-icons/fa';
-import { FiChevronDown, FiCheck, FiArrowRight } from 'react-icons/fi';
+import { FaDumbbell, FaUsers, FaChartLine, FaCalendarAlt, FaCreditCard, FaMobileAlt, FaStar, FaQuoteLeft, FaQuoteRight, FaFacebook, FaTwitter, FaInstagram, FaYoutube, FaArrowRight, FaPlay, FaMedal, FaTrophy, FaFire, FaHeartbeat, FaRunning, FaCrown, FaCheck } from 'react-icons/fa';
+import { FiChevronDown, FiCheck as FiCheckIcon, FiArrowRight as FiArrowRightIcon } from 'react-icons/fi';
 import { Button, Container, Row, Col, Card } from 'react-bootstrap';
 import './LendingPage.css';
 
@@ -12,9 +12,22 @@ const LendingPage = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [hoveredFeature, setHoveredFeature] = useState(null);
   const [activeTab, setActiveTab] = useState('members');
+  const [showPurchaseModal, setShowPurchaseModal] = useState(false);
+  const [showSuccessNotification, setShowSuccessNotification] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState('Professional');
   const heroRef = useRef(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-const navigate = useNavigate();
+  const navigate = useNavigate();
+  
+  // Purchase modal form state
+  const [purchaseFormData, setPurchaseFormData] = useState({
+    selectedPlan: 'Professional',
+    companyName: '',
+    email: '',
+    billingDuration: 'Yearly',
+    startDate: ''
+  });
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
@@ -33,6 +46,45 @@ const navigate = useNavigate();
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  const handlePurchaseClick = (planName) => {
+    setSelectedPlan(planName);
+    setPurchaseFormData({
+      ...purchaseFormData,
+      selectedPlan: planName
+    });
+    setShowPurchaseModal(true);
+  };
+
+  const handlePurchaseFormChange = (e) => {
+    const { name, value } = e.target;
+    setPurchaseFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handlePurchaseSubmit = () => {
+    // Close the purchase modal
+    setShowPurchaseModal(false);
+    
+    // Show the success notification
+    setShowSuccessNotification(true);
+    
+    // Hide the success notification after 5 seconds
+    setTimeout(() => {
+      setShowSuccessNotification(false);
+    }, 5000);
+    
+    // Reset form
+    setPurchaseFormData({
+      selectedPlan: 'Professional',
+      companyName: '',
+      email: '',
+      billingDuration: 'Yearly',
+      startDate: ''
+    });
   };
 
   const features = [
@@ -292,74 +344,72 @@ const navigate = useNavigate();
               ))}
             </ul>
             <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5, delay: 0.7 }}
-    >
-      <Button
-        variant="primary"
-        className="ml-3 demo-btn"
-        onClick={() => navigate("/login")}
-      >
-        Login
-        <FiArrowRight className="btn-icon" />
-      </Button>
-    </motion.div>
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.7 }}
+            >
+              <Button
+                variant="primary"
+                className="ml-3 demo-btn"
+                onClick={() => navigate("/login")}
+              >
+                Login
+                <FiArrowRightIcon className="btn-icon" />
+              </Button>
+            </motion.div>
           </div>
         </Container>
       </nav>
 
-  {/* Hero Section */}
-<section className="hero-section" ref={heroRef}>
-  <Container className="">
-    <Row className="align-items-center ">
-      <Col lg={6} className="mb-5 mb-lg-0">
-        <div className="align-item-center px-4">
-          <div className="hero-badge ">
-            <FaFire className="badge-icon me-2 " /> #1 Gym Management Software
-          </div>
-          <h1 className="hero-title px-4">
-            Transform Your <span className="highlight">Gym Business</span>
-          </h1>
-          <p className="hero-subtitle px-3">
-            The all-in-one solution for modern gyms and fitness centers. Streamline operations, 
-            boost member engagement, and grow your business with our powerful management system.
-          </p>
-          
-         
-          
-          <div className=" row row-cols-4 cols-sm-4 g-3">
-            {stats.map((stat, index) => (
-              <Col key={index}>
-                <div className="hero-stat text-center">
-                  <div className="stat-icon">{stat.icon}</div>
-                  <div className="stat-value">{stat.value}</div>
-                  <div className="stat-label">{stat.label}</div>
+      {/* Hero Section */}
+      <section className="hero-section" ref={heroRef}>
+        <Container className="">
+          <Row className="align-items-center ">
+            <Col lg={6} className="mb-5 mb-lg-0">
+              <div className="align-item-center px-4">
+                <div className="hero-badge ">
+                  <FaFire className="badge-icon me-2 " /> #1 Gym Management Software
                 </div>
-              </Col>
-            ))}
+                <h1 className="hero-title px-4">
+                  Transform Your <span className="highlight">Gym Business</span>
+                </h1>
+                <p className="hero-subtitle px-3">
+                  The all-in-one solution for modern gyms and fitness centers. Streamline operations, 
+                  boost member engagement, and grow your business with our powerful management system.
+                </p>
+                
+                <div className=" row row-cols-4 cols-sm-4 g-3">
+                  {stats.map((stat, index) => (
+                    <Col key={index}>
+                      <div className="hero-stat text-center">
+                        <div className="stat-icon">{stat.icon}</div>
+                        <div className="stat-value">{stat.value}</div>
+                        <div className="stat-label">{stat.label}</div>
+                      </div>
+                    </Col>
+                  ))}
+                </div>
+              </div>
+            </Col>
+            <Col lg={6}>
+              <div className=" h-100 d-flex align-items-center justify-content-center">
+                <div className="hero-image-wrapper position-relative overflow-hidden rounded-4 shadow-lg">
+                  <img 
+                    src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80" 
+                    alt="Modern Gym" 
+                    className="hero-image img-fluid w-100"
+                  />
+                  <div className="hero-image-overlay position-absolute top-0 start-0 w-100 h-100"></div>
+                </div>
+              </div>
+            </Col>
+          </Row>
+          
+          <div className="scroll-indicator position-absolute bottom-0 start-50 translate-middle-x">
+            <FiChevronDown className="fs-3" />
           </div>
-        </div>
-      </Col>
-      <Col lg={6}>
-        <div className=" h-100 d-flex align-items-center justify-content-center">
-          <div className="hero-image-wrapper position-relative overflow-hidden rounded-4 shadow-lg">
-            <img 
-              src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80" 
-              alt="Modern Gym" 
-              className="hero-image img-fluid w-100"
-            />
-            <div className="hero-image-overlay position-absolute top-0 start-0 w-100 h-100"></div>
-          </div>
-        </div>
-      </Col>
-    </Row>
-    
-    <div className="scroll-indicator position-absolute bottom-0 start-50 translate-middle-x">
-      <FiChevronDown className="fs-3" />
-    </div>
-  </Container>
-</section>
+        </Container>
+      </section>
 
       {/* Features Section */}
       <section id="features" className="features-section mt-0">
@@ -413,7 +463,7 @@ const navigate = useNavigate();
                       className="feature-arrow"
                       animate={{ x: hoveredFeature === index ? 5 : 0 }}
                     >
-                      <FiArrowRight />
+                      <FiArrowRightIcon />
                     </motion.div>
                   </Card.Body>
                 </Card>
@@ -451,15 +501,15 @@ const navigate = useNavigate();
                       transition={{ duration: 0.3, delay: index * 0.1 }}
                       whileHover={{ x: 10 }}
                     >
-                      <FiCheck className="check-icon" />
+                      <FiCheckIcon className="check-icon" />
                       <span>{benefit}</span>
                     </motion.div>
                   ))}
                 </div>
                 
-                <Button variant="primary" className="mt-4">
+                <Button className="mt-4 demo-btn">
                   See All Benefits
-                  <FiArrowRight className="btn-icon" />
+                  <FiArrowRightIcon className="btn-icon" />
                 </Button>
               </motion.div>
             </Col>
@@ -630,7 +680,7 @@ const navigate = useNavigate();
                   <ul>
                     {plan.features.map((feature, i) => (
                       <li key={i}>
-                        <FiCheck className="check-icon" />
+                        <FiCheckIcon className="check-icon" />
                         {feature}
                       </li>
                     ))}
@@ -639,6 +689,7 @@ const navigate = useNavigate();
                 <Button 
                   variant={plan.popular ? "primary" : "outline-primary"} 
                   className="pricing-btn"
+                  onClick={() => handlePurchaseClick(plan.name)}
                 >
                   Get Started
                 </Button>
@@ -662,9 +713,9 @@ const navigate = useNavigate();
             <h2>Transform Your Gym <span className="highlight">Today</span></h2>
             <p>Join thousands of gym owners who have already streamlined their operations with FitManager Pro.</p>
             <div className="cta-buttons">
-              <Button variant="light" size="lg" className="mr-3">
+              <Button variant="light" size="lg" className="mr-3" onClick={() => handlePurchaseClick('Professional')}>
                 Start Free Trial
-                <FiArrowRight className="btn-icon" />
+                <FiArrowRightIcon className="btn-icon" />
               </Button>
               <Button variant="outline-light" size="lg">
                 Schedule a Demo
@@ -745,6 +796,331 @@ const navigate = useNavigate();
           </div>
         </Container>
       </footer>
+
+      {/* Purchase Modal */}
+      {showPurchaseModal && (
+        <div 
+          className="modal d-block" 
+          style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+        >
+          <div className="modal-dialog modal-dialog-centered modal-lg">
+            <div className="modal-content" style={{ borderRadius: '16px', border: 'none', overflow: 'hidden' }}>
+              {/* Modal Header */}
+              <div className="modal-header border-0 pb-0 pt-4 px-4">
+                <h2 className="modal-title fw-bold" style={{ color: '#1a202c', fontSize: '1.75rem' }}>
+                  Complete Your Purchase
+                </h2>
+                <button 
+                  type="button" 
+                  className="btn-close"
+                  onClick={() => setShowPurchaseModal(false)}
+                  style={{ fontSize: '0.9rem' }}
+                ></button>
+              </div>
+
+              {/* Modal Body */}
+              <div className="modal-body px-4 py-4">
+                {/* Selected Plan */}
+                <div className="mb-4">
+                  <div className="d-flex align-items-center justify-content-between mb-3">
+                    <label className="form-label mb-0" style={{ color: '#2d3748', fontSize: '0.9rem', fontWeight: '600' }}>
+                      Selected Plan
+                    </label>
+                  </div>
+                  <input 
+                    type="text"
+                    name="selectedPlan"
+                    className="form-control"
+                    value={purchaseFormData.selectedPlan}
+                    onChange={handlePurchaseFormChange}
+                    readOnly
+                    style={{
+                      backgroundColor: '#f7fafc',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '8px',
+                      padding: '10px 14px',
+                      fontSize: '0.95rem',
+                      color: '#2d3748'
+                    }}
+                  />
+                </div>
+
+                {/* Company Name */}
+                <div className="mb-4">
+                  <div className="d-flex align-items-center justify-content-between mb-3">
+                    <label className="form-label mb-0" style={{ color: '#2d3748', fontSize: '0.9rem', fontWeight: '600' }}>
+                      Company Name
+                    </label>
+                  </div>
+                  <input 
+                    type="text"
+                    name="companyName"
+                    className="form-control"
+                    placeholder="Enter company name"
+                    value={purchaseFormData.companyName}
+                    onChange={handlePurchaseFormChange}
+                    style={{
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '8px',
+                      padding: '10px 14px',
+                      fontSize: '0.95rem',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.border = '1px solid #667eea';
+                      e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.border = '1px solid #e2e8f0';
+                      e.target.style.boxShadow = 'none';
+                    }}
+                  />
+                </div>
+
+                {/* Email Address */}
+                <div className="mb-4">
+                  <div className="d-flex align-items-center justify-content-between mb-3">
+                    <label className="form-label mb-0" style={{ color: '#2d3748', fontSize: '0.9rem', fontWeight: '600' }}>
+                      Email Address
+                    </label>
+                  </div>
+                  <input 
+                    type="email"
+                    name="email"
+                    className="form-control"
+                    placeholder="your@email.com"
+                    value={purchaseFormData.email}
+                    onChange={handlePurchaseFormChange}
+                    style={{
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '8px',
+                      padding: '10px 14px',
+                      fontSize: '0.95rem',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.border = '1px solid #667eea';
+                      e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.border = '1px solid #e2e8f0';
+                      e.target.style.boxShadow = 'none';
+                    }}
+                  />
+                </div>
+
+                {/* Billing Duration */}
+                <div className="mb-4">
+                  <label className="form-label d-block mb-2" style={{ color: '#2d3748', fontSize: '0.9rem', fontWeight: '600' }}>
+                    Billing Duration
+                  </label>
+                  <div className="d-flex gap-4">
+                    <div className="form-check">
+                      <input 
+                        className="form-check-input"
+                        type="radio"
+                        name="billingDuration"
+                        id="monthly"
+                        value="Monthly"
+                        checked={purchaseFormData.billingDuration === 'Monthly'}
+                        onChange={handlePurchaseFormChange}
+                        style={{ 
+                          width: '18px', 
+                          height: '18px', 
+                          cursor: 'pointer',
+                          marginTop: '2px'
+                        }}
+                      />
+                      <label 
+                        className="form-check-label ms-2" 
+                        htmlFor="monthly"
+                        style={{ 
+                          fontSize: '0.95rem', 
+                          color: '#2d3748',
+                          cursor: 'pointer',
+                          fontWeight: '400'
+                        }}
+                      >
+                        Monthly
+                      </label>
+                    </div>
+                    <div className="form-check">
+                      <input 
+                        className="form-check-input"
+                        type="radio"
+                        name="billingDuration"
+                        id="yearly"
+                        value="Yearly"
+                        checked={purchaseFormData.billingDuration === 'Yearly'}
+                        onChange={handlePurchaseFormChange}
+                        style={{ 
+                          width: '18px', 
+                          height: '18px', 
+                          cursor: 'pointer',
+                          marginTop: '2px'
+                        }}
+                      />
+                      <label 
+                        className="form-check-label ms-2" 
+                        htmlFor="yearly"
+                        style={{ 
+                          fontSize: '0.95rem', 
+                          color: '#2d3748',
+                          cursor: 'pointer',
+                          fontWeight: '400'
+                        }}
+                      >
+                        Yearly
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Start Date */}
+                <div className="mb-4">
+                  <div className="d-flex align-items-center justify-content-between mb-3">
+                    <label className="form-label mb-0" style={{ color: '#2d3748', fontSize: '0.9rem', fontWeight: '600' }}>
+                      Start Date
+                    </label>
+                  </div>
+                  <input 
+                    type="date"
+                    name="startDate"
+                    className="form-control"
+                    value={purchaseFormData.startDate}
+                    onChange={handlePurchaseFormChange}
+                    style={{
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '8px',
+                      padding: '10px 14px',
+                      fontSize: '0.95rem',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.border = '1px solid #667eea';
+                      e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.border = '1px solid #e2e8f0';
+                      e.target.style.boxShadow = 'none';
+                    }}
+                  />
+                </div>
+
+                {/* Confirm Button */}
+                <button 
+                  type="button"
+                  onClick={handlePurchaseSubmit}
+                  className="btn w-100 py-3 fw-semibold mt-2"
+                  style={{
+                    backgroundColor: '#60a5fa',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '1rem',
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 2px 8px rgba(96, 165, 250, 0.25)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = '#3b82f6';
+                    e.target.style.transform = 'translateY(-2px)';
+                    e.target.style.boxShadow = '0 4px 12px rgba(96, 165, 250, 0.35)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = '#60a5fa';
+                    e.target.style.transform = 'translateY(0)';
+                    e.target.style.boxShadow = '0 2px 8px rgba(96, 165, 250, 0.25)';
+                  }}
+                >
+                  Confirm Purchase
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Notification */}
+      {showSuccessNotification && (
+        <motion.div
+          className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+          style={{ zIndex: 9999, backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <motion.div
+            className="bg-white rounded-4 p-5 text-center"
+            style={{
+              maxWidth: '500px',
+              width: '90%',
+              boxShadow: '0 10px 40px rgba(0, 0, 0, 0.2)'
+            }}
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.3, delay: 0.1 }}
+          >
+            <div className="mb-4">
+              <div
+                className="d-inline-flex align-items-center justify-content-center rounded-circle"
+                style={{
+                  width: '80px',
+                  height: '80px',
+                  backgroundColor: '#10b981',
+                  color: 'white'
+                }}
+              >
+                <FaCheck size={40} />
+              </div>
+            </div>
+            <h2 className="mb-3" style={{ color: '#1a202c', fontWeight: 'bold' }}>
+              Request Sent Successfully!
+            </h2>
+            <p className="mb-4" style={{ color: '#4a5568', fontSize: '1.1rem' }}>
+              Thank you for your purchase request. We've received your information and will contact you shortly to complete the setup process.
+            </p>
+            <div className="mb-4 p-3 rounded-3" style={{ backgroundColor: '#f7fafc' }}>
+              <h5 className="mb-2" style={{ color: '#2d3748' }}>Order Details:</h5>
+              <div className="text-start">
+                <div className="d-flex justify-content-between mb-2">
+                  <span style={{ color: '#718096' }}>Plan:</span>
+                  <span style={{ color: '#2d3748', fontWeight: '500' }}>{purchaseFormData.selectedPlan}</span>
+                </div>
+                <div className="d-flex justify-content-between mb-2">
+                  <span style={{ color: '#718096' }}>Company:</span>
+                  <span style={{ color: '#2d3748', fontWeight: '500' }}>{purchaseFormData.companyName}</span>
+                </div>
+                <div className="d-flex justify-content-between mb-2">
+                  <span style={{ color: '#718096' }}>Email:</span>
+                  <span style={{ color: '#2d3748', fontWeight: '500' }}>{purchaseFormData.email}</span>
+                </div>
+                <div className="d-flex justify-content-between mb-2">
+                  <span style={{ color: '#718096' }}>Billing:</span>
+                  <span style={{ color: '#2d3748', fontWeight: '500' }}>{purchaseFormData.billingDuration}</span>
+                </div>
+                <div className="d-flex justify-content-between">
+                  <span style={{ color: '#718096' }}>Start Date:</span>
+                  <span style={{ color: '#2d3748', fontWeight: '500' }}>{purchaseFormData.startDate}</span>
+                </div>
+              </div>
+            </div>
+            <Button
+              variant="primary"
+              className="px-4 py-2"
+              style={{
+                backgroundColor: '#60a5fa',
+                border: 'none',
+                borderRadius: '8px',
+                fontWeight: '500'
+              }}
+              onClick={() => setShowSuccessNotification(false)}
+            >
+              Got it
+            </Button>
+          </motion.div>
+        </motion.div>
+      )}
     </div>
   );
 };

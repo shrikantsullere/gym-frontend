@@ -267,14 +267,14 @@ const CreatePlan = () => {
 
   // Render plan card component
   const renderPlanCard = (plan, planType) => (
-    <Col xs={12} sm={6} lg={4} key={plan.id} className="d-flex">
+    <Col xs={12} sm={6} lg={4} key={plan.id} className="d-flex mb-3">
       <Card className="h-100 shadow-sm border-0 w-100" style={{ borderRadius: '12px', overflow: 'hidden', transition: 'transform 0.3s ease, box-shadow 0.3s ease' }}>
         <div style={{
           height: '6px',
           backgroundColor: plan.active ? customColor : '#ccc',
           width: '100%'
         }}></div>
-        <Card.Body className="d-flex flex-column p-2 p-md-3">
+        <Card.Body className="d-flex flex-column p-3">
           <div className="d-flex justify-content-between align-items-start mb-2">
             <div>
               <div className="badge bg-primary mb-2 px-2 py-1" style={{ backgroundColor: customColor, color: 'white', fontSize: '0.7rem' }}>
@@ -389,25 +389,25 @@ const CreatePlan = () => {
 
   return (
     <div className="bg-light min-vh-100">
-      <Container fluid className="px-3 px-md-5 py-4">
-        <h1 className="mb-4 mb-md-5 fw-bold text-dark" style={{ fontSize: 'clamp(1.5rem, 4vw, 2.2rem)' }}>
+      <Container fluid className="px-2 px-sm-3 px-md-5 py-3 py-md-4">
+        <h1 className="mb-3 mb-md-4 fw-bold text-dark" style={{ fontSize: 'clamp(1.5rem, 4vw, 2.2rem)' }}>
           Plan & Booking Management
         </h1>
 
-        {/* Button-style Tabs - All buttons in one line with same width */}
-        <div className="d-flex justify-content-between align-items-center gap-3 mb-4 p-3 bg-white rounded shadow-sm border">
-          <div className="d-flex gap-3">
+        {/* Button-style Tabs - Responsive Layout */}
+        <div className="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 mb-4 p-3 bg-white rounded shadow-sm border">
+          <div className="d-flex flex-column flex-md-row gap-3 w-100 w-md-auto">
             <Button
               variant={activeTab === 'group' ? 'primary' : 'outline-primary'}
               onClick={() => setActiveTab('group')}
-              className="px-3 px-md-4 py-1 fw-medium d-flex align-items-center justify-content-center"
+              className="px-3 px-md-4 py-2 fw-medium d-flex align-items-center justify-content-center"
               style={{
                 backgroundColor: activeTab === 'group' ? customColor : 'transparent',
                 borderColor: customColor,
                 color: activeTab === 'group' ? 'white' : customColor,
                 transition: 'all 0.3s ease',
-                minWidth: '180px',
-                width: '180px'
+                width: '100%',
+                maxWidth: '300px'
               }}
             >
               Group Class Plans
@@ -415,14 +415,14 @@ const CreatePlan = () => {
             <Button
               variant={activeTab === 'personal' ? 'primary' : 'outline-primary'}
               onClick={() => setActiveTab('personal')}
-              className="px-3 px-md-4 py-1 fw-medium d-flex align-items-center justify-content-center"
+              className="px-3 px-md-4 py-2 fw-medium d-flex align-items-center justify-content-center"
               style={{
                 backgroundColor: activeTab === 'personal' ? customColor : 'transparent',
                 borderColor: customColor,
                 color: activeTab === 'personal' ? 'white' : customColor,
                 transition: 'all 0.3s ease',
-                minWidth: '180px',
-                width: '180px'
+                width: '100%',
+                maxWidth: '300px'
               }}
             >
               Personal Training Plans
@@ -442,25 +442,25 @@ const CreatePlan = () => {
               borderColor: customColor,
               color: customColor,
               transition: "all 0.3s ease",
-              minWidth: '150px',
-              width: '150px',
-              height: '57px'
+              width: '100%',
+              maxWidth: '200px'
             }}
           >
-            <FaPlus size={14} />
-            Create  Plan
+            <FaPlus size={14} className="me-2" />
+            Create Plan
           </Button>
         </div>
 
-        {/* Branch Filter */}
+        {/* Branch Filter - Responsive */}
         <div className="mb-4 p-3 bg-white rounded shadow-sm border">
-          <div className="d-flex align-items-center gap-3">
+          <div className="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-3">
             <Form.Label className="mb-0 fw-medium" style={{ color: '#333' }}>Filter by Branch:</Form.Label>
             <Form.Select
               value={selectedBranch}
               onChange={(e) => setSelectedBranch(e.target.value)}
               style={{
-                width: '200px',
+                width: '100%',
+                maxWidth: '200px',
                 borderColor: customColor,
                 color: selectedBranch === 'all' ? '#6c757d' : customColor
               }}
@@ -495,11 +495,11 @@ const CreatePlan = () => {
           </Row>
         </Tab.Container>
 
-        {/* Booking Requests Section */}
+        {/* Booking Requests Section - Responsive */}
         <div className="mt-5 pt-4 border-top" style={{ borderColor: customColor }}>
           <h3 className="fw-bold mb-4 text-dark" style={{ fontSize: 'clamp(1.2rem, 3vw, 1.4rem)' }}>Member Booking Requests</h3>
 
-          {/* Summary Cards */}
+          {/* Summary Cards - Responsive */}
           <Row className="mb-4 g-3">
             <Col xs={12} sm={6} md={4}>
               <Card className="text-center border-0 shadow-sm h-100" style={{ backgroundColor: '#f8f9fa', borderRadius: '12px', transition: 'transform 0.3s ease' }}>
@@ -536,7 +536,7 @@ const CreatePlan = () => {
             </Col>
           </Row>
 
-          {/* Requests Table */}
+          {/* Requests Table - Responsive with Card View for Mobile */}
           <Card className="border-0 shadow-sm" style={{ borderRadius: '12px' }}>
             <Card.Header className="bg-light border-0 pb-3" style={{ borderBottom: `3px solid ${customColor}`, borderRadius: '12px 12px 0 0' }}>
               <div className="d-flex justify-content-between align-items-center">
@@ -553,115 +553,204 @@ const CreatePlan = () => {
                   <p className="fs-5">No booking requests yet.</p>
                 </div>
               ) : (
-                <div className="table-responsive">
-                  <Table hover responsive className="align-middle mb-0">
-                    <thead className="bg-light">
-                      <tr>
-                        <th className="py-3">#</th>
-                        <th className="py-3">Member</th>
-                        <th className="py-3 d-none d-md-table-cell">Plan</th>
-                        <th className="py-3 d-none d-md-table-cell">Type</th>
-                        <th className="py-3 d-none d-lg-table-cell">Sessions</th>
-                        <th className="py-3 d-none d-lg-table-cell">Validity</th>
-                        <th className="py-3 d-none d-md-table-cell">Requested At</th>
-                        <th className="py-3">Status</th>
-                        <th className="py-3">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {bookingRequests.map((req, index) => (
-                        <tr key={req.id}>
-                          <td className="py-3">{index + 1}</td>
-                          <td className="py-3">
-                            <div>
-                              <strong>{req.memberName}</strong>
-                              <div className="d-md-none text-muted small">{req.planName}</div>
-                            </div>
-                          </td>
-                          <td className="py-3 d-none d-md-table-cell">{req.planName}</td>
-                          <td className="py-3 d-none d-md-table-cell">
-                            {req.planType === 'Group' ? (
-                              <span className="badge bg-primary px-3 py-2" style={{ backgroundColor: customColor, color: 'white', borderRadius: '20px' }}>Group</span>
-                            ) : (
-                              <span className="badge bg-primary px-3 py-2" style={{ backgroundColor: customColor, color: 'white', borderRadius: '20px' }}>Personal</span>
-                            )}
-                          </td>
-                          <td className="py-3 d-none d-lg-table-cell">{req.sessions} total</td>
-                          <td className="py-3 d-none d-lg-table-cell">{req.validity} days</td>
-                          <td className="py-3 d-none d-md-table-cell">{req.requestedAt}</td>
-                          <td className="py-3">
-                            {req.status === 'pending' && <span className="badge bg-warning text-dark px-3 py-2" style={{ borderRadius: '20px' }}>Pending</span>}
-                            {req.status === 'approved' && <span className="badge px-3 py-2" style={{ backgroundColor: customColor, color: 'white', borderRadius: '20px' }}>Approved</span>}
-                            {req.status === 'rejected' && <span className="badge bg-danger px-3 py-2" style={{ borderRadius: '20px' }}>Rejected</span>}
-                          </td>
-                          <td className="py-3">
-                            <div className="d-flex gap-2 align-items-center flex-nowrap" style={{ minWidth: 'fit-content' }}>
-                              {req.status === 'pending' ? (
-                                <Button
-                                  size="sm"
-                                  className="d-flex align-items-center gap-1 fw-medium"
-                                  onClick={() => handleOpenStatusModal(req)}
-                                  style={{
-                                    backgroundColor: '#ffc107',
-                                    borderColor: '#ffc107',
-                                    color: '#212529',
-                                    transition: 'background-color 0.3s ease',
-                                    whiteSpace: 'nowrap'
-                                  }}
-                                >
-                                  <FaToggleOn size={14} /> Process
-                                </Button>
-                              ) : req.status === 'approved' ? (
-                                <Button
-                                  size="sm"
-                                  className="d-flex align-items-center gap-1 fw-medium"
-                                  onClick={() => handleToggleRequestStatus(req.id)}
-                                  style={{
-                                    backgroundColor: customColor,
-                                    borderColor: customColor,
-                                    color: 'white',
-                                    transition: 'background-color 0.3s ease',
-                                    whiteSpace: 'nowrap'
-                                  }}
-                                >
-                                  <FaToggleOn size={14} /> Active
-                                </Button>
-                              ) : (
-                                <Button
-                                  size="sm"
-                                  className="d-flex align-items-center gap-1 fw-medium"
-                                  onClick={() => handleToggleRequestStatus(req.id)}
-                                  style={{
-                                    backgroundColor: '#6c757d',
-                                    borderColor: '#6c757d',
-                                    color: 'white',
-                                    transition: 'background-color 0.3s ease',
-                                    whiteSpace: 'nowrap'
-                                  }}
-                                >
-                                  <FaToggleOff size={14} /> Inactive
-                                </Button>
-                              )}
-                            </div>
-                          </td>
+                <>
+                  {/* Desktop Table View */}
+                  <div className="table-responsive d-none d-md-block">
+                    <Table hover responsive className="align-middle mb-0">
+                      <thead className="bg-light">
+                        <tr>
+                          <th className="py-3">#</th>
+                          <th className="py-3">Member</th>
+                          <th className="py-3">Plan</th>
+                          <th className="py-3">Type</th>
+                          <th className="py-3 d-none d-lg-table-cell">Sessions</th>
+                          <th className="py-3 d-none d-lg-table-cell">Validity</th>
+                          <th className="py-3">Requested At</th>
+                          <th className="py-3">Status</th>
+                          <th className="py-3">Action</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                </div>
+                      </thead>
+                      <tbody>
+                        {bookingRequests.map((req, index) => (
+                          <tr key={req.id}>
+                            <td className="py-3">{index + 1}</td>
+                            <td className="py-3">
+                              <strong>{req.memberName}</strong>
+                            </td>
+                            <td className="py-3">{req.planName}</td>
+                            <td className="py-3">
+                              {req.planType === 'Group' ? (
+                                <span className="badge bg-primary px-3 py-2" style={{ backgroundColor: customColor, color: 'white', borderRadius: '20px' }}>Group</span>
+                              ) : (
+                                <span className="badge bg-primary px-3 py-2" style={{ backgroundColor: customColor, color: 'white', borderRadius: '20px' }}>Personal</span>
+                              )}
+                            </td>
+                            <td className="py-3 d-none d-lg-table-cell">{req.sessions} total</td>
+                            <td className="py-3 d-none d-lg-table-cell">{req.validity} days</td>
+                            <td className="py-3">{req.requestedAt}</td>
+                            <td className="py-3">
+                              {req.status === 'pending' && <span className="badge bg-warning text-dark px-3 py-2" style={{ borderRadius: '20px' }}>Pending</span>}
+                              {req.status === 'approved' && <span className="badge px-3 py-2" style={{ backgroundColor: customColor, color: 'white', borderRadius: '20px' }}>Approved</span>}
+                              {req.status === 'rejected' && <span className="badge bg-danger px-3 py-2" style={{ borderRadius: '20px' }}>Rejected</span>}
+                            </td>
+                            <td className="py-3">
+                              <div className="d-flex gap-2 align-items-center flex-nowrap" style={{ minWidth: 'fit-content' }}>
+                                {req.status === 'pending' ? (
+                                  <Button
+                                    size="sm"
+                                    className="d-flex align-items-center gap-1 fw-medium"
+                                    onClick={() => handleOpenStatusModal(req)}
+                                    style={{
+                                      backgroundColor: '#ffc107',
+                                      borderColor: '#ffc107',
+                                      color: '#212529',
+                                      transition: 'background-color 0.3s ease',
+                                      whiteSpace: 'nowrap'
+                                    }}
+                                  >
+                                    <FaToggleOn size={14} /> Process
+                                  </Button>
+                                ) : req.status === 'approved' ? (
+                                  <Button
+                                    size="sm"
+                                    className="d-flex align-items-center gap-1 fw-medium"
+                                    onClick={() => handleToggleRequestStatus(req.id)}
+                                    style={{
+                                      backgroundColor: customColor,
+                                      borderColor: customColor,
+                                      color: 'white',
+                                      transition: 'background-color 0.3s ease',
+                                      whiteSpace: 'nowrap'
+                                    }}
+                                  >
+                                    <FaToggleOn size={14} /> Active
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    size="sm"
+                                    className="d-flex align-items-center gap-1 fw-medium"
+                                    onClick={() => handleToggleRequestStatus(req.id)}
+                                    style={{
+                                      backgroundColor: '#6c757d',
+                                      borderColor: '#6c757d',
+                                      color: 'white',
+                                      transition: 'background-color 0.3s ease',
+                                      whiteSpace: 'nowrap'
+                                    }}
+                                  >
+                                    <FaToggleOff size={14} /> Inactive
+                                  </Button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </Table>
+                  </div>
+
+                  {/* Mobile Card View */}
+                  <div className="d-md-none p-3">
+                    {bookingRequests.map((req, index) => (
+                      <Card key={req.id} className="mb-3 border shadow-sm" style={{ borderRadius: '10px' }}>
+                        <Card.Body className="p-3">
+                          <div className="d-flex justify-content-between align-items-start mb-2">
+                            <h6 className="mb-0 fw-bold">{req.memberName}</h6>
+                            <span className="badge bg-secondary rounded-pill">{index + 1}</span>
+                          </div>
+                          <div className="mb-2">
+                            <span className="text-muted small">Plan: </span>
+                            <span className="fw-medium">{req.planName}</span>
+                          </div>
+                          <div className="mb-2">
+                            <span className="text-muted small">Type: </span>
+                            {req.planType === 'Group' ? (
+                              <span className="badge bg-primary px-2 py-1" style={{ backgroundColor: customColor, color: 'white', borderRadius: '20px' }}>Group</span>
+                            ) : (
+                              <span className="badge bg-primary px-2 py-1" style={{ backgroundColor: customColor, color: 'white', borderRadius: '20px' }}>Personal</span>
+                            )}
+                          </div>
+                          <div className="row mb-2">
+                            <div className="col-6">
+                              <span className="text-muted small">Sessions: </span>
+                              <span className="fw-medium">{req.sessions}</span>
+                            </div>
+                            <div className="col-6">
+                              <span className="text-muted small">Validity: </span>
+                              <span className="fw-medium">{req.validity} days</span>
+                            </div>
+                          </div>
+                          <div className="mb-3">
+                            <span className="text-muted small">Requested: </span>
+                            <span className="fw-medium">{req.requestedAt}</span>
+                          </div>
+                          <div className="d-flex justify-content-between align-items-center">
+                            <div>
+                              {req.status === 'pending' && <span className="badge bg-warning text-dark px-3 py-2" style={{ borderRadius: '20px' }}>Pending</span>}
+                              {req.status === 'approved' && <span className="badge px-3 py-2" style={{ backgroundColor: customColor, color: 'white', borderRadius: '20px' }}>Approved</span>}
+                              {req.status === 'rejected' && <span className="badge bg-danger px-3 py-2" style={{ borderRadius: '20px' }}>Rejected</span>}
+                            </div>
+                            {req.status === 'pending' ? (
+                              <Button
+                                size="sm"
+                                className="d-flex align-items-center gap-1 fw-medium"
+                                onClick={() => handleOpenStatusModal(req)}
+                                style={{
+                                  backgroundColor: '#ffc107',
+                                  borderColor: '#ffc107',
+                                  color: '#212529',
+                                  transition: 'background-color 0.3s ease',
+                                }}
+                              >
+                                <FaToggleOn size={14} /> Process
+                              </Button>
+                            ) : req.status === 'approved' ? (
+                              <Button
+                                size="sm"
+                                className="d-flex align-items-center gap-1 fw-medium"
+                                onClick={() => handleToggleRequestStatus(req.id)}
+                                style={{
+                                  backgroundColor: customColor,
+                                  borderColor: customColor,
+                                  color: 'white',
+                                  transition: 'background-color 0.3s ease',
+                                }}
+                              >
+                                <FaToggleOn size={14} /> Active
+                              </Button>
+                            ) : (
+                              <Button
+                                size="sm"
+                                className="d-flex align-items-center gap-1 fw-medium"
+                                onClick={() => handleToggleRequestStatus(req.id)}
+                                style={{
+                                  backgroundColor: '#6c757d',
+                                  borderColor: '#6c757d',
+                                  color: 'white',
+                                  transition: 'background-color 0.3s ease',
+                                }}
+                              >
+                                <FaToggleOff size={14} /> Inactive
+                              </Button>
+                            )}
+                          </div>
+                        </Card.Body>
+                      </Card>
+                    ))}
+                  </div>
+                </>
               )}
             </Card.Body>
           </Card>
         </div>
 
-        {/* Status Change Modal - Smaller and Responsive */}
+        {/* Status Change Modal - Responsive */}
         <Modal 
           show={showStatusModal} 
           onHide={() => setShowStatusModal(false)} 
           centered
           size="sm"
           contentClassName="p-0"
-          style={{ maxWidth: '90vw' }}
         >
           <Modal.Header className="py-2 px-3" style={{ backgroundColor: '#f8f9fa', borderBottom: `2px solid ${customColor}` }}>
             <Modal.Title style={{ color: '#333', fontWeight: '600', fontSize: '1.1rem' }}>Process Request</Modal.Title>
@@ -710,12 +799,12 @@ const CreatePlan = () => {
           </Modal.Body>
         </Modal>
 
-        {/* Create Plan Modal */}
-        <Modal show={showCreateModal} onHide={() => setShowCreateModal(false)} centered size="lg">
+        {/* Create Plan Modal - Responsive */}
+        <Modal show={showCreateModal} onHide={() => setShowCreateModal(false)} centered size="lg" fullscreen="sm-down">
           <Modal.Header closeButton style={{ backgroundColor: '#f8f9fa', borderBottom: `2px solid ${customColor}` }}>
             <Modal.Title style={{ color: '#333', fontWeight: '600' }}>Create New {newPlan.type === 'group' ? 'Group' : 'Personal'} Plan</Modal.Title>
           </Modal.Header>
-          <Modal.Body>
+          <Modal.Body className="p-3 p-md-4">
             <Form>
               <Form.Group className="mb-4">
                 <Form.Label className="fw-medium" style={{ color: '#333' }}>Plan Name</Form.Label>
@@ -788,10 +877,11 @@ const CreatePlan = () => {
               </Row>
             </Form>
           </Modal.Body>
-          <Modal.Footer style={{ borderTop: '1px solid #eee' }}>
+          <Modal.Footer style={{ borderTop: '1px solid #eee' }} className="flex-column flex-sm-row">
             <Button
               variant="secondary"
               onClick={() => setShowCreateModal(false)}
+              className="w-100 w-sm-auto"
               style={{
                 backgroundColor: '#6c757d',
                 borderColor: '#6c757d',
@@ -802,6 +892,7 @@ const CreatePlan = () => {
             </Button>
             <Button
               onClick={handleCreatePlan}
+              className="w-100 w-sm-auto mt-2 mt-sm-0"
               style={{
                 backgroundColor: customColor,
                 borderColor: customColor,
@@ -813,12 +904,12 @@ const CreatePlan = () => {
           </Modal.Footer>
         </Modal>
 
-        {/* Edit Plan Modal */}
-        <Modal show={showEditModal} onHide={() => setShowEditModal(false)} centered size="lg">
+        {/* Edit Plan Modal - Responsive */}
+        <Modal show={showEditModal} onHide={() => setShowEditModal(false)} centered size="lg" fullscreen="sm-down">
           <Modal.Header closeButton style={{ backgroundColor: '#f8f9fa', borderBottom: `2px solid ${customColor}` }}>
             <Modal.Title style={{ color: '#333', fontWeight: '600' }}>Edit {selectedPlan?.type === 'group' ? 'Group' : 'Personal'} Plan</Modal.Title>
           </Modal.Header>
-          <Modal.Body>
+          <Modal.Body className="p-3 p-md-4">
             <Form>
               <Form.Group className="mb-4">
                 <Form.Label className="fw-medium" style={{ color: '#333' }}>Plan Name</Form.Label>
@@ -891,10 +982,11 @@ const CreatePlan = () => {
               </Row>
             </Form>
           </Modal.Body>
-          <Modal.Footer style={{ borderTop: '1px solid #eee' }}>
+          <Modal.Footer style={{ borderTop: '1px solid #eee' }} className="flex-column flex-sm-row">
             <Button
               variant="secondary"
               onClick={() => setShowEditModal(false)}
+              className="w-100 w-sm-auto"
               style={{
                 backgroundColor: '#6c757d',
                 borderColor: '#6c757d',
@@ -906,6 +998,7 @@ const CreatePlan = () => {
             <Button
               variant="info"
               onClick={handleUpdatePlan}
+              className="w-100 w-sm-auto mt-2 mt-sm-0"
               style={{
                 backgroundColor: customColor,
                 borderColor: '#fff',
@@ -918,12 +1011,12 @@ const CreatePlan = () => {
           </Modal.Footer>
         </Modal>
 
-        {/* View Plan Modal */}
-        <Modal show={showViewModal} onHide={() => setShowViewModal(false)} centered size="lg">
+        {/* View Plan Modal - Responsive */}
+        <Modal show={showViewModal} onHide={() => setShowViewModal(false)} centered size="lg" fullscreen="sm-down">
           <Modal.Header closeButton style={{ backgroundColor: '#f8f9fa', borderBottom: `2px solid ${customColor}` }}>
             <Modal.Title style={{ color: '#333', fontWeight: '600' }}>View Plan Details</Modal.Title>
           </Modal.Header>
-          <Modal.Body>
+          <Modal.Body className="p-3 p-md-4">
             {selectedPlan && (
               <div className="p-4 bg-light rounded">
                 <h5 className="fw-bold mb-4" style={{ color: '#333', fontSize: '1.3rem' }}>{selectedPlan.name} ({selectedPlan.type === 'group' ? 'Group' : 'Personal'})</h5>
@@ -987,6 +1080,7 @@ const CreatePlan = () => {
             <Button
               variant="secondary"
               onClick={() => setShowViewModal(false)}
+              className="w-100 w-sm-auto"
               style={{
                 backgroundColor: '#6c757d',
                 borderColor: '#6c757d',
@@ -998,7 +1092,7 @@ const CreatePlan = () => {
           </Modal.Footer>
         </Modal>
 
-        {/* Delete Confirmation Modal */}
+        {/* Delete Confirmation Modal - Responsive */}
         <Modal show={showDeleteModal} onHide={handleCancelDelete} centered>
           <Modal.Header closeButton>
             <Modal.Title style={{ color: '#333' }}>Confirm Deletion</Modal.Title>
@@ -1011,10 +1105,11 @@ const CreatePlan = () => {
               This action cannot be undone.
             </p>
           </Modal.Body>
-          <Modal.Footer className="justify-content-center">
+          <Modal.Footer className="justify-content-center flex-column flex-sm-row">
             <Button
               variant="secondary"
               onClick={handleCancelDelete}
+              className="w-100 w-sm-auto"
               style={{
                 backgroundColor: '#6c757d',
                 borderColor: '#6c757d',
@@ -1026,6 +1121,7 @@ const CreatePlan = () => {
             <Button
               variant="danger"
               onClick={handleConfirmDelete}
+              className="w-100 w-sm-auto mt-2 mt-sm-0"
               style={{
                 backgroundColor: '#dc3545',
                 borderColor: '#dc3545',

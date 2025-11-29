@@ -1,9 +1,12 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { 
   RiCalendarLine, 
   RiTaskLine, 
   RiToolsLine, 
   RiUserLine,
+  RiArrowRightSLine,
+  RiAddLine,
+  RiMore2Fill,
   RiBarChartLine
 } from 'react-icons/ri';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -12,6 +15,131 @@ import * as echarts from 'echarts';
 const HouseKeepingDashboard = () => {
   const barChartRef = useRef(null);
   const pieChartRef = useRef(null);
+  const [activeDay, setActiveDay] = useState(null);
+  const [showMore, setShowMore] = useState(false);
+  const [selectedDay, setSelectedDay] = useState(null);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [filterStatus, setFilterStatus] = useState('all'); // all, completed, pending, upcoming
+  const [currentWeekStart, setCurrentWeekStart] = useState(new Date());
+  
+  // Generate week days dynamically
+  const generateWeekDays = () => {
+    const days = [];
+    const startDate = new Date(currentWeekStart);
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    
+    for (let i = 0; i < 7; i++) {
+      const currentDate = new Date(startDate);
+      currentDate.setDate(startDate.getDate() + i);
+      
+      const dayName = dayNames[currentDate.getDay()];
+      const dayOfMonth = currentDate.getDate();
+      const month = currentDate.toLocaleDateString('en-US', { month: 'short' });
+      
+      // Randomly assign status for demo (in real app, this would come from API)
+      const statuses = ['completed', 'in-progress', 'upcoming', 'overtime', 'off'];
+      const status = i === 0 ? 'in-progress' : i === 6 ? 'off' : statuses[Math.floor(Math.random() * (statuses.length - 1))];
+      
+      // Randomly assign areas for demo
+      const areas = ['Locker Area', 'Cardio Zone', 'Reception Area', 'Weight Room', 'Pool Area', 'Full Facility'];
+      const area = status === 'off' ? 'Day Off' : areas[Math.floor(Math.random() * areas.length)];
+      
+      // Randomly assign times for demo
+      const times = ['8:00 AM - 4:00 PM', '2:00 PM - 10:00 PM', '6:00 AM - 2:00 PM'];
+      const time = status === 'off' ? 'Day Off' : times[Math.floor(Math.random() * times.length)];
+      
+      days.push({
+        id: i,
+        dayName,
+        date: `${month} ${dayOfMonth}`,
+        status,
+        area,
+        time,
+        fullDate: currentDate
+      });
+    }
+    
+    return days;
+  };
+  
+  const [weekDays, setWeekDays] = useState(generateWeekDays());
+  
+  // Filter days based on selected status
+  const filteredDays = filterStatus === 'all' 
+    ? weekDays 
+    : weekDays.filter(day => day.status === filterStatus);
+  
+  // Navigate to previous/next week
+  const navigateWeek = (direction) => {
+    const newDate = new Date(currentWeekStart);
+    newDate.setDate(currentWeekStart.getDate() + (direction === 'next' ? 7 : -7));
+    setCurrentWeekStart(newDate);
+    setWeekDays(generateWeekDays());
+  };
+  
+  // Format date for display
+  const formatDateRange = () => {
+    const start = new Date(currentWeekStart);
+    const end = new Date(currentWeekStart);
+    end.setDate(start.getDate() + 6);
+    
+    const options = { month: 'short', day: 'numeric' };
+    return `${start.toLocaleDateString('en-US', options)} - ${end.toLocaleDateString('en-US', options)}`;
+  };
+  
+  // Get status styling
+  const getStatusStyling = (status) => {
+    switch (status) {
+      case 'completed':
+        return {
+          bgClass: 'bg-success bg-opacity-10',
+          borderClass: 'border-success',
+          textClass: 'text-success',
+          icon: '✅',
+          label: 'Completed'
+        };
+      case 'in-progress':
+        return {
+          bgClass: 'bg-primary bg-opacity-10',
+          borderClass: 'border-primary',
+          textClass: 'text-primary',
+          icon: '🔄',
+          label: 'In Progress'
+        };
+      case 'upcoming':
+        return {
+          bgClass: 'bg-light',
+          borderClass: 'border-secondary',
+          textClass: 'text-secondary',
+          icon: '⏳',
+          label: 'Upcoming'
+        };
+      case 'overtime':
+        return {
+          bgClass: 'bg-warning bg-opacity-10',
+          borderClass: 'border-warning',
+          textClass: 'text-warning',
+          icon: '⚡',
+          label: 'Overtime'
+        };
+      case 'off':
+        return {
+          bgClass: 'bg-white',
+          borderClass: 'border-light',
+          textClass: 'text-muted',
+          icon: '🏠',
+          label: 'Day Off'
+        };
+      default:
+        return {
+          bgClass: 'bg-light',
+          borderClass: 'border-secondary',
+          textClass: 'text-secondary',
+          icon: '⏳',
+          label: 'Unknown'
+        };
+    }
+  };
 
   useEffect(() => {
     // Initialize Bar Chart
@@ -99,7 +227,6 @@ const HouseKeepingDashboard = () => {
     };
     window.addEventListener('resize', handleResize);
     
-    // Cleanup
     return () => {
       window.removeEventListener('resize', handleResize);
       barChart.dispose();
@@ -107,18 +234,56 @@ const HouseKeepingDashboard = () => {
     };
   }, []);
 
+  // Use the dynamic weekDays instead of the hardcoded array
+  const displayWeekDays = weekDays.map(day => ({
+    day: day.dayName,
+    date: day.date,
+    time: day.time,
+    area: day.area,
+    status: day.status,
+    color: day.status === 'completed' ? 'success' : 
+           day.status === 'in-progress' ? 'primary' : 
+           day.status === 'overtime' ? 'warning' : 
+           day.status === 'off' ? 'light' : 'secondary'
+  }));
+
+  const getStatusIcon = (status) => {
+    switch(status) {
+      case 'completed': return '✅';
+      case 'in-progress': return '🔄';
+      case 'upcoming': return '⏳';
+      case 'overtime': return '⚡';
+      case 'off': return '🏠';
+      default: return '';
+    }
+  };
+
+  const getStatusText = (status) => {
+    switch(status) {
+      case 'completed': return 'Completed';
+      case 'in-progress': return 'In Progress';
+      case 'upcoming': return 'Upcoming';
+      case 'overtime': return 'Overtime';
+      case 'off': return 'Off';
+      default: return '';
+    }
+  };
+
   return (
-    <div className="w-100 min-vh-100 bg-light p-0">
-      <div className="p-2 p-md-4">
+    <div className='w-100 min-vh-100 bg-light p-0'>
+      <div className="p-2 p-sm-3 p-md-4">
+        
+        {/* Header */}
         <div className="mb-4">
-          <h1 className="h3 mb-1">Welcome, Priya!</h1>
+          <h1 className="h3 mb-1 fw-bold">Welcome, Priya!</h1>
           <p className="text-muted">Your schedule, tasks, and alerts for today</p>
         </div>
         
         {/* Summary Widgets */}
-        <div className="row g-3 mb-4">
-          <div className="col-6 col-md-6 col-lg-3">
-            <div className="card shadow-sm h-100">
+        <div className="row g-3 g-md-4 mb-4 mb-md-5">
+          
+          <div className="col-6 col-md-3">
+            <div className="card shadow-sm h-100 border-0 transition-all hover-lift">
               <div className="card-body d-flex justify-content-between align-items-start">
                 <div>
                   <div className="d-flex align-items-center mb-3">
@@ -130,12 +295,17 @@ const HouseKeepingDashboard = () => {
                   <h3 className="h6 fw-semibold mb-1">Shifts This Week</h3>
                   <p className="text-muted small mb-0">Next: Today, 8:00 AM – 4:00 PM</p>
                 </div>
+                <div className="ms-2">
+                  <button className="btn btn-sm btn-light rounded-circle p-1">
+                    <RiArrowRightSLine className="text-primary" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
           
-          <div className="col-6 col-md-6 col-lg-3">
-            <div className="card shadow-sm h-100">
+          <div className="col-6 col-md-3">
+            <div className="card shadow-sm h-100 border-0 transition-all hover-lift">
               <div className="card-body d-flex justify-content-between align-items-start">
                 <div>
                   <div className="d-flex align-items-center mb-3">
@@ -152,12 +322,17 @@ const HouseKeepingDashboard = () => {
                     <span className="text-success small fw-medium">72%</span>
                   </div>
                 </div>
+                <div className="ms-2">
+                  <button className="btn btn-sm btn-light rounded-circle p-1">
+                    <RiArrowRightSLine className="text-success" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
           
-          <div className="col-6 col-md-6 col-lg-3">
-            <div className="card shadow-sm h-100">
+          <div className="col-6 col-md-3">
+            <div className="card shadow-sm h-100 border-0 transition-all hover-lift">
               <div className="card-body d-flex justify-content-between align-items-start">
                 <div>
                   <div className="d-flex align-items-center mb-3">
@@ -169,12 +344,17 @@ const HouseKeepingDashboard = () => {
                   <h3 className="h6 fw-semibold mb-1">Pending Maintenance</h3>
                   <p className="text-muted small mb-0">Requires attention</p>
                 </div>
+                <div className="ms-2">
+                  <button className="btn btn-sm btn-light rounded-circle p-1">
+                    <RiArrowRightSLine className="text-warning" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
           
-          <div className="col-6 col-md-6 col-lg-3">
-            <div className="card shadow-sm h-100">
+          <div className="col-6 col-md-3">
+            <div className="card shadow-sm h-100 border-0 transition-all hover-lift">
               <div className="card-body d-flex justify-content-between align-items-start">
                 <div>
                   <div className="d-flex align-items-center mb-3">
@@ -189,126 +369,160 @@ const HouseKeepingDashboard = () => {
                     <span className="text-muted small">Excellent record</span>
                   </div>
                 </div>
+                <div className="ms-2">
+                  <button className="btn btn-sm btn-light rounded-circle p-1">
+                    <RiArrowRightSLine className="text-info" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
+
         </div>
         
         {/* Weekly Duty Roster */}
-        <div className="card shadow-sm mb-4">
-          <div className="card-body">
-            <h2 className="h5 fw-semibold mb-4">Weekly Duty Roster</h2>
-            <div className="overflow-auto">
-              <div className="d-flex gap-3 pb-3" style={{ minWidth: 'max-content' }}>
-                <div className="flex-shrink-0" style={{ width: '128px' }}>
-                  <div className="text-center mb-3">
-                    <div className="fw-medium">Mon</div>
-                    <div className="text-muted small">Sep 2</div>
+        <div className="card shadow-sm border-0 mb-4 mb-md-5">
+          <div className="card-header bg-white border-0 py-3 px-4">
+            <div className="d-flex justify-content-between align-items-center">
+              <h2 className="h5 fw-semibold mb-0">Weekly Duty Roster</h2>
+              <button 
+                className="btn btn-sm btn-outline-secondary d-md-none"
+                onClick={() => setShowMore(!showMore)}
+              >
+                <RiMore2Fill />
+              </button>
+            </div>
+          </div>
+          <div className="card-body p-0">
+            {/* Desktop View */}
+            <div className="d-none d-md-block p-4">
+              <div className="d-flex gap-3" style={{ overflowX: 'auto', paddingBottom: '1rem' }}>
+                {displayWeekDays.map((day, index) => (
+                  <div 
+                    key={index} 
+                    className="flex-shrink-0 day-card" 
+                    style={{ width: '140px' }}
+                    onClick={() => setActiveDay(activeDay === index ? null : index)}
+                  >
+                    <div className="text-center mb-3">
+                      <div className="fw-medium">{day.day}</div>
+                      <div className="text-muted small">{day.date}</div>
+                    </div>
+                    <div className={`bg-${day.color} bg-opacity-10 border-start border-${day.color} border-4 p-3 rounded h-100 position-relative`}>
+                      <div className={`fw-medium text-${day.color} small`}>{day.time}</div>
+                      <div className={`text-${day.color} small mt-1`}>{day.area}</div>
+                      <div className={`text-${day.color} small mt-1`}>
+                        {getStatusIcon(day.status)} {getStatusText(day.status)}
+                      </div>
+                      {activeDay === index && (
+                        <div className="position-absolute top-0 end-0 m-2">
+                          <div className="bg-primary text-white rounded-circle p-1">
+                            <RiAddLine size={12} />
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div className="bg-success bg-opacity-10 border-start border-success border-4 p-3 rounded">
-                    <div className="fw-medium text-success small">8:00 AM - 4:00 PM</div>
-                    <div className="text-success small mt-1">Locker Area</div>
-                    <div className="text-success small mt-1">✅ Completed</div>
-                  </div>
-                </div>
-                
-                <div className="flex-shrink-0" style={{ width: '128px' }}>
-                  <div className="text-center mb-3">
-                    <div className="fw-medium">Tue</div>
-                    <div className="text-muted small">Sep 3</div>
-                  </div>
-                  <div className="bg-success bg-opacity-10 border-start border-success border-4 p-3 rounded">
-                    <div className="fw-medium text-success small">8:00 AM - 4:00 PM</div>
-                    <div className="text-success small mt-1">Cardio Zone</div>
-                    <div className="text-success small mt-1">✅ Completed</div>
-                  </div>
-                </div>
-                
-                <div className="flex-shrink-0" style={{ width: '128px' }}>
-                  <div className="text-center mb-3">
-                    <div className="fw-medium">Wed</div>
-                    <div className="text-muted small">Sep 4</div>
-                  </div>
-                  <div className="bg-primary bg-opacity-10 border-start border-primary border-4 p-3 rounded">
-                    <div className="fw-medium text-primary small">8:00 AM - 4:00 PM</div>
-                    <div className="text-primary small mt-1">Reception Area</div>
-                    <div className="text-primary small mt-1">🔄 In Progress</div>
-                  </div>
-                </div>
-                
-                <div className="flex-shrink-0" style={{ width: '128px' }}>
-                  <div className="text-center mb-3">
-                    <div className="fw-medium">Thu</div>
-                    <div className="text-muted small">Sep 5</div>
-                  </div>
-                  <div className="bg-light border-start border-secondary border-4 p-3 rounded">
-                    <div className="fw-medium text-secondary small">2:00 PM - 10:00 PM</div>
-                    <div className="text-muted small mt-1">Weight Room</div>
-                    <div className="text-muted small mt-1">⏳ Upcoming</div>
-                  </div>
-                </div>
-                
-                <div className="flex-shrink-0" style={{ width: '128px' }}>
-                  <div className="text-center mb-3">
-                    <div className="fw-medium">Fri</div>
-                    <div className="text-muted small">Sep 6</div>
-                  </div>
-                  <div className="bg-warning bg-opacity-10 border-start border-warning border-4 p-3 rounded">
-                    <div className="fw-medium text-warning small">6:00 AM - 2:00 PM</div>
-                    <div className="text-warning small mt-1">Pool Area</div>
-                    <div className="text-warning small mt-1">⚡ Overtime</div>
-                  </div>
-                </div>
-                
-                <div className="flex-shrink-0" style={{ width: '128px' }}>
-                  <div className="text-center mb-3">
-                    <div className="fw-medium">Sat</div>
-                    <div className="text-muted small">Sep 7</div>
-                  </div>
-                  <div className="bg-light border-start border-secondary border-4 p-3 rounded">
-                    <div className="fw-medium text-secondary small">8:00 AM - 4:00 PM</div>
-                    <div className="text-muted small mt-1">Full Facility</div>
-                    <div className="text-muted small mt-1">⏳ Upcoming</div>
-                  </div>
-                </div>
-                
-                <div className="flex-shrink-0" style={{ width: '128px' }}>
-                  <div className="text-center mb-3">
-                    <div className="fw-medium">Sun</div>
-                    <div className="text-muted small">Sep 8</div>
-                  </div>
-                  <div className="bg-white border-start border-light border-4 p-3 rounded">
-                    <div className="fw-medium text-muted small">Day Off</div>
-                    <div className="text-muted small mt-1">Rest Day</div>
-                    <div className="text-muted small mt-1">🏠 Off</div>
-                  </div>
-                </div>
+                ))}
               </div>
+            </div>
+            
+            {/* Mobile View */}
+            <div className="d-md-none">
+              {showMore ? (
+                <div className="p-3">
+                  {displayWeekDays.map((day, index) => (
+                    <div 
+                      key={index} 
+                      className="d-flex justify-content-between align-items-center p-3 border-bottom"
+                      onClick={() => setActiveDay(activeDay === index ? null : index)}
+                    >
+                      <div>
+                        <div className="fw-medium">{day.day} - {day.date}</div>
+                        <div className={`text-${day.color} small`}>{day.time}</div>
+                        <div className={`text-${day.color} small`}>{day.area}</div>
+                      </div>
+                      <div className="text-center">
+                        <div className={`bg-${day.color} bg-opacity-10 p-2 rounded`}>
+                          <div className={`text-${day.color} small`}>
+                            {getStatusIcon(day.status)}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-3">
+                  {displayWeekDays.slice(0, 3).map((day, index) => (
+                    <div 
+                      key={index} 
+                      className="d-flex justify-content-between align-items-center p-3 border-bottom"
+                      onClick={() => setActiveDay(activeDay === index ? null : index)}
+                    >
+                      <div>
+                        <div className="fw-medium">{day.day} - {day.date}</div>
+                        <div className={`text-${day.color} small`}>{day.time}</div>
+                        <div className={`text-${day.color} small`}>{day.area}</div>
+                      </div>
+                      <div className="text-center">
+                        <div className={`bg-${day.color} bg-opacity-10 p-2 rounded`}>
+                          <div className={`text-${day.color} small`}>
+                            {getStatusIcon(day.status)}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
         
         {/* Charts Section */}
-        <div className="row g-3">
+        <div className="row g-3 g-md-4">
           <div className="col-12 col-lg-6">
-            <div className="card shadow-sm h-100">
+            <div className="card shadow-sm border-0 h-100">
+              <div className="card-header bg-white border-0 py-3 px-4">
+                <h3 className="h5 fw-semibold mb-0">Tasks Completed (Last 7 Days)</h3>
+              </div>
               <div className="card-body">
-                <h3 className="h5 fw-semibold mb-4">Tasks Completed (Last 7 Days)</h3>
                 <div ref={barChartRef} style={{ height: '300px' }}></div>
               </div>
             </div>
           </div>
           
           <div className="col-12 col-lg-6">
-            <div className="card shadow-sm h-100">
+            <div className="card shadow-sm border-0 h-100">
+              <div className="card-header bg-white border-0 py-3 px-4">
+                <h3 className="h5 fw-semibold mb-0">Maintenance Status</h3>
+              </div>
               <div className="card-body">
-                <h3 className="h5 fw-semibold mb-4">Maintenance Status</h3>
                 <div ref={pieChartRef} style={{ height: '300px' }}></div>
               </div>
             </div>
           </div>
         </div>
+
       </div>
+      
+      <style jsx>{`
+        .hover-lift {
+          transition: all 0.3s ease;
+        }
+        .hover-lift:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .day-card {
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        .day-card:hover {
+          transform: translateY(-3px);
+        }
+      `}</style>
     </div>
   );
 };
