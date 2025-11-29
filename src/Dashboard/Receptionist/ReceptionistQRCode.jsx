@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaEye, FaEdit, FaTrashAlt, FaQrcode, FaChevronLeft, FaChevronRight, FaUser, FaClock, FaMobileAlt, FaCalendarAlt } from 'react-icons/fa';
+import { FaEye, FaEdit, FaTrashAlt, FaQrcode, FaChevronLeft, FaChevronRight, FaUser, FaClock, FaCalendarAlt } from 'react-icons/fa';
 
 const ReceptionistQRCode = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -10,8 +10,7 @@ const ReceptionistQRCode = () => {
     member_code: '',
     checkin_time: '',
     checkout_time: '',
-    mode: 'QR',
-    device_info: ''
+    mode: 'QR'
   });
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -19,7 +18,7 @@ const ReceptionistQRCode = () => {
   const [entriesPerPage, setEntriesPerPage] = useState(6); // Changed to 6 for better card layout
   const [currentPage, setCurrentPage] = useState(1);
   
-  // Sample data
+  // Sample data - removed device_info field
   const [records, setRecords] = useState([
     {
       id: 1,
@@ -29,7 +28,6 @@ const ReceptionistQRCode = () => {
       checkin_time: "06:15",
       checkout_time: "07:45",
       mode: "QR",
-      device_info: "iPhone 14 Pro",
       status: "Present"
     },
     {
@@ -40,7 +38,6 @@ const ReceptionistQRCode = () => {
       checkin_time: "09:30",
       checkout_time: "10:45",
       mode: "Manual",
-      device_info: "Admin Dashboard",
       status: "Late"
     },
     {
@@ -51,7 +48,6 @@ const ReceptionistQRCode = () => {
       checkin_time: null,
       checkout_time: null,
       mode: "QR",
-      device_info: "Samsung Galaxy S23",
       status: "Absent"
     },
     {
@@ -62,7 +58,6 @@ const ReceptionistQRCode = () => {
       checkin_time: "05:55",
       checkout_time: "07:30",
       mode: "QR",
-      device_info: "iPad Pro",
       status: "Present"
     },
     {
@@ -73,7 +68,6 @@ const ReceptionistQRCode = () => {
       checkin_time: "08:00",
       checkout_time: "09:15",
       mode: "QR",
-      device_info: "iPhone 13",
       status: "Present"
     },
     {
@@ -84,7 +78,6 @@ const ReceptionistQRCode = () => {
       checkin_time: "07:30",
       checkout_time: "08:45",
       mode: "Manual",
-      device_info: "Admin Dashboard",
       status: "Late"
     }
   ]);
@@ -142,8 +135,7 @@ const ReceptionistQRCode = () => {
       member_code: '',
       checkin_time: `${hours}:${minutes}`,
       checkout_time: '',
-      mode: 'QR',
-      device_info: 'Reception Terminal'
+      mode: 'QR'
     });
     setIsModalOpen(true);
   };
@@ -203,7 +195,7 @@ const ReceptionistQRCode = () => {
       Absent: "bg-danger-subtle text-danger-emphasis"
     };
     return (
-      <span className={`badge rounded-pill ${badgeClasses[status] || 'bg-secondary'} px-3 py-1`}>
+      <span className={`badge rounded-pill ${badgeClasses[status] || 'bg-secondary'} px-2 py-1`}>
         {status}
       </span>
     );
@@ -270,7 +262,6 @@ const ReceptionistQRCode = () => {
         checkin_time: scanData.checkin_time,
         checkout_time: scanData.checkout_time,
         mode: scanData.mode,
-        device_info: scanData.device_info,
         status: scanData.checkin_time ? 'Present' : 'Absent'
       };
 
@@ -294,7 +285,6 @@ const ReceptionistQRCode = () => {
           checkin_time: document.querySelector('[name="checkin_time"]')?.value || null,
           checkout_time: document.querySelector('[name="checkout_time"]')?.value || null,
           mode: document.querySelector('[name="mode"]')?.value || 'Manual',
-          device_info: document.querySelector('[name="device_info"]')?.value || 'Admin Dashboard',
           status: document.querySelector('[name="status"]')?.value || 'Present'
         };
         setRecords(prev => [...prev, newRecord]);
@@ -308,7 +298,6 @@ const ReceptionistQRCode = () => {
           checkin_time: document.querySelector('[name="checkin_time"]')?.value || selectedRecord.checkin_time,
           checkout_time: document.querySelector('[name="checkout_time"]')?.value || selectedRecord.checkout_time,
           mode: document.querySelector('[name="mode"]')?.value || selectedRecord.mode,
-          device_info: document.querySelector('[name="device_info"]')?.value || selectedRecord.device_info,
           status: document.querySelector('[name="status"]')?.value || selectedRecord.status
         };
         setRecords(prev =>
@@ -320,7 +309,7 @@ const ReceptionistQRCode = () => {
     }
   };
 
-  // Attendance Card Component
+  // Attendance Card Component - Removed device info section
   const AttendanceCard = ({ record }) => (
     <div className="card attendance-card shadow-sm h-100">
       <div className="card-body d-flex flex-column">
@@ -386,26 +375,13 @@ const ReceptionistQRCode = () => {
           </div>
         </div>
         
-        {/* Mode and Device */}
-        <div className="row g-2 mb-3">
-          <div className="col-6">
-            <div className="d-flex align-items-center">
-              <FaQrcode className="text-info me-2" />
-              <div>
-                <small className="text-muted d-block">Mode</small>
-                {getModeBadge(record.mode)}
-              </div>
-            </div>
-          </div>
-          <div className="col-6">
-            <div className="d-flex align-items-center">
-              <FaMobileAlt className="text-secondary me-2" />
-              <div>
-                <small className="text-muted d-block">Device</small>
-                <small className="text-truncate d-block" title={record.device_info}>
-                  {record.device_info || '—'}
-                </small>
-              </div>
+        {/* Mode only - Removed device info section */}
+        <div className="mb-3">
+          <div className="d-flex align-items-center">
+            <FaQrcode className="text-info me-2" />
+            <div>
+              <small className="text-muted d-block">Mode</small>
+              {getModeBadge(record.mode)}
             </div>
           </div>
         </div>
@@ -432,8 +408,8 @@ const ReceptionistQRCode = () => {
       {/* Header */}
       <div className="row mb-4 align-items-center">
         <div className="col-12 col-lg-8">
-          <h2 className="fw-bold">QR Code Attendance Records</h2>
-          <p className="text-muted mb-0">Track member attendance via QR scan or manual entry.</p>
+          <h2 className="fw-bold fs-4 fs-md-3">QR Code Attendance Records</h2>
+          <p className="text-muted mb-0 fs-6">Track member attendance via QR scan or manual entry.</p>
         </div>
         <div className="col-12 col-lg-4 text-lg-end mt-3 mt-lg-0 d-flex flex-column flex-sm-row gap-2 justify-content-lg-end">
           <button
@@ -543,7 +519,7 @@ const ReceptionistQRCode = () => {
       <div className="row mt-4">
         <div className="col-12 col-md-5">
           <div className="d-flex align-items-center">
-            <span>
+            <span className="small">
               Showing {indexOfFirstEntry + 1} to {Math.min(indexOfLastEntry, filteredRecords.length)} of {filteredRecords.length} entries
             </span>
           </div>
@@ -643,7 +619,7 @@ const ReceptionistQRCode = () => {
                     </div>
 
                     {/* Check-in / Check-out */}
-                    <div className="row mb-3 g-3">
+                    <div className="row mb-4 g-3">
                       <div className="col-12 col-md-6">
                         <label className="form-label">Check-in Time</label>
                         <input
@@ -664,29 +640,17 @@ const ReceptionistQRCode = () => {
                       </div>
                     </div>
 
-                    {/* Mode & Device */}
-                    <div className="row mb-4 g-3">
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">Mode</label>
-                        <select
-                          className="form-select rounded-3"
-                          value={scanData.mode}
-                          onChange={(e) => setScanData({...scanData, mode: e.target.value})}
-                        >
-                          <option value="QR">QR</option>
-                          <option value="Manual">Manual</option>
-                        </select>
-                      </div>
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">Device Info</label>
-                        <input
-                          type="text"
-                          className="form-control rounded-3"
-                          placeholder="e.g., iPhone 14, Admin Dashboard"
-                          value={scanData.device_info}
-                          onChange={(e) => setScanData({...scanData, device_info: e.target.value})}
-                        />
-                      </div>
+                    {/* Mode only - Removed device info */}
+                    <div className="mb-4">
+                      <label className="form-label">Mode</label>
+                      <select
+                        className="form-select rounded-3"
+                        value={scanData.mode}
+                        onChange={(e) => setScanData({...scanData, mode: e.target.value})}
+                      >
+                        <option value="QR">QR</option>
+                        <option value="Manual">Manual</option>
+                      </select>
                     </div>
 
                     {/* Action Buttons */}
@@ -783,30 +747,18 @@ const ReceptionistQRCode = () => {
                       </div>
                     </div>
 
-                    {/* Mode & Device */}
-                    <div className="row mb-3 g-3">
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">Mode <span className="text-danger">*</span></label>
-                        <select
-                          className="form-select rounded-3"
-                          defaultValue={selectedRecord?.mode || 'QR'}
-                          disabled={modalType === 'view'}
-                          required
-                        >
-                          <option value="QR">QR</option>
-                          <option value="Manual">Manual</option>
-                        </select>
-                      </div>
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">Device Info</label>
-                        <input
-                          type="text"
-                          className="form-control rounded-3"
-                          placeholder="e.g., iPhone 14, Admin Dashboard"
-                          defaultValue={selectedRecord?.device_info || ''}
-                          readOnly={modalType === 'view'}
-                        />
-                      </div>
+                    {/* Mode only - Removed device info */}
+                    <div className="mb-3">
+                      <label className="form-label">Mode <span className="text-danger">*</span></label>
+                      <select
+                        className="form-select rounded-3"
+                        defaultValue={selectedRecord?.mode || 'QR'}
+                        disabled={modalType === 'view'}
+                        required
+                      >
+                        <option value="QR">QR</option>
+                        <option value="Manual">Manual</option>
+                      </select>
                     </div>
 
                     {/* Status */}
