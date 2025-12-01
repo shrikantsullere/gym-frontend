@@ -613,7 +613,7 @@ const StaffAttendance = () => {
         </div>
       </div>
 
-      {/* MAIN MODAL (Add/Edit/View) */}
+      {/* MAIN MODAL (Add/Edit/View) - Compact Version */}
       {isModalOpen && (
         <div
           className="modal fade show"
@@ -622,25 +622,32 @@ const StaffAttendance = () => {
           onClick={closeModal}
         >
           <div
-            className="modal-dialog modal-lg modal-dialog-centered"
+            className="modal-dialog modal-dialog-centered"
             onClick={(e) => e.stopPropagation()}
-            style={{ margin: '0.5rem', maxWidth: '95%' }}
+            style={{ 
+              maxWidth: modalType === 'view' ? '500px' : '550px',
+              margin: 'auto',
+              position: 'relative',
+              transform: 'scale(0.95)',
+              transition: 'transform 0.2s ease-out'
+            }}
           >
-            <div className="modal-content">
-              <div className="modal-header border-0 pb-0" style={{ backgroundColor: customColor, color: 'white' }}>
-                <h5 className="modal-title fw-bold" style={{ fontSize: '1.1rem' }}>{getModalTitle()}</h5>
+            <div className="modal-content border-0 shadow" style={{ borderRadius: '0.5rem', overflow: 'hidden' }}>
+              <div className="modal-header py-2 px-3" style={{ backgroundColor: customColor, color: 'white' }}>
+                <h5 className="modal-title fw-bold m-0" style={{ fontSize: '1rem' }}>{getModalTitle()}</h5>
                 <button
                   type="button"
                   className="btn-close btn-close-white"
                   onClick={closeModal}
+                  style={{ opacity: 0.8 }}
                 ></button>
               </div>
-              <div className="modal-body p-3 p-md-4">
+              <div className="modal-body p-3" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
                 <form onSubmit={handleFormSubmit}>
-                  {/* Staff & Role */}
-                  <div className="row mb-3 g-2">
-                    <div className="col-12 col-md-6">
-                      <label className="form-label fw-semibold" style={{ fontSize: '0.875rem' }}>Staff Member <span className="text-danger">*</span></label>
+                  <div className="row g-2">
+                    {/* Staff & Role */}
+                    <div className="col-12">
+                      <label className="form-label fw-semibold" style={{ fontSize: '0.8rem' }}>Staff Member</label>
                       <select
                         name="staff_id"
                         className="form-select form-select-sm"
@@ -657,22 +664,9 @@ const StaffAttendance = () => {
                       </select>
                     </div>
 
-                    <div className="col-12 col-md-6">
-                      <label className="form-label fw-semibold" style={{ fontSize: '0.875rem' }}>Assigned Role</label>
-                      <input
-                        type="text"
-                        className="form-control form-control-sm"
-                        defaultValue={selectedRecord?.role || ''}
-                        readOnly
-                        style={{ backgroundColor: '#f8f9fa' }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Branch & Date */}
-                  <div className="row mb-3 g-2">
-                    <div className="col-12 col-md-6">
-                      <label className="form-label fw-semibold" style={{ fontSize: '0.875rem' }}>Branch</label>
+                    {/* Branch & Date */}
+                    <div className="col-6">
+                      <label className="form-label fw-semibold" style={{ fontSize: '0.8rem' }}>Branch</label>
                       <input
                         type="text"
                         className="form-control form-control-sm"
@@ -681,8 +675,8 @@ const StaffAttendance = () => {
                         style={{ backgroundColor: '#f8f9fa' }}
                       />
                     </div>
-                    <div className="col-12 col-md-6">
-                      <label className="form-label fw-semibold" style={{ fontSize: '0.875rem' }}>Date <span className="text-danger">*</span></label>
+                    <div className="col-6">
+                      <label className="form-label fw-semibold" style={{ fontSize: '0.8rem' }}>Date</label>
                       <input
                         name="date"
                         type="date"
@@ -692,12 +686,10 @@ const StaffAttendance = () => {
                         required
                       />
                     </div>
-                  </div>
 
-                  {/* Shift */}
-                  <div className="row mb-3 g-2">
-                    <div className="col-12 col-md-6">
-                      <label className="form-label fw-semibold" style={{ fontSize: '0.875rem' }}>Shift</label>
+                    {/* Shift & Mode */}
+                    <div className="col-6">
+                      <label className="form-label fw-semibold" style={{ fontSize: '0.8rem' }}>Shift</label>
                       <select
                         name="shift_id"
                         className="form-select form-select-sm"
@@ -712,8 +704,8 @@ const StaffAttendance = () => {
                         ))}
                       </select>
                     </div>
-                    <div className="col-12 col-md-6">
-                      <label className="form-label fw-semibold" style={{ fontSize: '0.875rem' }}>Mode <span className="text-danger">*</span></label>
+                    <div className="col-6">
+                      <label className="form-label fw-semibold" style={{ fontSize: '0.8rem' }}>Mode</label>
                       <select
                         name="mode"
                         className="form-select form-select-sm"
@@ -725,12 +717,10 @@ const StaffAttendance = () => {
                         <option value="Manual">Manual</option>
                       </select>
                     </div>
-                  </div>
 
-                  {/* Check-in / Check-out */}
-                  <div className="row mb-3 g-2">
-                    <div className="col-12 col-md-6">
-                      <label className="form-label fw-semibold" style={{ fontSize: '0.875rem' }}>Check-in Time</label>
+                    {/* Check-in / Check-out */}
+                    <div className="col-6">
+                      <label className="form-label fw-semibold" style={{ fontSize: '0.8rem' }}>Check-in Time</label>
                       <input
                         name="checkin_time"
                         type="datetime-local"
@@ -739,8 +729,8 @@ const StaffAttendance = () => {
                         readOnly={modalType === 'view'}
                       />
                     </div>
-                    <div className="col-12 col-md-6">
-                      <label className="form-label fw-semibold" style={{ fontSize: '0.875rem' }}>Check-out Time</label>
+                    <div className="col-6">
+                      <label className="form-label fw-semibold" style={{ fontSize: '0.8rem' }}>Check-out Time</label>
                       <input
                         name="checkout_time"
                         type="datetime-local"
@@ -749,12 +739,10 @@ const StaffAttendance = () => {
                         readOnly={modalType === 'view'}
                       />
                     </div>
-                  </div>
 
-                  {/* Status & Notes */}
-                  <div className="row mb-3 g-2">
-                    <div className="col-12 col-md-6">
-                      <label className="form-label fw-semibold" style={{ fontSize: '0.875rem' }}>Status <span className="text-danger">*</span></label>
+                    {/* Status & Notes */}
+                    <div className="col-6">
+                      <label className="form-label fw-semibold" style={{ fontSize: '0.8rem' }}>Status</label>
                       <select
                         name="status"
                         className="form-select form-select-sm"
@@ -768,8 +756,8 @@ const StaffAttendance = () => {
                         <option value="Overtime">Overtime</option>
                       </select>
                     </div>
-                    <div className="col-12 col-md-6">
-                      <label className="form-label fw-semibold" style={{ fontSize: '0.875rem' }}>Notes</label>
+                    <div className="col-6">
+                      <label className="form-label fw-semibold" style={{ fontSize: '0.8rem' }}>Notes</label>
                       <input
                         name="notes"
                         type="text"
@@ -782,26 +770,22 @@ const StaffAttendance = () => {
                   </div>
 
                   {/* Buttons */}
-                  <div className="d-flex flex-column flex-sm-row justify-content-end gap-2 mt-4">
+                  <div className="d-flex justify-content-end gap-2 mt-3">
                     <button
                       type="button"
-                      className="btn btn-secondary px-3 py-2"
+                      className="btn btn-secondary btn-sm px-3"
                       onClick={closeModal}
-                      style={{ fontSize: '0.875rem' }}
                     >
                       Cancel
                     </button>
                     {modalType !== 'view' && (
                       <button
                         type="submit"
-                        className="btn px-3 py-2"
+                        className="btn btn-sm px-3"
                         style={{
                           backgroundColor: customColor,
                           color: 'white',
-                          border: 'none',
-                          borderRadius: '0.375rem',
-                          fontWeight: '500',
-                          fontSize: '0.875rem'
+                          border: 'none'
                         }}
                       >
                         {modalType === 'add' ? 'Add Record' : 'Save Changes'}
@@ -815,7 +799,7 @@ const StaffAttendance = () => {
         </div>
       )}
 
-      {/* DELETE CONFIRMATION MODAL */}
+      {/* DELETE CONFIRMATION MODAL - Compact Version */}
       {isDeleteModalOpen && (
         <div
           className="modal fade show"
@@ -826,41 +810,46 @@ const StaffAttendance = () => {
           <div
             className="modal-dialog modal-dialog-centered"
             onClick={(e) => e.stopPropagation()}
-            style={{ margin: '0.5rem', maxWidth: '95%' }}
+            style={{ 
+              maxWidth: '400px',
+              margin: 'auto',
+              position: 'relative',
+              transform: 'scale(0.95)',
+              transition: 'transform 0.2s ease-out'
+            }}
           >
-            <div className="modal-content">
-              <div className="modal-header border-0 pb-0" style={{ backgroundColor: customColor, color: 'white' }}>
-                <h5 className="modal-title fw-bold" style={{ fontSize: '1.1rem' }}>Confirm Deletion</h5>
+            <div className="modal-content border-0 shadow" style={{ borderRadius: '0.5rem', overflow: 'hidden' }}>
+              <div className="modal-header py-2 px-3" style={{ backgroundColor: customColor, color: 'white' }}>
+                <h5 className="modal-title fw-bold m-0" style={{ fontSize: '1rem' }}>Confirm Deletion</h5>
                 <button
                   type="button"
                   className="btn-close btn-close-white"
                   onClick={closeDeleteModal}
+                  style={{ opacity: 0.8 }}
                 ></button>
               </div>
-              <div className="modal-body text-center py-3 py-md-4">
-                <div className="display-6 text-danger mb-3">
-                  <FaExclamationTriangle />
+              <div className="modal-body text-center py-3">
+                <div className="text-danger mb-2">
+                  <FaExclamationTriangle size={24} />
                 </div>
-                <h5 style={{ fontSize: '1.1rem' }}>Are you sure?</h5>
-                <p className="text-muted" style={{ fontSize: '0.9rem' }}>
+                <h5 style={{ fontSize: '1rem' }}>Are you sure?</h5>
+                <p className="text-muted" style={{ fontSize: '0.85rem' }}>
                   This will permanently delete attendance record for <strong>{selectedRecord?.staff_name}</strong> ({selectedRecord?.role}) on <strong>{selectedRecord ? formatDate(selectedRecord.date) : ''}</strong>.<br />
                   This action cannot be undone.
                 </p>
               </div>
-              <div className="modal-footer border-0 justify-content-center pb-3 pb-md-4">
+              <div className="modal-footer border-0 justify-content-center pb-3">
                 <button
                   type="button"
-                  className="btn btn-secondary px-3 py-2"
+                  className="btn btn-secondary btn-sm px-3"
                   onClick={closeDeleteModal}
-                  style={{ fontSize: '0.875rem' }}
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
-                  className="btn btn-danger px-3 py-2"
+                  className="btn btn-danger btn-sm px-3"
                   onClick={confirmDelete}
-                  style={{ fontSize: '0.875rem' }}
                 >
                   Delete
                 </button>

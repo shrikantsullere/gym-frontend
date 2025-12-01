@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaEye, FaEdit, FaTrashAlt, FaQrcode, FaChevronLeft, FaChevronRight, FaUser, FaClock, FaMobileAlt, FaCalendarAlt, FaSearch, FaFilter, FaFileExport, FaPlus } from 'react-icons/fa';
+import { FaEye, FaEdit, FaTrashAlt, FaQrcode, FaChevronLeft, FaChevronRight, FaUser, FaClock, FaCalendarAlt, FaSearch, FaFilter, FaFileExport, FaPlus } from 'react-icons/fa';
 
 const ReceptionistQRCode = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -10,8 +10,7 @@ const ReceptionistQRCode = () => {
     member_code: '',
     checkin_time: '',
     checkout_time: '',
-    mode: 'QR',
-    device_info: ''
+    mode: 'QR'
   });
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -19,7 +18,7 @@ const ReceptionistQRCode = () => {
   const [entriesPerPage, setEntriesPerPage] = useState(6);
   const [currentPage, setCurrentPage] = useState(1);
   
-  // Sample data
+  // Sample data - removed device_info field
   const [records, setRecords] = useState([
     {
       id: 1,
@@ -29,7 +28,6 @@ const ReceptionistQRCode = () => {
       checkin_time: "06:15",
       checkout_time: "07:45",
       mode: "QR",
-      device_info: "iPhone 14 Pro",
       status: "Present"
     },
     {
@@ -40,7 +38,6 @@ const ReceptionistQRCode = () => {
       checkin_time: "09:30",
       checkout_time: "10:45",
       mode: "Manual",
-      device_info: "Admin Dashboard",
       status: "Late"
     },
     {
@@ -51,7 +48,6 @@ const ReceptionistQRCode = () => {
       checkin_time: null,
       checkout_time: null,
       mode: "QR",
-      device_info: "Samsung Galaxy S23",
       status: "Absent"
     },
     {
@@ -62,7 +58,6 @@ const ReceptionistQRCode = () => {
       checkin_time: "05:55",
       checkout_time: "07:30",
       mode: "QR",
-      device_info: "iPad Pro",
       status: "Present"
     },
     {
@@ -73,7 +68,6 @@ const ReceptionistQRCode = () => {
       checkin_time: "08:00",
       checkout_time: "09:15",
       mode: "QR",
-      device_info: "iPhone 13",
       status: "Present"
     },
     {
@@ -84,7 +78,6 @@ const ReceptionistQRCode = () => {
       checkin_time: "07:30",
       checkout_time: "08:45",
       mode: "Manual",
-      device_info: "Admin Dashboard",
       status: "Late"
     }
   ]);
@@ -142,8 +135,7 @@ const ReceptionistQRCode = () => {
       member_code: '',
       checkin_time: `${hours}:${minutes}`,
       checkout_time: '',
-      mode: 'QR',
-      device_info: 'Reception Terminal'
+      mode: 'QR'
     });
     setIsModalOpen(true);
   };
@@ -206,7 +198,7 @@ const ReceptionistQRCode = () => {
     const color = statusColors[status] || { bg: 'bg-secondary', text: 'text-white' };
     
     return (
-      <span className={`badge ${color.bg} ${color.text} rounded-pill px-3 py-1`}>
+      <span className={`badge rounded-pill ${badgeClasses[status] || 'bg-secondary'} px-3 py-1`}>
         {status}
       </span>
     );
@@ -273,7 +265,6 @@ const ReceptionistQRCode = () => {
         checkin_time: scanData.checkin_time,
         checkout_time: scanData.checkout_time,
         mode: scanData.mode,
-        device_info: scanData.device_info,
         status: scanData.checkin_time ? 'Present' : 'Absent'
       };
 
@@ -297,7 +288,6 @@ const ReceptionistQRCode = () => {
           checkin_time: document.querySelector('[name="checkin_time"]')?.value || null,
           checkout_time: document.querySelector('[name="checkout_time"]')?.value || null,
           mode: document.querySelector('[name="mode"]')?.value || 'Manual',
-          device_info: document.querySelector('[name="device_info"]')?.value || 'Admin Dashboard',
           status: document.querySelector('[name="status"]')?.value || 'Present'
         };
         setRecords(prev => [...prev, newRecord]);
@@ -311,7 +301,6 @@ const ReceptionistQRCode = () => {
           checkin_time: document.querySelector('[name="checkin_time"]')?.value || selectedRecord.checkin_time,
           checkout_time: document.querySelector('[name="checkout_time"]')?.value || selectedRecord.checkout_time,
           mode: document.querySelector('[name="mode"]')?.value || selectedRecord.mode,
-          device_info: document.querySelector('[name="device_info"]')?.value || selectedRecord.device_info,
           status: document.querySelector('[name="status"]')?.value || selectedRecord.status
         };
         setRecords(prev =>
@@ -323,32 +312,46 @@ const ReceptionistQRCode = () => {
     }
   };
 
-  // Attendance Card Component
+  // Attendance Card Component - Modified to put name and edit button on same line
   const AttendanceCard = ({ record }) => (
-    <div className="attendance-card">
-      <div className="card-header">
-        <div className="employee-info">
-          <h5 className="employee-name">{record.member_name}</h5>
-          <p className="employee-code">{record.member_code}</p>
+    <div className="card attendance-card shadow-sm h-100">
+      <div className="card-body d-flex flex-column">
+        {/* Card Header */}
+        <div className="d-flex justify-content-between align-items-start mb-3">
+          <div className="flex-grow-1">
+            <h5 className="card-title mb-1">{record.member_name}</h5>
+            <p className="card-text text-muted small mb-0">{record.member_code}</p>
+          </div>
+          <div className="d-flex gap-1">
+            <button
+              className="btn btn-sm btn-outline-secondary action-btn"
+              title="View"
+              onClick={() => handleView(record)}
+            >
+              <FaEye size={14} />
+            </button>
+            <button
+              className="btn btn-sm btn-outline-primary action-btn"
+              title="Edit"
+              onClick={() => handleEdit(record)}
+            >
+              <FaEdit size={14} />
+            </button>
+            <button
+              className="btn btn-sm btn-outline-danger action-btn"
+              title="Delete"
+              onClick={() => handleDeleteClick(record)}
+            >
+              <FaTrashAlt size={14} />
+            </button>
+          </div>
         </div>
-        <div className="card-actions">
-          <button className="icon-btn view-btn" onClick={() => handleView(record)}>
-            <FaEye />
-          </button>
-          <button className="icon-btn edit-btn" onClick={() => handleEdit(record)}>
-            <FaEdit />
-          </button>
-          <button className="icon-btn delete-btn" onClick={() => handleDeleteClick(record)}>
-            <FaTrashAlt />
-          </button>
-        </div>
-      </div>
-      
-      <div className="card-body">
-        <div className="date-status">
-          <div className="date">
-            <FaCalendarAlt />
-            <span>{formatDate(record.date)}</span>
+        
+        {/* Date and Status */}
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <div className="d-flex align-items-center">
+            <FaCalendarAlt className="text-primary me-2" />
+            <span className="small">{formatDate(record.date)}</span>
           </div>
           {getStatusBadge(record.status)}
         </div>
@@ -364,14 +367,41 @@ const ReceptionistQRCode = () => {
           </div>
         </div>
         
-        <div className="mode-device">
-          <div className="mode">
-            <div className="mode-label">Mode</div>
-            {getModeBadge(record.mode)}
+        {/* Mode and Device */}
+        <div className="row g-2 mb-3">
+          <div className="col-6">
+            <div className="d-flex align-items-center">
+              <FaQrcode className="text-info me-2" />
+              <div>
+                <small className="text-muted d-block">Mode</small>
+                {getModeBadge(record.mode)}
+              </div>
+            </div>
           </div>
-          <div className="device">
-            <div className="device-label">Device</div>
-            <div className="device-value">{record.device_info || '—'}</div>
+          <div className="col-6">
+            <div className="d-flex align-items-center">
+              <FaMobileAlt className="text-secondary me-2" />
+              <div>
+                <small className="text-muted d-block">Device</small>
+                <small className="text-truncate d-block" title={record.device_info}>
+                  {record.device_info || '—'}
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Card Footer */}
+        <div className="mt-auto pt-2 border-top">
+          <div className="d-flex justify-content-between align-items-center">
+            <div className="d-flex align-items-center">
+              <FaUser className="text-primary me-2" />
+              <small className="text-muted">ID: {record.id}</small>
+            </div>
+            <div className="d-flex align-items-center">
+              <small className="text-muted me-1">Status:</small>
+              {getStatusBadge(record.status)}
+            </div>
           </div>
         </div>
       </div>
@@ -386,10 +416,10 @@ const ReceptionistQRCode = () => {
   return (
     <div className="attendance-dashboard">
       {/* Header */}
-      <div className="dashboard-header">
-        <div className="header-info">
-          <h1 className="dashboard-title">Employee Attendance</h1>
-          <p className="dashboard-subtitle">Track member attendance via QR scan or manual entry</p>
+      <div className="row mb-4 align-items-center">
+        <div className="col-12 col-lg-8">
+          <h2 className="fw-bold">QR Code Attendance Records</h2>
+          <p className="text-muted mb-0">Track member attendance via QR scan or manual entry.</p>
         </div>
         <div className="header-actions">
           <button className="btn primary-btn" onClick={handleScanQR}>
@@ -473,32 +503,50 @@ const ReceptionistQRCode = () => {
       </div>
 
       {/* Pagination */}
-      <div className="pagination-container">
-        <div className="pagination-info">
-          Showing {indexOfFirstEntry + 1} to {Math.min(indexOfLastEntry, filteredRecords.length)} of {filteredRecords.length} entries
+      <div className="row mt-4">
+        <div className="col-12 col-md-5">
+          <div className="d-flex align-items-center">
+            <span>
+              Showing {indexOfFirstEntry + 1} to {Math.min(indexOfLastEntry, filteredRecords.length)} of {filteredRecords.length} entries
+            </span>
+          </div>
         </div>
-        <div className="pagination">
-          <button 
-            className={`pagination-btn ${currentPage === 1 ? 'disabled' : ''}`}
-            onClick={prevPage}
-          >
-            <FaChevronLeft />
-          </button>
-          {[...Array(totalPages)].map((_, i) => (
-            <button
-              key={i}
-              className={`pagination-btn ${currentPage === i + 1 ? 'active' : ''}`}
-              onClick={() => paginate(i + 1)}
-            >
-              {i + 1}
-            </button>
-          ))}
-          <button 
-            className={`pagination-btn ${currentPage === totalPages ? 'disabled' : ''}`}
-            onClick={nextPage}
-          >
-            <FaChevronRight />
-          </button>
+        <div className="col-12 col-md-7">
+          <div className="d-flex justify-content-md-end justify-content-center mt-2 mt-md-0">
+            <nav>
+              <ul className="pagination mb-0">
+                <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                  <button className="page-link" onClick={prevPage}>
+                    Previous
+                  </button>
+                </li>
+                <li className={`page-item ${currentPage === 1 ? 'active' : ''}`}>
+                  <button className="page-link" onClick={() => paginate(1)}>
+                    1
+                  </button>
+                </li>
+                {totalPages > 1 && (
+                  <li className={`page-item ${currentPage === 2 ? 'active' : ''}`}>
+                    <button className="page-link" onClick={() => paginate(2)}>
+                      2
+                    </button>
+                  </li>
+                )}
+                {totalPages > 2 && (
+                  <li className={`page-item ${currentPage === 3 ? 'active' : ''}`}>
+                    <button className="page-link" onClick={() => paginate(3)}>
+                      3
+                    </button>
+                  </li>
+                )}
+                <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                  <button className="page-link" onClick={nextPage}>
+                    Next
+                  </button>
+                </li>
+              </ul>
+            </nav>
+          </div>
         </div>
       </div>
 
@@ -539,46 +587,52 @@ const ReceptionistQRCode = () => {
                     </div>
                   </div>
 
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Check-in Time</label>
-                      <input
-                        type="time"
-                        value={scanData.checkin_time}
-                        onChange={(e) => setScanData({...scanData, checkin_time: e.target.value})}
-                      />
+                    {/* Check-in / Check-out */}
+                    <div className="row mb-3 g-3">
+                      <div className="col-12 col-md-6">
+                        <label className="form-label">Check-in Time</label>
+                        <input
+                          type="time"
+                          className="form-control rounded-3"
+                          value={scanData.checkin_time}
+                          onChange={(e) => setScanData({...scanData, checkin_time: e.target.value})}
+                        />
+                      </div>
+                      <div className="col-12 col-md-6">
+                        <label className="form-label">Check-out Time</label>
+                        <input
+                          type="time"
+                          className="form-control rounded-3"
+                          value={scanData.checkout_time}
+                          onChange={(e) => setScanData({...scanData, checkout_time: e.target.value})}
+                        />
+                      </div>
                     </div>
-                    <div className="form-group">
-                      <label>Check-out Time</label>
-                      <input
-                        type="time"
-                        value={scanData.checkout_time}
-                        onChange={(e) => setScanData({...scanData, checkout_time: e.target.value})}
-                      />
-                    </div>
-                  </div>
 
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Mode</label>
-                      <select
-                        value={scanData.mode}
-                        onChange={(e) => setScanData({...scanData, mode: e.target.value})}
-                      >
-                        <option value="QR">QR</option>
-                        <option value="Manual">Manual</option>
-                      </select>
+                    {/* Mode & Device */}
+                    <div className="row mb-4 g-3">
+                      <div className="col-12 col-md-6">
+                        <label className="form-label">Mode</label>
+                        <select
+                          className="form-select rounded-3"
+                          value={scanData.mode}
+                          onChange={(e) => setScanData({...scanData, mode: e.target.value})}
+                        >
+                          <option value="QR">QR</option>
+                          <option value="Manual">Manual</option>
+                        </select>
+                      </div>
+                      <div className="col-12 col-md-6">
+                        <label className="form-label">Device Info</label>
+                        <input
+                          type="text"
+                          className="form-control rounded-3"
+                          placeholder="e.g., iPhone 14, Admin Dashboard"
+                          value={scanData.device_info}
+                          onChange={(e) => setScanData({...scanData, device_info: e.target.value})}
+                        />
+                      </div>
                     </div>
-                    <div className="form-group">
-                      <label>Device Info</label>
-                      <input
-                        type="text"
-                        placeholder="e.g., iPhone 14, Admin Dashboard"
-                        value={scanData.device_info}
-                        onChange={(e) => setScanData({...scanData, device_info: e.target.value})}
-                      />
-                    </div>
-                  </div>
 
                   <div className="modal-actions">
                     <button className="btn outline-btn" onClick={closeModal}>
@@ -645,28 +699,31 @@ const ReceptionistQRCode = () => {
                     </div>
                   </div>
 
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Mode <span className="required">*</span></label>
-                      <select
-                        defaultValue={selectedRecord?.mode || 'QR'}
-                        disabled={modalType === 'view'}
-                        required
-                      >
-                        <option value="QR">QR</option>
-                        <option value="Manual">Manual</option>
-                      </select>
+                    {/* Mode & Device */}
+                    <div className="row mb-3 g-3">
+                      <div className="col-12 col-md-6">
+                        <label className="form-label">Mode <span className="text-danger">*</span></label>
+                        <select
+                          className="form-select rounded-3"
+                          defaultValue={selectedRecord?.mode || 'QR'}
+                          disabled={modalType === 'view'}
+                          required
+                        >
+                          <option value="QR">QR</option>
+                          <option value="Manual">Manual</option>
+                        </select>
+                      </div>
+                      <div className="col-12 col-md-6">
+                        <label className="form-label">Device Info</label>
+                        <input
+                          type="text"
+                          className="form-control rounded-3"
+                          placeholder="e.g., iPhone 14, Admin Dashboard"
+                          defaultValue={selectedRecord?.device_info || ''}
+                          readOnly={modalType === 'view'}
+                        />
+                      </div>
                     </div>
-                    <div className="form-group">
-                      <label>Device Info</label>
-                      <input
-                        type="text"
-                        placeholder="e.g., iPhone 14, Admin Dashboard"
-                        defaultValue={selectedRecord?.device_info || ''}
-                        readOnly={modalType === 'view'}
-                      />
-                    </div>
-                  </div>
 
                   <div className="form-group">
                     <label>Status <span className="required">*</span></label>
