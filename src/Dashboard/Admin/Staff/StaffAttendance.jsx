@@ -619,7 +619,6 @@ const StaffAttendance = () => {
           className="modal fade show"
           tabIndex="-1"
           style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}
-          onClick={closeModal}
         >
           <div
             className="modal-dialog modal-dialog-centered"
