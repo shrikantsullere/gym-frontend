@@ -120,9 +120,9 @@ const ClassSchedule = () => {
               <div className="card shadow-sm border-0" style={{ borderRadius: '12px', overflow: 'hidden' }}>
                 {/* Card Header */}
                 <div 
-                  className="p-4 text-white" 
+                  className="p-4" 
                   style={{ 
-                    background: '#2f6a87',
+                    color: '#2f6a87',
                     minHeight: '60px'
                   }}
                 >

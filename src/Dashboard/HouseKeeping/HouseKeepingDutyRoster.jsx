@@ -598,297 +598,297 @@ const DutyRoster = () => {
   };
 
   // Render swap requests
-  const renderSwapRequests = () => {
-    const relevantRequests = getRelevantSwapRequests();
+  // const renderSwapRequests = () => {
+  //   const relevantRequests = getRelevantSwapRequests();
     
-    return (
-      <Card>
-        <Card.Body>
-          <h5 className="mb-3">Shift Swap Requests</h5>
-          {relevantRequests.length === 0 ? (
-            <p>No swap requests found.</p>
-          ) : (
-            <div className="table-responsive">
-              <Table>
-                <thead>
-                  <tr>
-                    <th>Requester</th>
-                    <th>Target</th>
-                    <th>Date</th>
-                    <th>Reason</th>
-                    <th>Status</th>
-                    <th>Date Requested</th>
-                    {user.role === 'manager' && <th>Actions</th>}
-                  </tr>
-                </thead>
-                <tbody>
-                  {relevantRequests.map(request => (
-                    <tr key={request.id}>
-                      <td>{request.requesterName}</td>
-                      <td>{request.targetName}</td>
-                      <td>{formatDate(request.date)}</td>
-                      <td>{request.reason || '-'}</td>
-                      <td>
-                        <Badge bg={
-                          request.status === 'pending' ? 'warning' : 
-                          request.status === 'approved' ? 'success' : 'danger'
-                        }>
-                          {request.status}
-                        </Badge>
-                      </td>
-                      <td>{formatDate(request.createdAt)}</td>
-                      {user.role === 'manager' && request.status === 'pending' && (
-                        <td>
-                          <div className="d-flex flex-column flex-md-row">
-                            <Button 
-                              size="sm" 
-                              variant="success" 
-                              className="me-md-1 mb-1 mb-md-0"
-                              onClick={() => handleSwapAction(request.id, 'approved')}
-                            >
-                              Approve
-                            </Button>
-                            <Button 
-                              size="sm" 
-                              variant="danger"
-                              onClick={() => handleSwapAction(request.id, 'rejected')}
-                            >
-                              Reject
-                            </Button>
-                          </div>
-                        </td>
-                      )}
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            </div>
-          )}
-        </Card.Body>
-      </Card>
-    );
-  };
+  //   return (
+  //     <Card>
+  //       <Card.Body>
+  //         <h5 className="mb-3">Shift Swap Requests</h5>
+  //         {relevantRequests.length === 0 ? (
+  //           <p>No swap requests found.</p>
+  //         ) : (
+  //           <div className="table-responsive">
+  //             <Table>
+  //               <thead>
+  //                 <tr>
+  //                   <th>Requester</th>
+  //                   <th>Target</th>
+  //                   <th>Date</th>
+  //                   <th>Reason</th>
+  //                   <th>Status</th>
+  //                   <th>Date Requested</th>
+  //                   {user.role === 'manager' && <th>Actions</th>}
+  //                 </tr>
+  //               </thead>
+  //               <tbody>
+  //                 {relevantRequests.map(request => (
+  //                   <tr key={request.id}>
+  //                     <td>{request.requesterName}</td>
+  //                     <td>{request.targetName}</td>
+  //                     <td>{formatDate(request.date)}</td>
+  //                     <td>{request.reason || '-'}</td>
+  //                     <td>
+  //                       <Badge bg={
+  //                         request.status === 'pending' ? 'warning' : 
+  //                         request.status === 'approved' ? 'success' : 'danger'
+  //                       }>
+  //                         {request.status}
+  //                       </Badge>
+  //                     </td>
+  //                     <td>{formatDate(request.createdAt)}</td>
+  //                     {user.role === 'manager' && request.status === 'pending' && (
+  //                       <td>
+  //                         <div className="d-flex flex-column flex-md-row">
+  //                           <Button 
+  //                             size="sm" 
+  //                             variant="success" 
+  //                             className="me-md-1 mb-1 mb-md-0"
+  //                             onClick={() => handleSwapAction(request.id, 'approved')}
+  //                           >
+  //                             Approve
+  //                           </Button>
+  //                           <Button 
+  //                             size="sm" 
+  //                             variant="danger"
+  //                             onClick={() => handleSwapAction(request.id, 'rejected')}
+  //                           >
+  //                             Reject
+  //                           </Button>
+  //                         </div>
+  //                       </td>
+  //                     )}
+  //                   </tr>
+  //                 ))}
+  //               </tbody>
+  //             </Table>
+  //           </div>
+  //         )}
+  //       </Card.Body>
+  //     </Card>
+  //   );
+  // };
 
   // Render notifications
-  const renderNotifications = () => {
-    return (
-      <Card>
-        <Card.Body>
-          <h5 className="mb-3">Notifications</h5>
-          {notifications.length === 0 ? (
-            <p>No notifications found.</p>
-          ) : (
-            <div className="notification-list">
-              {notifications.map(notification => (
-                <div 
-                  key={notification.id} 
-                  className={`p-3 mb-2 rounded ${notification.read ? 'bg-light' : 'text-white'}`}
-                  style={{ backgroundColor: !notification.read ? customStyles.primaryColor : '' }}
-                  onClick={() => markNotificationAsRead(notification.id)}
-                >
-                  <div className="d-flex justify-content-between align-items-start">
-                    <div>{notification.message}</div>
-                    {!notification.read && <span className="badge bg-danger ms-2">New</span>}
-                  </div>
-                  <div className="small mt-2">
-                    {new Date(notification.timestamp).toLocaleString()}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </Card.Body>
-      </Card>
-    );
-  };
+  // const renderNotifications = () => {
+  //   return (
+  //     <Card>
+  //       <Card.Body>
+  //         <h5 className="mb-3">Notifications</h5>
+  //         {notifications.length === 0 ? (
+  //           <p>No notifications found.</p>
+  //         ) : (
+  //           <div className="notification-list">
+  //             {notifications.map(notification => (
+  //               <div 
+  //                 key={notification.id} 
+  //                 className={`p-3 mb-2 rounded ${notification.read ? 'bg-light' : 'text-white'}`}
+  //                 style={{ backgroundColor: !notification.read ? customStyles.primaryColor : '' }}
+  //                 onClick={() => markNotificationAsRead(notification.id)}
+  //               >
+  //                 <div className="d-flex justify-content-between align-items-start">
+  //                   <div>{notification.message}</div>
+  //                   {!notification.read && <span className="badge bg-danger ms-2">New</span>}
+  //                 </div>
+  //                 <div className="small mt-2">
+  //                   {new Date(notification.timestamp).toLocaleString()}
+  //                 </div>
+  //               </div>
+  //             ))}
+  //           </div>
+  //         )}
+  //       </Card.Body>
+  //     </Card>
+  //   );
+  // };
 
   // Render reports (manager only)
-  const renderReports = () => {
-    if (user.role !== 'manager') return null;
+  // const renderReports = () => {
+  //   if (user.role !== 'manager') return null;
     
-    return (
-      <Card>
-        <Card.Body>
-          <h5 className="mb-3">Reports</h5>
-          <Row>
-            <Col md={6} className="mb-3 mb-md-0">
-              <Card>
-                <Card.Body>
-                  <Card.Title>Shift Confirmation Rate</Card.Title>
-                  <div className="d-flex align-items-center">
-                    <div className="me-3">
-                      <FaChartBar size={40} style={{ color: customStyles.primaryColor }} />
-                    </div>
-                    <div>
-                      <h3>80%</h3>
-                      <p className="text-muted mb-0">4 out of 5 shifts confirmed</p>
-                    </div>
-                  </div>
-                </Card.Body>
-              </Card>
-            </Col>
-            <Col md={6}>
-              <Card>
-                <Card.Body>
-                  <Card.Title>Pending Swap Requests</Card.Title>
-                  <div className="d-flex align-items-center">
-                    <div className="me-3">
-                      <FaHistory size={40} className="text-warning" />
-                    </div>
-                    <div>
-                      <h3>1</h3>
-                      <p className="text-muted mb-0">Awaiting approval</p>
-                    </div>
-                  </div>
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
+  //   return (
+  //     <Card>
+  //       <Card.Body>
+  //         <h5 className="mb-3">Reports</h5>
+  //         <Row>
+  //           <Col md={6} className="mb-3 mb-md-0">
+  //             <Card>
+  //               <Card.Body>
+  //                 <Card.Title>Shift Confirmation Rate</Card.Title>
+  //                 <div className="d-flex align-items-center">
+  //                   <div className="me-3">
+  //                     <FaChartBar size={40} style={{ color: customStyles.primaryColor }} />
+  //                   </div>
+  //                   <div>
+  //                     <h3>80%</h3>
+  //                     <p className="text-muted mb-0">4 out of 5 shifts confirmed</p>
+  //                   </div>
+  //                 </div>
+  //               </Card.Body>
+  //             </Card>
+  //           </Col>
+  //           <Col md={6}>
+  //             <Card>
+  //               <Card.Body>
+  //                 <Card.Title>Pending Swap Requests</Card.Title>
+  //                 <div className="d-flex align-items-center">
+  //                   <div className="me-3">
+  //                     <FaHistory size={40} className="text-warning" />
+  //                   </div>
+  //                   <div>
+  //                     <h3>1</h3>
+  //                     <p className="text-muted mb-0">Awaiting approval</p>
+  //                   </div>
+  //                 </div>
+  //               </Card.Body>
+  //             </Card>
+  //           </Col>
+  //         </Row>
           
-          <Card className="mt-4">
-            <Card.Body>
-              <Card.Title>Staff Attendance vs Roster</Card.Title>
-              <div className="table-responsive">
-                <Table>
-                  <thead>
-                    <tr>
-                      <th>Staff Name</th>
-                      <th>Total Shifts</th>
-                      <th>Confirmed</th>
-                      <th>Completed</th>
-                      <th>Cancelled</th>
-                      <th>No-Show</th>
-                      <th>Attendance Rate</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {staffList.map(staff => {
-                      const staffShifts = shifts.filter(s => s.staffId === staff.id);
-                      const confirmedShifts = staffShifts.filter(s => s.status === 'confirmed');
-                      const completedShifts = staffShifts.filter(s => s.status === 'completed');
-                      const cancelledShifts = staffShifts.filter(s => s.status === 'cancelled');
-                      const noShowShifts = staffShifts.filter(s => s.status === 'no-show');
-                      const attendanceRate = staffShifts.length > 0 
-                        ? Math.round((confirmedShifts.length / staffShifts.length) * 100) 
-                        : 0;
+  //         <Card className="mt-4">
+  //           <Card.Body>
+  //             <Card.Title>Staff Attendance vs Roster</Card.Title>
+  //             <div className="table-responsive">
+  //               <Table>
+  //                 <thead>
+  //                   <tr>
+  //                     <th>Staff Name</th>
+  //                     <th>Total Shifts</th>
+  //                     <th>Confirmed</th>
+  //                     <th>Completed</th>
+  //                     <th>Cancelled</th>
+  //                     <th>No-Show</th>
+  //                     <th>Attendance Rate</th>
+  //                   </tr>
+  //                 </thead>
+  //                 <tbody>
+  //                   {staffList.map(staff => {
+  //                     const staffShifts = shifts.filter(s => s.staffId === staff.id);
+  //                     const confirmedShifts = staffShifts.filter(s => s.status === 'confirmed');
+  //                     const completedShifts = staffShifts.filter(s => s.status === 'completed');
+  //                     const cancelledShifts = staffShifts.filter(s => s.status === 'cancelled');
+  //                     const noShowShifts = staffShifts.filter(s => s.status === 'no-show');
+  //                     const attendanceRate = staffShifts.length > 0 
+  //                       ? Math.round((confirmedShifts.length / staffShifts.length) * 100) 
+  //                       : 0;
                       
-                      return (
-                        <tr key={staff.id}>
-                          <td>{staff.name}</td>
-                          <td>{staffShifts.length}</td>
-                          <td>{confirmedShifts.length}</td>
-                          <td>{completedShifts.length}</td>
-                          <td>{cancelledShifts.length}</td>
-                          <td>{noShowShifts.length}</td>
-                          <td>
-                            <div className="d-flex align-items-center">
-                              <div className="progress me-2" style={{ width: '100px' }}>
-                                <div 
-                                  className="progress-bar" 
-                                  role="progressbar" 
-                                  style={{ 
-                                    width: `${attendanceRate}%`,
-                                    backgroundColor: customStyles.primaryColor
-                                  }}
-                                  aria-valuenow={attendanceRate} 
-                                  aria-valuemin={0} 
-                                  aria-valuemax={100}
-                                ></div>
-                              </div>
-                              {attendanceRate}%
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </Table>
-              </div>
-            </Card.Body>
-          </Card>
-        </Card.Body>
-      </Card>
-    );
-  };
+  //                     return (
+  //                       <tr key={staff.id}>
+  //                         <td>{staff.name}</td>
+  //                         <td>{staffShifts.length}</td>
+  //                         <td>{confirmedShifts.length}</td>
+  //                         <td>{completedShifts.length}</td>
+  //                         <td>{cancelledShifts.length}</td>
+  //                         <td>{noShowShifts.length}</td>
+  //                         <td>
+  //                           <div className="d-flex align-items-center">
+  //                             <div className="progress me-2" style={{ width: '100px' }}>
+  //                               <div 
+  //                                 className="progress-bar" 
+  //                                 role="progressbar" 
+  //                                 style={{ 
+  //                                   width: `${attendanceRate}%`,
+  //                                   backgroundColor: customStyles.primaryColor
+  //                                 }}
+  //                                 aria-valuenow={attendanceRate} 
+  //                                 aria-valuemin={0} 
+  //                                 aria-valuemax={100}
+  //                               ></div>
+  //                             </div>
+  //                             {attendanceRate}%
+  //                           </div>
+  //                         </td>
+  //                       </tr>
+  //                     );
+  //                   })}
+  //                 </tbody>
+  //               </Table>
+  //             </div>
+  //           </Card.Body>
+  //         </Card>
+  //       </Card.Body>
+  //     </Card>
+  //   );
+  // };
 
   // Render shift assignment (manager only)
-  const renderShiftAssignment = () => {
-    if (user.role !== 'manager') return null;
+  // const renderShiftAssignment = () => {
+  //   if (user.role !== 'manager') return null;
     
-    return (
-      <Card>
-        <Card.Body>
-          <h5 className="mb-3">Assign Shifts</h5>
-          <Row className="mb-3">
-            <Col md={4} className="mb-3 mb-md-0">
-              <Form.Group>
-                <Form.Label>Select Staff</Form.Label>
-                <Form.Select>
-                  <option value="">Choose staff member</option>
-                  {staffList.map(staff => (
-                    <option key={staff.id} value={staff.id}>{staff.name}</option>
-                  ))}
-                </Form.Select>
-              </Form.Group>
-            </Col>
-            <Col md={4} className="mb-3 mb-md-0">
-              <Form.Group>
-                <Form.Label>Date</Form.Label>
-                <Form.Control type="date" />
-              </Form.Group>
-            </Col>
-            <Col md={4}>
-              <Form.Group>
-                <Form.Label>Time</Form.Label>
-                <Row>
-                  <Col>
-                    <Form.Control type="time" placeholder="Start" />
-                  </Col>
-                  <Col>
-                    <Form.Control type="time" placeholder="End" />
-                  </Col>
-                </Row>
-              </Form.Group>
-            </Col>
-          </Row>
-          <Row className="mb-3">
-            <Col md={6} className="mb-3 mb-md-0">
-              <Form.Group>
-                <Form.Label>Location</Form.Label>
-                <Form.Select>
-                  <option>Main Branch</option>
-                  <option>North Branch</option>
-                  <option>South Branch</option>
-                  <option>East Branch</option>
-                  <option>West Branch</option>
-                </Form.Select>
-              </Form.Group>
-            </Col>
-            <Col md={6}>
-              <Form.Group>
-                <Form.Label>Role</Form.Label>
-                <Form.Select>
-                  <option>Staff</option>
-                  <option>Senior Staff</option>
-                  <option>Supervisor</option>
-                  <option>Manager</option>
-                </Form.Select>
-              </Form.Group>
-            </Col>
-          </Row>
-          <Button 
-            variant="primary"
-            style={{ 
-              backgroundColor: customStyles.primaryColor,
-              borderColor: customStyles.primaryColor
-            }}
-          >
-            <FaPlus className="me-2" /> Assign Shift
-          </Button>
-        </Card.Body>
-      </Card>
-    );
-  };
+  //   return (
+  //     <Card>
+  //       <Card.Body>
+  //         <h5 className="mb-3">Assign Shifts</h5>
+  //         <Row className="mb-3">
+  //           <Col md={4} className="mb-3 mb-md-0">
+  //             <Form.Group>
+  //               <Form.Label>Select Staff</Form.Label>
+  //               <Form.Select>
+  //                 <option value="">Choose staff member</option>
+  //                 {staffList.map(staff => (
+  //                   <option key={staff.id} value={staff.id}>{staff.name}</option>
+  //                 ))}
+  //               </Form.Select>
+  //             </Form.Group>
+  //           </Col>
+  //           <Col md={4} className="mb-3 mb-md-0">
+  //             <Form.Group>
+  //               <Form.Label>Date</Form.Label>
+  //               <Form.Control type="date" />
+  //             </Form.Group>
+  //           </Col>
+  //           <Col md={4}>
+  //             <Form.Group>
+  //               <Form.Label>Time</Form.Label>
+  //               <Row>
+  //                 <Col>
+  //                   <Form.Control type="time" placeholder="Start" />
+  //                 </Col>
+  //                 <Col>
+  //                   <Form.Control type="time" placeholder="End" />
+  //                 </Col>
+  //               </Row>
+  //             </Form.Group>
+  //           </Col>
+  //         </Row>
+  //         <Row className="mb-3">
+  //           <Col md={6} className="mb-3 mb-md-0">
+  //             <Form.Group>
+  //               <Form.Label>Location</Form.Label>
+  //               <Form.Select>
+  //                 <option>Main Branch</option>
+  //                 <option>North Branch</option>
+  //                 <option>South Branch</option>
+  //                 <option>East Branch</option>
+  //                 <option>West Branch</option>
+  //               </Form.Select>
+  //             </Form.Group>
+  //           </Col>
+  //           <Col md={6}>
+  //             <Form.Group>
+  //               <Form.Label>Role</Form.Label>
+  //               <Form.Select>
+  //                 <option>Staff</option>
+  //                 <option>Senior Staff</option>
+  //                 <option>Supervisor</option>
+  //                 <option>Manager</option>
+  //               </Form.Select>
+  //             </Form.Group>
+  //           </Col>
+  //         </Row>
+  //         <Button 
+  //           variant="primary"
+  //           style={{ 
+  //             backgroundColor: customStyles.primaryColor,
+  //             borderColor: customStyles.primaryColor
+  //           }}
+  //         >
+  //           <FaPlus className="me-2" /> Assign Shift
+  //         </Button>
+  //       </Card.Body>
+  //     </Card>
+  //   );
+  // };
 
   // Render status filter
   const renderStatusFilter = () => {
@@ -1098,29 +1098,29 @@ const DutyRoster = () => {
           {renderListView()}
         </Tab>
         
-        {user.role === 'manager' && (
+        {/* {user.role === 'manager' && (
           <Tab eventKey="assignShifts" title="Assign Shifts">
             {renderShiftAssignment()}
           </Tab>
-        )}
+        )} */}
         
-        <Tab eventKey="swapRequests" title="Swap Requests">
+        {/* <Tab eventKey="swapRequests" title="Swap Requests">
           {renderSwapRequests()}
         </Tab>
         
         <Tab eventKey="notifications" title="Notifications">
           {renderNotifications()}
-        </Tab>
+        </Tab> */}
         
-        {user.role === 'manager' && (
+        {/* {user.role === 'manager' && (
           <Tab eventKey="reports" title="Reports">
             {renderReports()}
           </Tab>
-        )}
+        )} */}
       </Tabs>
       
       {/* Swap Request Modal */}
-      <Modal show={showSwapModal} onHide={() => setShowSwapModal(false)} centered scrollable>
+      {/* <Modal show={showSwapModal} onHide={() => setShowSwapModal(false)} centered scrollable>
         <Modal.Header closeButton>
           <Modal.Title>Request Shift Swap</Modal.Title>
         </Modal.Header>
@@ -1172,7 +1172,7 @@ const DutyRoster = () => {
             Submit Request
           </Button>
         </Modal.Footer>
-      </Modal>
+      </Modal> */}
       
       {/* Confirm Shift Modal */}
       <Modal show={showConfirmModal} onHide={() => setShowConfirmModal(false)} centered scrollable>

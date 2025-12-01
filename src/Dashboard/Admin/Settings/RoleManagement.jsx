@@ -1,6 +1,6 @@
 // src/components/SettingsPage.js
 import React, { useState } from 'react';
-import { FaUser, FaLock, FaBell, FaPalette, FaBuilding, FaSave, FaTimes } from 'react-icons/fa';
+import { FaUser, FaLock, FaPalette, FaBuilding, FaSave, FaTimes } from 'react-icons/fa';
 
 const RoleManagement = () => {
   // State for all form data
@@ -16,18 +16,6 @@ const RoleManagement = () => {
     currentPassword: '',
     newPassword: '',
     confirmNewPassword: '',
-
-    // Notification Section
-    emailNotifications: {
-      newMember: true,
-      salaryGenerated: true,
-      systemUpdates: false,
-    },
-    pushNotifications: {
-      newMember: false,
-      salaryGenerated: true,
-      systemUpdates: true,
-    },
 
     // Appearance Section
     theme: 'light', // 'light' or 'dark'
@@ -232,105 +220,8 @@ const RoleManagement = () => {
               </div>
             </div>
 
-            {/* SECTION 3: Notifications */}
-            <div className="card shadow-sm border-0 mb-4">
-              <div className="card-header bg-light">
-                <h5 className="mb-0">
-                  <FaBell className="me-2" /> Notifications
-                </h5>
-              </div>
-              <div className="card-body">
-                <div className="row">
-                  <div className="col-md-6">
-                    <h6 className="h6">Email Notifications</h6>
-                    <div className="form-check form-switch mb-2">
-                      <input
-                        className="form-check-input"
-                        type="checkbox"
-                        id="emailNewMember"
-                        name="newMember"
-                        checked={settingsData.emailNotifications.newMember}
-                        onChange={(e) => handleInputChange(e, 'emailNotifications')}
-                      />
-                      <label className="form-check-label" htmlFor="emailNewMember">
-                        New member registration
-                      </label>
-                    </div>
-                    <div className="form-check form-switch mb-2">
-                      <input
-                        className="form-check-input"
-                        type="checkbox"
-                        id="emailSalary"
-                        name="salaryGenerated"
-                        checked={settingsData.emailNotifications.salaryGenerated}
-                        onChange={(e) => handleInputChange(e, 'emailNotifications')}
-                      />
-                      <label className="form-check-label" htmlFor="emailSalary">
-                        Salary is generated
-                      </label>
-                    </div>
-                    <div className="form-check form-switch">
-                      <input
-                        className="form-check-input"
-                        type="checkbox"
-                        id="emailUpdates"
-                        name="systemUpdates"
-                        checked={settingsData.emailNotifications.systemUpdates}
-                        onChange={(e) => handleInputChange(e, 'emailNotifications')}
-                      />
-                      <label className="form-check-label" htmlFor="emailUpdates">
-                        System updates
-                      </label>
-                    </div>
-                  </div>
-                  <div className="col-md-6">
-                    <h6 className="h6">Push Notifications</h6>
-                    <div className="form-check form-switch mb-2">
-                      <input
-                        className="form-check-input"
-                        type="checkbox"
-                        id="pushNewMember"
-                        name="newMember"
-                        checked={settingsData.pushNotifications.newMember}
-                        onChange={(e) => handleInputChange(e, 'pushNotifications')}
-                      />
-                      <label className="form-check-label" htmlFor="pushNewMember">
-                        New member registration
-                      </label>
-                    </div>
-                    <div className="form-check form-switch mb-2">
-                      <input
-                        className="form-check-input"
-                        type="checkbox"
-                        id="pushSalary"
-                        name="salaryGenerated"
-                        checked={settingsData.pushNotifications.salaryGenerated}
-                        onChange={(e) => handleInputChange(e, 'pushNotifications')}
-                      />
-                      <label className="form-check-label" htmlFor="pushSalary">
-                        Salary is generated
-                      </label>
-                    </div>
-                    <div className="form-check form-switch">
-                      <input
-                        className="form-check-input"
-                        type="checkbox"
-                        id="pushUpdates"
-                        name="systemUpdates"
-                        checked={settingsData.pushNotifications.systemUpdates}
-                        onChange={(e) => handleInputChange(e, 'pushNotifications')}
-                      />
-                      <label className="form-check-label" htmlFor="pushUpdates">
-                        System updates
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* SECTION 4: Appearance */}
-            <div className="card shadow-sm border-0 mb-4">
+            {/* SECTION 3: Appearance */}
+            {/* <div className="card shadow-sm border-0 mb-4">
               <div className="card-header bg-light">
                 <h5 className="mb-0">
                   <FaPalette className="me-2" /> Appearance
@@ -383,9 +274,9 @@ const RoleManagement = () => {
                   </div>
                 </div>
               </div>
-            </div>
+            </div> */}
 
-            {/* SECTION 5: Gym Details */}
+            {/* SECTION 4: Gym Details */}
             <div className="card shadow-sm border-0 mb-4">
               <div className="card-header bg-light">
                 <h5 className="mb-0">

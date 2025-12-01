@@ -179,7 +179,7 @@ const ViewPlans = () => {
                   }}></div>
                   <Card.Body className="d-flex flex-column p-3 p-md-4">
                     <div className="text-center mb-2 mb-md-3">
-                      <div className="badge bg-primary mb-2 px-3 py-1" style={{
+                      <div className="badge  mb-2 px-3 py-1" style={{
                         backgroundColor: '#2f6a87',
                         color: 'white',
                         fontSize: '0.75rem',
