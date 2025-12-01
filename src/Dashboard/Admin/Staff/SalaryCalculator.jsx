@@ -7,6 +7,23 @@ const SalaryCalculator = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [modalType, setModalType] = useState('add'); // 'add', 'edit', 'view'
   const [selectedSalary, setSelectedSalary] = useState(null);
+  
+  // Add state for form data
+  const [formData, setFormData] = useState({
+    salary_id: '',
+    staff_id: '',
+    period_start: '',
+    period_end: '',
+    hours_worked: '',
+    hourly_total: '',
+    fixed_salary: '',
+    commission_total: '',
+    bonuses: [],
+    deductions: [],
+    net_pay: '',
+    status: 'Generated',
+    paid_at: ''
+  });
 
   // Sample data — in real app, fetch from API
   const staffList = [
@@ -52,18 +69,66 @@ const SalaryCalculator = () => {
   const handleAddNew = () => {
     setModalType('add');
     setSelectedSalary(null);
+    // Reset form data for adding new salary
+    setFormData({
+      salary_id: getNextSalaryId(),
+      staff_id: '',
+      period_start: '',
+      period_end: '',
+      hours_worked: '',
+      hourly_total: '',
+      fixed_salary: '',
+      commission_total: '',
+      bonuses: [],
+      deductions: [],
+      net_pay: '',
+      status: 'Generated',
+      paid_at: ''
+    });
     setIsModalOpen(true);
   };
 
   const handleView = (salary) => {
     setModalType('view');
     setSelectedSalary(salary);
+    // Populate form with selected salary data
+    setFormData({
+      salary_id: salary.salary_id,
+      staff_id: salary.staff_id,
+      period_start: salary.period_start,
+      period_end: salary.period_end,
+      hours_worked: salary.hours_worked || '',
+      hourly_total: salary.hourly_total || '',
+      fixed_salary: salary.fixed_salary || '',
+      commission_total: salary.commission_total || '',
+      bonuses: salary.bonuses || [],
+      deductions: salary.deductions || [],
+      net_pay: salary.net_pay,
+      status: salary.status,
+      paid_at: salary.paid_at ? new Date(salary.paid_at).toISOString().slice(0,16) : ''
+    });
     setIsModalOpen(true);
   };
 
   const handleEdit = (salary) => {
     setModalType('edit');
     setSelectedSalary(salary);
+    // Populate form with selected salary data
+    setFormData({
+      salary_id: salary.salary_id,
+      staff_id: salary.staff_id,
+      period_start: salary.period_start,
+      period_end: salary.period_end,
+      hours_worked: salary.hours_worked || '',
+      hourly_total: salary.hourly_total || '',
+      fixed_salary: salary.fixed_salary || '',
+      commission_total: salary.commission_total || '',
+      bonuses: salary.bonuses || [],
+      deductions: salary.deductions || [],
+      net_pay: salary.net_pay,
+      status: salary.status,
+      paid_at: salary.paid_at ? new Date(salary.paid_at).toISOString().slice(0,16) : ''
+    });
     setIsModalOpen(true);
   };
 
@@ -89,6 +154,85 @@ const SalaryCalculator = () => {
   const closeDeleteModal = () => {
     setIsDeleteModalOpen(false);
     setSelectedSalary(null);
+  };
+
+  // Handle form input changes
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    
+    // Auto-calculate values when relevant fields change
+    if (name === 'hours_worked' || name === 'fixed_salary' || name === 'commission_total') {
+      const staff = staffList.find(s => s.staff_id === formData.staff_id);
+      if (staff) {
+        let hourlyTotal = formData.hourly_total;
+        if (name === 'hours_worked') {
+          hourlyTotal = calculateHourlyTotal(parseFloat(value) || 0, formData.staff_id);
+        }
+        
+        const commissionTotal = name === 'commission_total' 
+          ? parseFloat(value) || 0 
+          : calculateCommissionTotal(hourlyTotal, parseFloat(formData.fixed_salary) || 0, formData.staff_id);
+        
+        const netPay = calculateNetPay(
+          hourlyTotal, 
+          parseFloat(name === 'fixed_salary' ? value : formData.fixed_salary) || 0, 
+          commissionTotal, 
+          formData.bonuses, 
+          formData.deductions
+        );
+        
+        setFormData(prev => ({
+          ...prev,
+          hourly_total: hourlyTotal,
+          commission_total: commissionTotal,
+          net_pay: netPay
+        }));
+      }
+    }
+  };
+
+  // Handle staff selection change
+  const handleStaffChange = (e) => {
+    const staffId = e.target.value;
+    setFormData(prev => ({
+      ...prev,
+      staff_id: staffId
+    }));
+    
+    // Auto-calculate hourly total if hours are already entered
+    if (formData.hours_worked) {
+      const hourlyTotal = calculateHourlyTotal(parseFloat(formData.hours_worked) || 0, staffId);
+      const commissionTotal = calculateCommissionTotal(hourlyTotal, parseFloat(formData.fixed_salary) || 0, staffId);
+      const netPay = calculateNetPay(hourlyTotal, parseFloat(formData.fixed_salary) || 0, commissionTotal, formData.bonuses, formData.deductions);
+      
+      setFormData(prev => ({
+        ...prev,
+        hourly_total: hourlyTotal,
+        commission_total: commissionTotal,
+        net_pay: netPay
+      }));
+    }
+  };
+
+  // Handle form submission
+  const handleSubmit = () => {
+    if (modalType === 'add') {
+      // Add new salary
+      const newSalary = { ...formData };
+      setSalaries(prev => [...prev, newSalary]);
+      alert('Salary record added successfully!');
+    } else if (modalType === 'edit') {
+      // Update existing salary
+      setSalaries(prev => prev.map(s => 
+        s.salary_id === formData.salary_id ? { ...formData } : s
+      ));
+      alert('Salary record updated successfully!');
+    }
+    closeModal();
   };
 
   // Prevent background scroll
@@ -282,7 +426,6 @@ const SalaryCalculator = () => {
                           className="btn btn-sm btn-outline-primary"
                           title="Edit"
                           onClick={() => handleEdit(salary)}
-                          disabled={salary.status === "Paid"}
                         >
                           <FaEdit size={12} />
                         </button>
@@ -290,7 +433,6 @@ const SalaryCalculator = () => {
                           className="btn btn-sm btn-outline-danger"
                           title="Delete"
                           onClick={() => handleDeleteClick(salary)}
-                          disabled={salary.status === "Paid"}
                         >
                           <FaTrashAlt size={12} />
                         </button>
@@ -325,6 +467,17 @@ const SalaryCalculator = () => {
                 <button type="button" className="btn-close" onClick={closeModal}></button>
               </div>
               <div className="modal-body p-3 p-md-4">
+                {/* Warning for editing paid salary */}
+                {modalType === 'edit' && selectedSalary?.status === 'Paid' && (
+                  <div className="alert alert-warning d-flex align-items-center mb-3" role="alert">
+                    <i className="fas fa-exclamation-triangle me-2"></i>
+                    <div>
+                      <strong>Warning:</strong> You are editing a salary record that has already been marked as "Paid". 
+                      This may affect financial records and reporting.
+                    </div>
+                  </div>
+                )}
+                
                 <form>
                   {/* SECTION 1: Staff & Period */}
                   <h6 className="fw-bold mb-3 fs-6">Staff & Period</h6>
@@ -334,7 +487,7 @@ const SalaryCalculator = () => {
                       <input
                         type="text"
                         className="form-control form-control-sm"
-                        value={selectedSalary?.salary_id || (modalType === 'add' ? getNextSalaryId() : '')}
+                        value={formData.salary_id}
                         readOnly
                       />
                     </div>
@@ -342,18 +495,10 @@ const SalaryCalculator = () => {
                       <label className="form-label small">Staff Member <span className="text-danger">*</span></label>
                       <select
                         className="form-select form-select-sm"
+                        name="staff_id"
+                        value={formData.staff_id}
+                        onChange={handleStaffChange}
                         disabled={modalType === 'view'}
-                        defaultValue={selectedSalary?.staff_id || ''}
-                        onChange={(e) => {
-                          if (modalType === 'add' || modalType === 'edit') {
-                            const staffId = e.target.value;
-                            const staff = staffList.find(s => s.staff_id === staffId);
-                            if (staff) {
-                              // Auto-set roles-related fields
-                              // We'll update form values dynamically via state later
-                            }
-                          }
-                        }}
                         required
                       >
                         <option value="">Select Staff</option>
@@ -369,9 +514,7 @@ const SalaryCalculator = () => {
                       <input
                         type="text"
                         className="form-control form-control-sm"
-                        value={selectedSalary 
-                          ? getStaffInfo(selectedSalary.staff_id)?.role 
-                          : ''}
+                        value={formData.staff_id ? getStaffInfo(formData.staff_id)?.role : ''}
                         readOnly
                       />
                     </div>
@@ -380,7 +523,9 @@ const SalaryCalculator = () => {
                       <input
                         type="date"
                         className="form-control form-control-sm"
-                        defaultValue={selectedSalary?.period_start || ''}
+                        name="period_start"
+                        value={formData.period_start}
+                        onChange={handleInputChange}
                         disabled={modalType === 'view'}
                         required
                       />
@@ -390,7 +535,9 @@ const SalaryCalculator = () => {
                       <input
                         type="date"
                         className="form-control form-control-sm"
-                        defaultValue={selectedSalary?.period_end || ''}
+                        name="period_end"
+                        value={formData.period_end}
+                        onChange={handleInputChange}
                         disabled={modalType === 'view'}
                         required
                       />
@@ -406,21 +553,12 @@ const SalaryCalculator = () => {
                         type="number"
                         className="form-control form-control-sm"
                         placeholder="e.g., 160"
-                        defaultValue={selectedSalary?.hours_worked || ''}
+                        name="hours_worked"
+                        value={formData.hours_worked}
+                        onChange={handleInputChange}
                         disabled={modalType === 'view'}
                         step="0.1"
                         min="0"
-                        onChange={(e) => {
-                          if (modalType !== 'view' && selectedSalary) {
-                            const hours = parseFloat(e.target.value) || 0;
-                            const staff = staffList.find(s => s.staff_id === selectedSalary.staff_id);
-                            const hourlyTotal = hours * (staff?.hourly_rate || 0);
-                            const commissionTotal = calculateCommissionTotal(hourlyTotal, selectedSalary.fixed_salary, selectedSalary.staff_id);
-                            const netPay = calculateNetPay(hourlyTotal, selectedSalary.fixed_salary, commissionTotal, selectedSalary.bonuses, selectedSalary.deductions);
-                            // In real app: update state with calculated values
-                            // For demo, we just show auto-calculation
-                          }
-                        }}
                       />
                     </div>
                     <div className="col-12 col-md-6">
@@ -430,9 +568,7 @@ const SalaryCalculator = () => {
                         className="form-control form-control-sm"
                         placeholder="Auto-filled from staff profile"
                         readOnly
-                        defaultValue={selectedSalary 
-                          ? getStaffInfo(selectedSalary.staff_id)?.hourly_rate || 0 
-                          : 0}
+                        value={formData.staff_id ? getStaffInfo(formData.staff_id)?.hourly_rate || 0 : 0}
                       />
                     </div>
                     <div className="col-12 col-md-6">
@@ -442,7 +578,7 @@ const SalaryCalculator = () => {
                         className="form-control form-control-sm"
                         placeholder="Auto-calculated"
                         readOnly
-                        defaultValue={selectedSalary?.hourly_total || 0}
+                        value={formData.hourly_total}
                       />
                     </div>
                     <div className="col-12 col-md-6">
@@ -451,7 +587,9 @@ const SalaryCalculator = () => {
                         type="number"
                         className="form-control form-control-sm"
                         placeholder="e.g., 5000"
-                        defaultValue={selectedSalary?.fixed_salary || ''}
+                        name="fixed_salary"
+                        value={formData.fixed_salary}
+                        onChange={handleInputChange}
                         disabled={modalType === 'view'}
                         min="0"
                       />
@@ -462,7 +600,9 @@ const SalaryCalculator = () => {
                         type="number"
                         className="form-control form-control-sm"
                         placeholder="e.g., 1200"
-                        defaultValue={selectedSalary?.commission_total || ''}
+                        name="commission_total"
+                        value={formData.commission_total}
+                        onChange={handleInputChange}
                         disabled={modalType === 'view'}
                         min="0"
                       />
@@ -501,9 +641,9 @@ const SalaryCalculator = () => {
                       </div>
                     </div>
                     <div className="border rounded p-2 bg-light small">
-                      {selectedSalary?.bonuses?.length > 0 ? (
+                      {formData.bonuses?.length > 0 ? (
                         <ul className="mb-0 ps-3">
-                          {selectedSalary.bonuses.map((bonus, i) => (
+                          {formData.bonuses.map((bonus, i) => (
                             <li key={i} className="d-flex justify-content-between">
                               <span>{bonus.label}</span>
                               <span>{formatCurrency(bonus.amount)}</span>
@@ -547,9 +687,9 @@ const SalaryCalculator = () => {
                       </div>
                     </div>
                     <div className="border rounded p-2 bg-light small">
-                      {selectedSalary?.deductions?.length > 0 ? (
+                      {formData.deductions?.length > 0 ? (
                         <ul className="mb-0 ps-3">
-                          {selectedSalary.deductions.map((deduction, i) => (
+                          {formData.deductions.map((deduction, i) => (
                             <li key={i} className="d-flex justify-content-between">
                               <span>{deduction.label}</span>
                               <span>{formatCurrency(deduction.amount)}</span>
@@ -570,7 +710,7 @@ const SalaryCalculator = () => {
                       <input
                         type="number"
                         className="form-control form-control-sm fw-bold"
-                        value={selectedSalary?.net_pay || 0}
+                        value={formData.net_pay}
                         readOnly
                       />
                     </div>
@@ -578,21 +718,25 @@ const SalaryCalculator = () => {
                       <label className="form-label small">Status</label>
                       <select
                         className="form-select form-select-sm"
+                        name="status"
+                        value={formData.status}
+                        onChange={handleInputChange}
                         disabled={modalType === 'view'}
-                        defaultValue={selectedSalary?.status || 'Generated'}
                       >
                         <option value="Generated">Generated</option>
                         <option value="Approved">Approved</option>
                         <option value="Paid">Paid</option>
                       </select>
                     </div>
-                    {selectedSalary?.status === "Paid" && (
+                    {formData.status === "Paid" && (
                       <div className="col-12">
                         <label className="form-label small">Paid At</label>
                         <input
                           type="datetime-local"
                           className="form-control form-control-sm"
-                          defaultValue={selectedSalary?.paid_at ? new Date(selectedSalary.paid_at).toISOString().slice(0,16) : ''}
+                          name="paid_at"
+                          value={formData.paid_at}
+                          onChange={handleInputChange}
                           disabled={modalType === 'view'}
                         />
                       </div>
@@ -620,10 +764,7 @@ const SalaryCalculator = () => {
                           padding: '8px 16px',
                           fontWeight: '500',
                         }}
-                        onClick={() => {
-                          alert(modalType === 'add' ? 'Salary record added!' : 'Salary record updated!');
-                          closeModal();
-                        }}
+                        onClick={handleSubmit}
                       >
                         {modalType === 'add' ? 'Generate Salary' : 'Update Record'}
                       </button>
