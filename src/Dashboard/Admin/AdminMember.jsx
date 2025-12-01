@@ -30,7 +30,8 @@ const initialMembers = [
     status: "Active",
     address: "123 Main St, New York, NY",
     gender: "Male",
-    dob: "1985-05-15"
+    dob: "1985-05-15",
+    interestedIn: "Personal Training" // Added field
   },
   {
     id: 2,
@@ -44,7 +45,8 @@ const initialMembers = [
     status: "Expired",
     address: "456 Oak Ave, Los Angeles, CA",
     gender: "Female",
-    dob: "1990-08-22"
+    dob: "1990-08-22",
+    interestedIn: "Group Classes" // Added field
   },
   {
     id: 3,
@@ -58,7 +60,8 @@ const initialMembers = [
     status: "Frozen",
     address: "789 Pine Rd, Chicago, IL",
     gender: "Male",
-    dob: "1982-11-30"
+    dob: "1982-11-30",
+    interestedIn: "Both" // Added field
   }
 ];
 
@@ -85,7 +88,8 @@ const AdminMember = () => {
     dateOfBirth: "",
     startDate: new Date().toISOString().split('T')[0],
     paymentMode: "cash",
-    amountPaid: ""
+    amountPaid: "",
+    interestedIn: "" // Added field for "Interested In" selection
   });
   
   const [editMember, setEditMember] = useState({
@@ -97,7 +101,8 @@ const AdminMember = () => {
     plan: "",
     address: "",
     gender: "",
-    dob: ""
+    dob: "",
+    interestedIn: "" // Added field
   });
   
   const [renewPlan, setRenewPlan] = useState({
@@ -155,7 +160,8 @@ const AdminMember = () => {
       dob: newMember.dateOfBirth,
       planStart,
       expiry: expiry.toISOString().split('T')[0],
-      status: "Active"
+      status: "Active",
+      interestedIn: newMember.interestedIn // Added field
     };
     
     setMembers([...members, member]);
@@ -170,7 +176,8 @@ const AdminMember = () => {
       dateOfBirth: "",
       startDate: new Date().toISOString().split('T')[0],
       paymentMode: "cash",
-      amountPaid: ""
+      amountPaid: "",
+      interestedIn: "" // Reset new field
     });
     setShowAddForm(false);
   };
@@ -487,7 +494,7 @@ const AdminMember = () => {
         </div>
       </div>
 
-      {/* Add Member Modal - Fixed with editable start date */}
+      {/* Add Member Modal - Fixed with editable start date and Interested In section */}
       {showAddForm && (
         <div className="modal fade show d-block" tabIndex="-1" style={{backgroundColor: "rgba(0,0,0,0.5)"}}>
           <div className="modal-dialog modal-lg modal-dialog-centered">
@@ -582,6 +589,51 @@ const AdminMember = () => {
                             required
                           />
                           <label className="form-check-label" htmlFor="other">Other</label>
+                        </div>
+                      </div>
+                    </div>
+                    {/* Added Interested In section */}
+                    <div className="col-12">
+                      <label className="form-label">Interested In <span className="text-danger">*</span></label>
+                      <div className="d-flex gap-3">
+                        <div className="form-check">
+                          <input 
+                            className="form-check-input" 
+                            type="radio" 
+                            name="interestedIn" 
+                            id="personalTraining" 
+                            value="Personal Training"
+                            checked={newMember.interestedIn === "Personal Training"}
+                            onChange={(e) => setNewMember({...newMember, interestedIn: e.target.value})}
+                            required
+                          />
+                          <label className="form-check-label" htmlFor="personalTraining">Personal Training</label>
+                        </div>
+                        <div className="form-check">
+                          <input 
+                            className="form-check-input" 
+                            type="radio" 
+                            name="interestedIn" 
+                            id="groupClasses" 
+                            value="Group Classes"
+                            checked={newMember.interestedIn === "Group Classes"}
+                            onChange={(e) => setNewMember({...newMember, interestedIn: e.target.value})}
+                            required
+                          />
+                          <label className="form-check-label" htmlFor="groupClasses">Group Classes</label>
+                        </div>
+                        <div className="form-check">
+                          <input 
+                            className="form-check-input" 
+                            type="radio" 
+                            name="interestedIn" 
+                            id="both" 
+                            value="Both"
+                            checked={newMember.interestedIn === "Both"}
+                            onChange={(e) => setNewMember({...newMember, interestedIn: e.target.value})}
+                            required
+                          />
+                          <label className="form-check-label" htmlFor="both">Both</label>
                         </div>
                       </div>
                     </div>
@@ -687,7 +739,7 @@ const AdminMember = () => {
         </div>
       )}
 
-      {/* Edit Member Modal - Fixed */}
+      {/* Edit Member Modal - Fixed with Interested In section */}
       {showEditForm && (
         <div className="modal fade show d-block" tabIndex="-1" style={{backgroundColor: "rgba(0,0,0,0.5)"}}>
           <div className="modal-dialog modal-lg modal-dialog-centered">
@@ -780,6 +832,48 @@ const AdminMember = () => {
                         <option value="Female">Female</option>
                         <option value="Other">Other</option>
                       </select>
+                    </div>
+                    {/* Added Interested In section to Edit form */}
+                    <div className="col-12">
+                      <label className="form-label">Interested In</label>
+                      <div className="d-flex gap-3">
+                        <div className="form-check">
+                          <input 
+                            className="form-check-input" 
+                            type="radio" 
+                            name="editInterestedIn" 
+                            id="editPersonalTraining" 
+                            value="Personal Training"
+                            checked={editMember.interestedIn === "Personal Training"}
+                            onChange={(e) => setEditMember({...editMember, interestedIn: e.target.value})}
+                          />
+                          <label className="form-check-label" htmlFor="editPersonalTraining">Personal Training</label>
+                        </div>
+                        <div className="form-check">
+                          <input 
+                            className="form-check-input" 
+                            type="radio" 
+                            name="editInterestedIn" 
+                            id="editGroupClasses" 
+                            value="Group Classes"
+                            checked={editMember.interestedIn === "Group Classes"}
+                            onChange={(e) => setEditMember({...editMember, interestedIn: e.target.value})}
+                          />
+                          <label className="form-check-label" htmlFor="editGroupClasses">Group Classes</label>
+                        </div>
+                        <div className="form-check">
+                          <input 
+                            className="form-check-input" 
+                            type="radio" 
+                            name="editInterestedIn" 
+                            id="editBoth" 
+                            value="Both"
+                            checked={editMember.interestedIn === "Both"}
+                            onChange={(e) => setEditMember({...editMember, interestedIn: e.target.value})}
+                          />
+                          <label className="form-check-label" htmlFor="editBoth">Both</label>
+                        </div>
+                      </div>
                     </div>
                     <div className="col-12 col-md-6">
                       <label className="form-label">Date of Birth</label>
@@ -904,7 +998,7 @@ const AdminMember = () => {
         </div>
       )}
 
-      {/* View Member Modal - Fixed */}
+      {/* View Member Modal - Fixed with Interested In field */}
       {showViewModal && selectedMember && (
         <div className="modal fade show d-block" tabIndex="-1" style={{backgroundColor: "rgba(0,0,0,0.5)"}}>
           <div className="modal-dialog modal-lg modal-dialog-centered">
@@ -963,6 +1057,11 @@ const AdminMember = () => {
                       <div className="col-12 col-sm-6">
                         <strong>Date of Birth:</strong>
                         <div>{new Date(selectedMember.dob).toLocaleDateString()}</div>
+                      </div>
+                      {/* Added Interested In field to View modal */}
+                      <div className="col-12 col-sm-6">
+                        <strong>Interested In:</strong>
+                        <div>{selectedMember.interestedIn}</div>
                       </div>
                       <div className="col-12">
                         <strong>Address:</strong>
