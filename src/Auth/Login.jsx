@@ -35,18 +35,29 @@ const Login = () => {
     setEmail(loginEmail);
     setPassword(loginPassword);
 
-    // ✅ Special case: ONLY superadmin uses real API
-    if (loginEmail === "superadmin@example.com" && loginPassword === "superadmin123") {
+    // ✅ Only real user: super@gym.com with password 123456
+    if (loginEmail === "super@gym.com" && loginPassword === "123456") {
       try {
-        const response = await axiosInstance.post("/auth/login", { email: loginEmail, password: loginPassword });
+        const response = await axiosInstance.post("/auth/login", {
+          email: loginEmail,
+          password: loginPassword,
+        });
+
         const { token, user } = response.data;
 
+        // Normalize role to uppercase to match roleRedirectMap keys
+        const normalizedRole = user.role.toUpperCase(); // e.g., "Superadmin" → "SUPERADMIN"
+
         localStorage.setItem("authToken", token);
-        localStorage.setItem("userRole", user.role);
+        localStorage.setItem("userRole", normalizedRole);
         localStorage.setItem("userEmail", user.email);
         localStorage.setItem("userId", user.id);
 
-        navigate(roleRedirectMap[user.role] || "/");
+        if (roleRedirectMap[normalizedRole]) {
+          navigate(roleRedirectMap[normalizedRole]);
+        } else {
+          navigate("/"); // fallback
+        }
       } catch (error) {
         alert("Superadmin login failed: " + (error.response?.data?.message || "Check network or credentials"));
       } finally {
@@ -61,7 +72,6 @@ const Login = () => {
     );
 
     if (matchedRole) {
-      // Use a fake but consistent token for dev
       const fakeToken = `dev_fake_token_${matchedRole.role.toLowerCase()}_${Date.now()}`;
 
       localStorage.setItem("authToken", fakeToken);
@@ -85,7 +95,7 @@ const Login = () => {
   // Direct login for any role
   const directLogin = (role) => {
     if (role === "SUPERADMIN") {
-      handleLogin("superadmin@example.com", "superadmin123");
+      handleLogin("super@gym.com", "123456");
     } else {
       const user = dummyUsers[role];
       if (user) {
