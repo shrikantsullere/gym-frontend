@@ -141,7 +141,7 @@ const ClassSchedule = () => {
                   </div>
                   <div className="d-flex align-items-center mb-3">
                     <FaRupeeSign size={16} className="me-2 text-success" />
-                    <strong className="text-success">{formatPrice(cls.price)}</strong>
+                    <strong className="text-success">{(cls.price)}</strong>
                   </div>
 
                   <div className="mt-4">
