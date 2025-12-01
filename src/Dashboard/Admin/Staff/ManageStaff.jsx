@@ -748,13 +748,12 @@ const ManageStaff = () => {
         ))}
       </div>
 
-      {/* MAIN MODAL (Add/Edit/View) */}
+      {/* MAIN MODAL (Add/Edit/View) - Fixed to prevent closing on backdrop click */}
       {isModalOpen && (
         <div
           className="modal fade show"
           tabIndex="-1"
           style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}
-          onClick={closeModal}
         >
           <div
             className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"
@@ -770,7 +769,7 @@ const ManageStaff = () => {
                 ></button>
               </div>
               <div className="modal-body p-3 p-md-4">
-                <form>
+                <form onSubmit={(e) => { e.preventDefault(); handleFormSubmit(); }}>
                   {/* SECTION 1: Basic Information */}
                   <h6 className="fw-bold mb-3">Basic Information</h6>
                   <div className="row mb-3 g-3">
@@ -1011,7 +1010,7 @@ const ManageStaff = () => {
                     </button>
                     {modalType !== 'view' && (
                       <button
-                        type="button"
+                        type="submit"
                         className="btn w-100 w-sm-auto"
                         style={{
                           backgroundColor: customColor,
@@ -1021,7 +1020,6 @@ const ManageStaff = () => {
                           padding: '10px 20px',
                           fontWeight: '500',
                         }}
-                        onClick={handleFormSubmit}
                       >
                         {modalType === 'add' ? 'Add Staff' : 'Update Staff'}
                       </button>

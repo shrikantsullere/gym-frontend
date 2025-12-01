@@ -338,7 +338,7 @@ const ClassesSchedule = () => {
         <div
           className="modal fade show"
           style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}
-          onClick={closeModal}
+          // onClick={closeModal}
         >
           <div
             className="modal-dialog modal-lg modal-dialog-centered"
