@@ -17,7 +17,7 @@ const Login = () => {
     PERSONALTRAINER: "/personaltrainer/dashboard",
     MEMBER: "/member/dashboard",
     HOUSEKEEPING: "/housekeeping/dashboard",
-    RECEPTIONIST: "/receptionist/dashboard",
+    RECEPTIONIST: "/receptionist/dashboard"
   };
 
   // Dummy user data for non-superadmin roles (DEV ONLY)

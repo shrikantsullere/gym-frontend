@@ -5,6 +5,7 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 const PersonalTraining = () => {
   const [trainingData, setTrainingData] = useState([
     {
+      id: 1,
       trainer: "John Smith",
       type: "Strength Training",
       date: "2023-06-20",
@@ -20,6 +21,7 @@ const PersonalTraining = () => {
       totalMembers: 1
     },
     {
+      id: 2,
       trainer: "Mike Williams",
       type: "Cardio & HIIT",
       date: "2023-06-22",
@@ -35,6 +37,7 @@ const PersonalTraining = () => {
       totalMembers: 2
     },
     {
+      id: 3,
       trainer: "Mike Williams",
       type: "Cardio & HIIT",
       date: "2025-09-18",
@@ -50,6 +53,7 @@ const PersonalTraining = () => {
       totalMembers: 3
     },
     {
+      id: 4,
       trainer: "Unknown",
       type: "",
       date: "",
@@ -66,15 +70,12 @@ const PersonalTraining = () => {
     }
   ]);
 
-  // State for modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMobileViewModalOpen, setIsMobileViewModalOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
 
-  // Custom color for all blue elements
   const customColor = "#6EB2CC";
 
-  // Button click handlers
   const handleShow = (booking) => {
     setSelectedBooking(booking);
     setIsModalOpen(true);
@@ -85,14 +86,10 @@ const PersonalTraining = () => {
     setIsMobileViewModalOpen(true);
   };
 
-  const handleDelete = (username) => {
-    // Fixed the delete function
+  const handleDelete = (id, username) => {
     if (window.confirm(`Are you sure you want to delete booking for ${username}?`)) {
-      // Remove the item from the array
-      const updatedData = trainingData.filter(item => item.username !== username);
+      const updatedData = trainingData.filter(item => item.id !== id);
       setTrainingData(updatedData);
-      
-      // Show success message
       alert(`Booking for ${username} has been deleted`);
     }
   };
@@ -112,7 +109,6 @@ const PersonalTraining = () => {
     setTrainingData(newData);
   };
 
-  // Get badge color based on booking status
   const getBadgeColor = (status) => {
     switch (status) {
       case "Confirmed":
@@ -124,10 +120,8 @@ const PersonalTraining = () => {
     }
   };
 
-  // Calculate total members
   const totalMembersCount = trainingData.reduce((total, booking) => total + (booking.totalMembers || 1), 0);
 
-  // Mobile Card View Component
   const MobileBookingCard = ({ booking, index }) => (
     <div className="card mb-3 shadow-sm" style={{ borderRadius: '12px' }}>
       <div className="card-body p-3">
@@ -196,7 +190,7 @@ const PersonalTraining = () => {
             </button>
             <button
               className="btn btn-sm"
-              onClick={() => handleDelete(booking.username)}
+              onClick={() => handleDelete(booking.id, booking.username)}
               style={{ 
                 fontSize: '0.75rem', 
                 padding: '0.25rem 0.5rem',
@@ -215,7 +209,6 @@ const PersonalTraining = () => {
 
   return (
     <div className="container-fluid p-2 p-md-4">
-      {/* Personal Training Heading */}
       <div className="d-flex justify-content-between align-items-center mb-3 mb-md-4">
         <div>
           <h2 className="fw-bold mb-1" style={{ fontSize: 'clamp(1.5rem, 4vw, 2.2rem)' }}>Personal Training Details</h2>
@@ -229,7 +222,6 @@ const PersonalTraining = () => {
         </div>
       </div>
       
-      {/* Desktop Table View */}
       <div className="d-none d-md-block">
         <div className="table-responsive">
           <table className="table table-bordered table-hover">
@@ -248,7 +240,7 @@ const PersonalTraining = () => {
             </thead>
             <tbody>
               {trainingData.map((data, index) => (
-                <tr key={index}>
+                <tr key={data.id}>
                   <td>{data.memberName}</td>
                   <td>
                     {data.trainer} {data.type && `(${data.type})`}
@@ -288,7 +280,7 @@ const PersonalTraining = () => {
                       <button 
                         className="btn btn-sm" 
                         title="Delete"
-                        onClick={() => handleDelete(data.username)}
+                        onClick={() => handleDelete(data.id, data.username)}
                         style={{ 
                           color: '#dc3545',
                           background: 'none',
@@ -306,14 +298,12 @@ const PersonalTraining = () => {
         </div>
       </div>
 
-      {/* Mobile Card View */}
       <div className="d-md-none">
         {trainingData.map((booking, index) => (
-          <MobileBookingCard key={index} booking={booking} index={index} />
+          <MobileBookingCard key={booking.id} booking={booking} index={index} />
         ))}
       </div>
 
-      {/* Desktop Modal for Viewing Details */}
       {isModalOpen && (
         <div
           className="modal fade show"
@@ -389,7 +379,6 @@ const PersonalTraining = () => {
         </div>
       )}
 
-      {/* Mobile Modal for Viewing Details */}
       {isMobileViewModalOpen && (
         <div
           className="modal fade show"
