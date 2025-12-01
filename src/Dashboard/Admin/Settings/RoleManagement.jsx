@@ -1,8 +1,8 @@
 // src/components/SettingsPage.js
 import React, { useState } from 'react';
-import { FaUser, FaLock, FaPalette, FaBuilding, FaSave, FaTimes } from 'react-icons/fa';
+import { FaUser, FaLock, FaSave, FaTimes } from 'react-icons/fa';
 
-const RoleManagement = () => {
+const SettingsPage = () => {
   // State for profile photo URL
   const [profilePhotoUrl, setProfilePhotoUrl] = useState('https://randomuser.me/api/portraits/men/46.jpg');
   
@@ -12,48 +12,25 @@ const RoleManagement = () => {
     fullName: 'Admin',
     email: 'admin@gymapp.com',
     phone: '+91 90000 00000',
-    branch: 'All Branches',
     profilePhoto: null, // For file upload
 
     // Password Section
     currentPassword: '',
     newPassword: '',
     confirmNewPassword: '',
-
-    // Appearance Section
-    theme: 'light', // 'light' or 'dark'
-    language: 'english',
-
-    // Gym Details Section
-    gymName: 'FitLife Gym',
-    gymAddress: '123 Main St, Anytown, USA',
-    gymContactEmail: 'contact@fitlife.com',
-    gymContactPhone: '+1 555-123-4567',
   });
 
   // State for showing success message
   const [showSaveMessage, setShowSaveMessage] = useState(false);
 
   // Generic handler for input changes
-  const handleInputChange = (e, section) => {
-    const { name, value, type, checked } = e.target;
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
     
-    if (section) {
-      // For nested objects like notifications
-      setSettingsData(prev => ({
-        ...prev,
-        [section]: {
-          ...prev[section],
-          [name]: type === 'checkbox' ? checked : value
-        }
-      }));
-    } else {
-      // For top-level properties
-      setSettingsData(prev => ({
-        ...prev,
-        [name]: type === 'checkbox' ? checked : value
-      }));
-    }
+    setSettingsData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   // Handler for file upload
@@ -138,7 +115,7 @@ const RoleManagement = () => {
                           id="fullName"
                           name="fullName"
                           value={settingsData.fullName}
-                          onChange={(e) => handleInputChange(e)}
+                          onChange={handleInputChange}
                         />
                       </div>
                       <div className="col-md-6">
@@ -149,7 +126,7 @@ const RoleManagement = () => {
                           id="email"
                           name="email"
                           value={settingsData.email}
-                          onChange={(e) => handleInputChange(e)}
+                          onChange={handleInputChange}
                         />
                       </div>
                       <div className="col-md-6">
@@ -160,23 +137,8 @@ const RoleManagement = () => {
                           id="phone"
                           name="phone"
                           value={settingsData.phone}
-                          onChange={(e) => handleInputChange(e)}
+                          onChange={handleInputChange}
                         />
-                      </div>
-                      <div className="col-md-6">
-                        <label htmlFor="branch" className="form-label">Branch</label>
-                        <select
-                          className="form-select"
-                          id="branch"
-                          name="branch"
-                          value={settingsData.branch}
-                          onChange={(e) => handleInputChange(e)}
-                        >
-                          <option value="All Branches">All Branches</option>
-                          <option value="Downtown">Downtown</option>
-                          <option value="Uptown">Uptown</option>
-                          <option value="Westside">Westside</option>
-                        </select>
                       </div>
                     </div>
                   </div>
@@ -201,7 +163,7 @@ const RoleManagement = () => {
                       id="currentPassword"
                       name="currentPassword"
                       value={settingsData.currentPassword}
-                      onChange={(e) => handleInputChange(e)}
+                      onChange={handleInputChange}
                     />
                   </div>
                   <div className="col-12">
@@ -212,7 +174,7 @@ const RoleManagement = () => {
                       id="newPassword"
                       name="newPassword"
                       value={settingsData.newPassword}
-                      onChange={(e) => handleInputChange(e)}
+                      onChange={handleInputChange}
                     />
                   </div>
                   <div className="col-12">
@@ -223,65 +185,8 @@ const RoleManagement = () => {
                       id="confirmNewPassword"
                       name="confirmNewPassword"
                       value={settingsData.confirmNewPassword}
-                      onChange={(e) => handleInputChange(e)}
+                      onChange={handleInputChange}
                     />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* SECTION 4: Gym Details */}
-            <div className="card shadow-sm border-0 mb-4">
-              <div className="card-header bg-light">
-                <h5 className="mb-0">
-                  <FaBuilding className="me-2" /> Gym Details
-                </h5>
-              </div>
-              <div className="card-body">
-                <div className="row g-3">
-                  <div className="col-md-6">
-                    <label htmlFor="gymName" className="form-label">Gym Name</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      id="gymName"
-                      name="gymName"
-                      value={settingsData.gymName}
-                      onChange={(e) => handleInputChange(e)}
-                    />
-                  </div>
-                  <div className="col-md-6">
-                    <label htmlFor="gymContactEmail" className="form-label">Contact Email</label>
-                    <input
-                      type="email"
-                      className="form-control"
-                      id="gymContactEmail"
-                      name="gymContactEmail"
-                      value={settingsData.gymContactEmail}
-                      onChange={(e) => handleInputChange(e)}
-                    />
-                  </div>
-                  <div className="col-md-6">
-                    <label htmlFor="gymContactPhone" className="form-label">Contact Phone</label>
-                    <input
-                      type="tel"
-                      className="form-control"
-                      id="gymContactPhone"
-                      name="gymContactPhone"
-                      value={settingsData.gymContactPhone}
-                      onChange={(e) => handleInputChange(e)}
-                    />
-                  </div>
-                  <div className="col-12">
-                    <label htmlFor="gymAddress" className="form-label">Address</label>
-                    <textarea
-                      className="form-control"
-                      id="gymAddress"
-                      name="gymAddress"
-                      rows="3"
-                      value={settingsData.gymAddress}
-                      onChange={(e) => handleInputChange(e)}
-                    ></textarea>
                   </div>
                 </div>
               </div>
@@ -303,4 +208,4 @@ const RoleManagement = () => {
   );
 };
 
-export default RoleManagement;
+export default SettingsPage;
