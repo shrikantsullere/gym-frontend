@@ -1,7 +1,7 @@
 // src/pages/Login.js
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axiosInstance from "../../src/Api/axiosInstance";
+import axiosInstance from "../../src/Api/axiosInstance"; // correct path
 
 const Login = () => {
   const navigate = useNavigate();
@@ -20,7 +20,7 @@ const Login = () => {
     RECEPTIONIST: "/receptionist/dashboard"
   };
 
-  // Dummy user data for non-superadmin roles (DEV ONLY)
+  // Dummy DEV users
   const dummyUsers = {
     ADMIN: { id: 101, email: "admin@fit.com", role: "ADMIN" },
     GENERALTRAINER: { id: 102, email: "trainer@fit.com", role: "GENERALTRAINER" },
@@ -30,22 +30,28 @@ const Login = () => {
     RECEPTIONIST: { id: 106, email: "reception@fit.com", role: "RECEPTIONIST" },
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleLogin = async (loginEmail, loginPassword) => {
     setLoading(true);
+    setEmail(loginEmail);
+    setPassword(loginPassword);
 
-    // ✅ Special case: ONLY superadmin uses real API
-    if (email === "superadmin@example.com" && password === "superadmin123") {
+    // REAL LOGIN ONLY FOR SUPERADMIN
+    if (loginEmail === "super@gym.com" && loginPassword === "123456") {
       try {
-        const response = await axiosInstance.post("/auth/login", { email, password });
+        const response = await axiosInstance.post("/auth/login", {
+          email: loginEmail,
+          password: loginPassword,
+        });
+
         const { token, user } = response.data;
+        const normalizedRole = user.role.toUpperCase();
 
         localStorage.setItem("authToken", token);
-        localStorage.setItem("userRole", user.role);
+        localStorage.setItem("userRole", normalizedRole);
         localStorage.setItem("userEmail", user.email);
         localStorage.setItem("userId", user.id);
 
-        navigate(roleRedirectMap[user.role] || "/");
+        navigate(roleRedirectMap[normalizedRole] || "/");
       } catch (error) {
         alert("Superadmin login failed: " + (error.response?.data?.message || "Check network or credentials"));
       } finally {
@@ -54,13 +60,12 @@ const Login = () => {
       return;
     }
 
-    // 🔁 For ALL other roles: simulate login (NO API CALL)
+    // DEV MODE LOGIN (NO API CALL)
     const matchedRole = Object.values(dummyUsers).find(
-      (user) => user.email === email && password === "123456"
+      (user) => user.email === loginEmail && loginPassword === "123456"
     );
 
     if (matchedRole) {
-      // Use a fake but consistent token for dev
       const fakeToken = `dev_fake_token_${matchedRole.role.toLowerCase()}_${Date.now()}`;
 
       localStorage.setItem("authToken", fakeToken);
@@ -70,23 +75,24 @@ const Login = () => {
 
       navigate(roleRedirectMap[matchedRole.role] || "/");
     } else {
-      alert("Invalid credentials.\n\nFor dev testing:\n- Superadmin: superadmin@example.com / superadmin123\n- Others: use email from buttons + password '123456'");
+      alert("Invalid credentials.");
     }
 
     setLoading(false);
   };
 
-  // Auto-fill for any role
-  const autoFill = (role) => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    await handleLogin(email, password);
+  };
+
+  // Quick login buttons
+  const directLogin = (role) => {
     if (role === "SUPERADMIN") {
-      setEmail("superadmin@example.com");
-      setPassword("superadmin123");
+      handleLogin("super@gym.com", "123456");
     } else {
       const user = dummyUsers[role];
-      if (user) {
-        setEmail(user.email);
-        setPassword("123456"); // universal dev password
-      }
+      if (user) handleLogin(user.email, "123456");
     }
   };
 
@@ -108,7 +114,7 @@ const Login = () => {
               <h2 className="fw-bold mb-3 text-center">Welcome Back!</h2>
               <p className="text-muted text-center mb-4">Please login to your account</p>
 
-              {/* Quick-fill buttons for ALL roles */}
+              {/* Quick login buttons */}
               <div className="mb-4">
                 <p className="mb-2"><strong>Quick Login (Dev Mode):</strong></p>
                 <div className="d-flex flex-wrap gap-2">
@@ -116,14 +122,14 @@ const Login = () => {
                     <button
                       key={role}
                       type="button"
-                      className="btn btn-outline-primary btn-sm"
-                      onClick={() => autoFill(role)}
+                      className="btn btn-primary btn-sm"
+                      onClick={() => directLogin(role)}
+                      disabled={loading}
                     >
                       {role.replace(/([A-Z])/g, " $1").trim()}
                     </button>
                   ))}
                 </div>
-             
               </div>
 
               <form onSubmit={handleSubmit}>
