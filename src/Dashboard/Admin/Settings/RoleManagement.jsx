@@ -3,6 +3,9 @@ import React, { useState } from 'react';
 import { FaUser, FaLock, FaPalette, FaBuilding, FaSave, FaTimes } from 'react-icons/fa';
 
 const RoleManagement = () => {
+  // State for profile photo URL
+  const [profilePhotoUrl, setProfilePhotoUrl] = useState('https://randomuser.me/api/portraits/men/46.jpg');
+  
   // State for all form data
   const [settingsData, setSettingsData] = useState({
     // Profile Section
@@ -56,10 +59,17 @@ const RoleManagement = () => {
   // Handler for file upload
   const handleFileUpload = (e) => {
     if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      
+      // Update the form data
       setSettingsData(prev => ({
         ...prev,
-        profilePhoto: e.target.files[0]
+        profilePhoto: file
       }));
+      
+      // Create a URL for the uploaded image to display it
+      const imageUrl = URL.createObjectURL(file);
+      setProfilePhotoUrl(imageUrl);
     }
   };
 
@@ -100,7 +110,7 @@ const RoleManagement = () => {
                 <div className="row g-3">
                   <div className="col-md-4 text-center">
                     <img
-                      src="https://i.pravatar.cc/150?u=a042581f4e29026704d"
+                      src={profilePhotoUrl}
                       alt="Profile"
                       className="rounded-circle img-fluid mb-3"
                       style={{ maxWidth: '150px' }}
@@ -219,62 +229,6 @@ const RoleManagement = () => {
                 </div>
               </div>
             </div>
-
-            {/* SECTION 3: Appearance */}
-            {/* <div className="card shadow-sm border-0 mb-4">
-              <div className="card-header bg-light">
-                <h5 className="mb-0">
-                  <FaPalette className="me-2" /> Appearance
-                </h5>
-              </div>
-              <div className="card-body">
-                <div className="row g-3" style={{ maxWidth: '600px' }}>
-                  <div className="col-12">
-                    <label className="form-label">Theme</label>
-                    <div>
-                      <div className="form-check form-check-inline">
-                        <input
-                          className="form-check-input"
-                          type="radio"
-                          name="theme"
-                          id="lightTheme"
-                          value="light"
-                          checked={settingsData.theme === 'light'}
-                          onChange={(e) => handleInputChange(e)}
-                        />
-                        <label className="form-check-label" htmlFor="lightTheme">Light</label>
-                      </div>
-                      <div className="form-check form-check-inline">
-                        <input
-                          className="form-check-input"
-                          type="radio"
-                          name="theme"
-                          id="darkTheme"
-                          value="dark"
-                          checked={settingsData.theme === 'dark'}
-                          onChange={(e) => handleInputChange(e)}
-                        />
-                        <label className="form-check-label" htmlFor="darkTheme">Dark</label>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="col-12">
-                    <label htmlFor="language" className="form-label">Language</label>
-                    <select
-                      className="form-select"
-                      id="language"
-                      name="language"
-                      value={settingsData.language}
-                      onChange={(e) => handleInputChange(e)}
-                    >
-                      <option value="english">English</option>
-                      <option value="spanish">Spanish</option>
-                      <option value="french">French</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </div> */}
 
             {/* SECTION 4: Gym Details */}
             <div className="card shadow-sm border-0 mb-4">
