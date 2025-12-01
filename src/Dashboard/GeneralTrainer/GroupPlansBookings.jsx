@@ -11,9 +11,9 @@ const GroupPlansBookings = () => {
 
   // Group Training Plans (Read-only, comes from admin)
   const groupPlans = [
-    { id: 1, name: "Starter Group Class", sessions: 8, validity: 30, price: "₹2,499", description: "Perfect for beginners" },
-    { id: 2, name: "Pro Group Class", sessions: 16, validity: 60, price: "₹4,499", description: "For intermediate users" },
-    { id: 3, name: "Unlimited Group Access", sessions: 30, validity: 90, price: "₹7,999", description: "Best value for dedicated users" },
+    { id: 1, name: "Starter Group Class", sessions: 8, validity: 30, price: "2,499", description: "Perfect for beginners" },
+    { id: 2, name: "Pro Group Class", sessions: 16, validity: 60, price: "4,499", description: "For intermediate users" },
+    { id: 3, name: "Unlimited Group Access", sessions: 30, validity: 90, price: "7,999", description: "Best value for dedicated users" },
   ];
 
   // Mock customer data for each group plan
@@ -233,7 +233,7 @@ const GroupPlansBookings = () => {
                   }}></div>
                   <Card.Body className="d-flex flex-column p-3">
                     <div className="text-center mb-3">
-                      <div className="badge bg-primary mb-2 px-3 py-1" style={{ 
+                      <div className="badge mb-2 px-3 py-1" style={{ 
                         backgroundColor: '#2f6a87', 
                         color: 'white', 
                         fontSize: '0.75rem',
