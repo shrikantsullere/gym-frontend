@@ -1,66 +1,64 @@
 import React, { useState, useEffect } from 'react';
 import { FaEye, FaEdit, FaTrashAlt } from 'react-icons/fa';
-import axiosInstance from '../../Api/axiosInstance';
+import axiosInstance from "../../Api/axiosInstance"; // Keep your axios instance
 
 const SuperAdminAdmin = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [modalType, setModalType] = useState('add');
   const [selectedAdmin, setSelectedAdmin] = useState(null);
-  
-  // ✅ Updated mock data: use planId instead of full plan object
   const [admins, setAdmins] = useState([
     {
       id: 1,
-      name: "John Anderson",
-      adminId: "ADM01",
+      fullName: "John Anderson",
+      gymName: "FitLife Gym",
       address: "123 Main Street",
-      role: "Primary Admin",
       phone: "+1 555-123-4567",
       email: "john@admin.com",
-      status: "Active",
-      username: "john_admin",
-      planId: 1 // ✅ Only store ID
+      status: "active",
+      planName: "Gold",
+      price: "1200",
+      duration: "12 Months",
+      description: "Full access plan"
     },
     {
       id: 2,
-      name: "Emma Watson",
-      adminId: "ADM02",
+      fullName: "Emma Watson",
+      gymName: "Elite Fitness",
       address: "456 Park Avenue",
-      role: "Co-Admin",
       phone: "+1 555-987-6543",
       email: "emma@admin.com",
-      status: "Inactive",
-      username: "emma_admin",
-      planId: null // ✅ No plan = null
+      status: "inactive",
+      planName: "",
+      price: "",
+      duration: "",
+      description: ""
     }
   ]);
 
+  // ✅ FETCH PLANS FOR DROPDOWN
   const [plans, setPlans] = useState([]);
   const [loadingPlans, setLoadingPlans] = useState(true);
 
-  // Fetch plans
   useEffect(() => {
     const fetchPlans = async () => {
       try {
-        const res = await axiosInstance.get('/superadmin/saas-plan/plans');
-        if (res.data.success && Array.isArray(res.data.plans)) {
-          setPlans(res.data.plans);
+        const response = await axiosInstance.get("/plans");
+        if (response.data.success && Array.isArray(response.data.plans)) {
+          setPlans(response.data.plans);
         } else {
           setPlans([]);
         }
-      } catch (err) {
-        console.error('Failed to fetch plans:', err);
+      } catch (error) {
+        console.error("Failed to fetch plans:", error);
         setPlans([]);
+        alert("Failed to load plans. Please try again.");
       } finally {
         setLoadingPlans(false);
       }
     };
     fetchPlans();
   }, []);
-
-  // Utility: Get plan by ID
-  const getPlanById = (id) => plans.find(p => p.id === id);
 
   const handleAddNew = () => {
     setModalType('add');
@@ -88,7 +86,7 @@ const SuperAdminAdmin = () => {
   const confirmDelete = () => {
     if (selectedAdmin) {
       setAdmins(admins.filter(admin => admin.id !== selectedAdmin.id));
-      alert(`Admin "${selectedAdmin.name}" has been deleted.`);
+      alert(`Admin "${selectedAdmin.fullName}" has been deleted.`);
     }
     setIsDeleteModalOpen(false);
     setSelectedAdmin(null);
@@ -110,24 +108,20 @@ const SuperAdminAdmin = () => {
   }, [isModalOpen, isDeleteModalOpen]);
 
   const getStatusBadge = (status) => {
+    const normalized = (status || 'inactive').toLowerCase();
     return (
       <span
         className="badge rounded-pill px-2 py-1 d-inline-block"
         style={{
-          backgroundColor: status === "Active" ? "#D1F4E1" : "#F8D7DA",
-          color: status === "Active" ? "#157347" : "#B02A37",
+          backgroundColor: normalized === "active" ? "#D1F4E1" : "#F8D7DA",
+          color: normalized === "active" ? "#157347" : "#B02A37",
           fontWeight: "500",
           fontSize: "0.75rem"
         }}
       >
-        {status}
+        {normalized === "active" ? "Active" : "Inactive"}
       </span>
     );
-  };
-
-  const getPlanNameById = (planId) => {
-    const plan = getPlanById(planId);
-    return plan ? plan.planName : <span className="text-muted">No Plan</span>;
   };
 
   const getModalTitle = () => {
@@ -139,58 +133,45 @@ const SuperAdminAdmin = () => {
     }
   };
 
-  // ✅ Submit with planId (matches backend)
-  const handleFormSubmit = async (payload) => {
-    try {
-      if (modalType === 'add') {
-        // ✅ Send payload exactly as backend expects
-        const createPayload = {
-          name: payload.name,
-          gymName: payload.gymName,
-          address: payload.address,
-          phone: payload.phone,
-          email: payload.email,
-          username: payload.username,
-          password: payload.password,
-          status: payload.status, // "Active" → should be "ACTIVE"?
-          planId: payload.planId || null
-        };
-
-        const res = await axiosInstance.post('/superadmin/admins', createPayload);
-        if (res.data.success) {
-          // Optionally update local state with real data from response
-          const newAdmin = res.data.admin;
-          setAdmins(prev => [...prev, {
-            ...newAdmin,
-            status: newAdmin.status === "ACTIVE" ? "Active" : "Inactive"
-          }]);
-          alert('Admin created successfully!');
+  const handleFormSubmit = (payload) => {
+    if (modalType === 'add') {
+      const newId = Math.max(...admins.map(admin => admin.id), 0) + 1;
+      const newAdmin = {
+        id: newId,
+        fullName: payload.fullName,
+        email: payload.email,
+        phone: payload.phone,
+        gymName: payload.gymName,
+        address: payload.address,
+        planName: payload.planName,
+        price: payload.planPrice,
+        duration: payload.planDuration,
+        description: payload.planDescription,
+        status: payload.status.toLowerCase()
+      };
+      setAdmins([...admins, newAdmin]);
+      alert('New admin added successfully!');
+    } else if (modalType === 'edit' && selectedAdmin) {
+      const updatedAdmins = admins.map(admin => {
+        if (admin.id === selectedAdmin.id) {
+          return {
+            ...admin,
+            fullName: payload.fullName,
+            email: payload.email,
+            phone: payload.phone,
+            gymName: payload.gymName,
+            address: payload.address,
+            planName: payload.planName,
+            price: payload.planPrice,
+            duration: payload.planDuration,
+            description: payload.planDescription,
+            status: payload.status.toLowerCase()
+          };
         }
-      } else if (modalType === 'edit' && selectedAdmin) {
-        // For edit, you'd use PUT /superadmin/admins/:id (not implemented here)
-        // For now, just update local state
-        const updatedAdmins = admins.map(admin => {
-          if (admin.id === selectedAdmin.id) {
-            return {
-              ...admin,
-              name: payload.name,
-              adminId: payload.adminId,
-              address: payload.address,
-              phone: payload.phone,
-              email: payload.email,
-              status: payload.status,
-              username: payload.username,
-              planId: payload.planId || null
-            };
-          }
-          return admin;
-        });
-        setAdmins(updatedAdmins);
-        alert('Admin updated successfully!');
-      }
-    } catch (err) {
-      console.error('API Error:', err);
-      alert('Failed to save admin. Please try again.');
+        return admin;
+      });
+      setAdmins(updatedAdmins);
+      alert('Admin updated successfully!');
     }
     closeModal();
   };
@@ -222,35 +203,38 @@ const SuperAdminAdmin = () => {
       </div>
 
       {/* TABLE CARD */}
-      <div className="card border-0 shadow-sm" style={{ borderRadius: "16px", background: "#ffffff" }}>
+      <div
+        className="card border-0 shadow-sm"
+        style={{ borderRadius: "16px", background: "#ffffff" }}
+      >
         <div className="card-body p-0">
+          {/* Desktop Table */}
           <div className="table-responsive d-none d-md-block">
             <table className="table align-middle mb-0">
               <thead style={{ background: "#F8F9FB" }}>
                 <tr>
                   <th className="py-3">ADMIN NAME</th>
                   <th className="py-3">PLAN NAME</th>
-                  <th className="py-3">ADMIN ID</th>
+                  <th className="py-3">GYM NAME</th>
                   <th className="py-3">ADDRESS</th>
-                  <th className="py-3">CONTACT / ROLE</th>
+                  <th className="py-3">CONTACT</th>
                   <th className="py-3">STATUS</th>
                   <th className="py-3 text-center">ACTIONS</th>
                 </tr>
               </thead>
               <tbody>
                 {admins.map((admin) => (
-                  <tr key={admin.id} style={{ transition: "0.3s ease" }}
+                  <tr
+                    key={admin.id}
+                    style={{ transition: "0.3s ease" }}
                     onMouseEnter={(e) => (e.currentTarget.style.background = "#F1FBFF")}
                     onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                   >
-                    <td><strong>{admin.name}</strong></td>
-                    <td>{getPlanNameById(admin.planId)}</td> {/* ✅ Show plan name from ID */}
-                    <td>{admin.adminId}</td>
+                    <td><strong>{admin.fullName}</strong></td>
+                    <td>{admin.planName || <span className="text-muted">No Plan</span>}</td>
+                    <td>{admin.gymName}</td>
                     <td><small className="text-muted">{admin.address}</small></td>
-                    <td>
-                      <strong>{admin.phone}</strong><br />
-                      <small className="text-muted">{admin.role}</small>
-                    </td>
+                    <td>{admin.phone}</td>
                     <td>{getStatusBadge(admin.status)}</td>
                     <td className="text-center">
                       <div className="d-flex justify-content-center gap-2">
@@ -277,32 +261,26 @@ const SuperAdminAdmin = () => {
               <div key={admin.id} className="card mb-3 shadow-sm" style={{ borderRadius: "12px" }}>
                 <div className="card-body p-3">
                   <div className="d-flex justify-content-between align-items-start mb-2">
-                    <h5 className="card-title mb-0 fw-bold">{admin.name}</h5>
+                    <h5 className="card-title mb-0 fw-bold">{admin.fullName}</h5>
                     {getStatusBadge(admin.status)}
                   </div>
                   <div className="row g-2 mb-2">
                     <div className="col-6">
-                      <small className="text-muted d-block">Admin ID</small>
-                      <span>{admin.adminId}</span>
+                      <small className="text-muted d-block">Gym</small>
+                      <span>{admin.gymName}</span>
                     </div>
                     <div className="col-6">
                       <small className="text-muted d-block">Plan</small>
-                      <span>{getPlanNameById(admin.planId)}</span>
+                      <span>{admin.planName || <span className="text-muted">No Plan</span>}</span>
                     </div>
                   </div>
                   <div className="mb-2">
                     <small className="text-muted d-block">Address</small>
                     <span>{admin.address}</span>
                   </div>
-                  <div className="row g-2 mb-3">
-                    <div className="col-6">
-                      <small className="text-muted d-block">Phone</small>
-                      <span>{admin.phone}</span>
-                    </div>
-                    <div className="col-6">
-                      <small className="text-muted d-block">Role</small>
-                      <span>{admin.role}</span>
-                    </div>
+                  <div className="mb-2">
+                    <small className="text-muted d-block">Phone</small>
+                    <span>{admin.phone}</span>
                   </div>
                   <div className="d-flex justify-content-end gap-2">
                     <button className="btn btn-sm btn-outline-secondary" onClick={() => handleView(admin)}>
@@ -323,8 +301,6 @@ const SuperAdminAdmin = () => {
       </div>
 
       {/* MODALS */}
-
-
       {isModalOpen && (
         <ModalWrapper title={getModalTitle()} onClose={closeModal}>
           <AdminForm
@@ -343,7 +319,7 @@ const SuperAdminAdmin = () => {
           <div className="text-center py-4">
             <h5>Are you sure?</h5>
             <p className="text-muted">
-              This will permanently delete <strong>{selectedAdmin?.name}</strong>.
+              This will permanently delete <strong>{selectedAdmin?.fullName}</strong>.
             </p>
             <div className="d-flex justify-content-center gap-3 mt-4">
               <button className="btn btn-outline-secondary px-4" onClick={closeDeleteModal}>Cancel</button>
@@ -352,18 +328,24 @@ const SuperAdminAdmin = () => {
           </div>
         </ModalWrapper>
       )}
-
-
     </div>
   );
 };
 
-/* MODAL WRAPPER */
+/* ------------------------- MODAL WRAPPER ------------------------- */
 const ModalWrapper = ({ title, children, onClose }) => (
-  <div className="modal fade show" style={{ display: "block", background: "rgba(0,0,0,0.5)" }} onClick={onClose}>
-    <div className="modal-dialog modal-dialog-centered modal-md" style={{ maxWidth: "600px" }} onClick={(e) => e.stopPropagation()}>
+  <div
+    className="modal fade show"
+    style={{ display: "block", background: "rgba(0,0,0,0.5)" }}
+    onClick={onClose}
+  >
+    <div
+      className="modal-dialog modal-dialog-centered modal-md"
+      style={{ maxWidth: "600px" }}
+      onClick={(e) => e.stopPropagation()}
+    >
       <div className="modal-content p-0" style={{ borderRadius: "14px" }}>
-        <div className="modal-header border-0 py-3 px-3">
+        <div className="modal-header border-0 py-2 px-3">
           <h5 className="modal-title fw-bold fs-5">{title}</h5>
           <button type="button" className="btn-close" onClick={onClose}></button>
         </div>
@@ -373,23 +355,24 @@ const ModalWrapper = ({ title, children, onClose }) => (
   </div>
 );
 
-/* ADMIN FORM */
-const AdminForm = ({ mode, admin, onCancel, onSubmit, plans = [], loadingPlans = false }) => {
+/* --------------------------- ADMIN FORM -------------------------- */
+const AdminForm = ({ mode, admin, onCancel, onSubmit, plans, loadingPlans }) => {
   const isView = mode === "view";
   const isAdd = mode === "add";
 
-  // ✅ Initialize with planId (not planName)
   const [formData, setFormData] = useState({
-    name: admin?.name || "",
-    gymName: "",
-    adminId: admin?.adminId || "",
+    fullName: admin?.fullName || "",
+    gymName: admin?.gymName || "",
     address: admin?.address || "",
     phone: admin?.phone || "",
     email: admin?.email || "",
-    username: admin?.username || "",
     password: "",
-    status: admin?.status === "Active" ? "Active" : "Inactive",
-    planId: admin?.planId || "" // ✅ store ID
+    status: (admin?.status || "active"),
+    selectedPlanId: "", // for dropdown
+    planName: admin?.planName || "",
+    planPrice: admin?.price || "",
+    planDuration: admin?.duration || "",
+    planDescription: admin?.description || ""
   });
 
   const handleInputChange = (e) => {
@@ -397,10 +380,37 @@ const AdminForm = ({ mode, admin, onCancel, onSubmit, plans = [], loadingPlans =
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  // ✅ HANDLE PLAN SELECTION FROM DROPDOWN
+  const handlePlanChange = (planId) => {
+    const selectedPlan = plans.find(p => p.id == planId);
+    if (selectedPlan) {
+      // Convert duration (in days) to "X Months" or keep as is — adjust if needed
+      const durationText = selectedPlan.duration; // assuming it's already "1 Months", etc.
+
+      setFormData(prev => ({
+        ...prev,
+        selectedPlanId: planId,
+        planName: selectedPlan.name,
+        planPrice: selectedPlan.price.toString(),
+        planDuration: durationText,
+        planDescription: selectedPlan.description || `Plan for ${durationText} @ ₹${selectedPlan.price}`
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        selectedPlanId: "",
+        planName: "",
+        planPrice: "",
+        planDuration: "",
+        planDescription: ""
+      }));
+    }
+  };
+
   const handleStatusToggle = () => {
     setFormData(prev => ({
       ...prev,
-      status: prev.status === "Active" ? "Inactive" : "Active"
+      status: prev.status === "active" ? "inactive" : "active"
     }));
   };
 
@@ -408,124 +418,173 @@ const AdminForm = ({ mode, admin, onCancel, onSubmit, plans = [], loadingPlans =
     e.preventDefault();
     if (isView) return onCancel();
 
-    // Map status to backend format if needed
-    const statusForApi = formData.status === "Active" ? "ACTIVE" : "INACTIVE";
-
     const payload = {
-      ...formData,
-      status: statusForApi,
-      planId: formData.planId ? Number(formData.planId) : null
+      ...formData
     };
-
     onSubmit(payload);
   };
 
   return (
     <form onSubmit={handleSubmit}>
-      {/* Personal Information */}
+      {/* Personal Info */}
       <div className="mb-4">
         <h6 className="fw-bold mb-3 text-primary">Personal Information</h6>
         <div className="row g-2 mb-3">
-          <div className="col-12 col-md-6">
-            <label className="form-label fs-6">Admin Name *</label>
-            <input name="name" className="form-control form-control-sm" value={formData.name}
-              onChange={handleInputChange} readOnly={isView} required />
+          <div className="col-12">
+            <label className="form-label fs-6">Full Name *</label>
+            <input 
+              name="fullName" 
+              className="form-control form-control-sm" 
+              value={formData.fullName} 
+              onChange={handleInputChange} 
+              readOnly={isView} 
+              required
+            />
           </div>
-          {isAdd ? (
-            <div className="col-12 col-md-6">
-              <label className="form-label fs-6">Gym Name *</label>
-              <input name="gymName" className="form-control form-control-sm" value={formData.gymName}
-                onChange={handleInputChange} placeholder="Enter Gym Name" readOnly={isView} required />
-            </div>
-          ) : (
-            <div className="col-12 col-md-6">
-              <label className="form-label fs-6">Admin ID *</label>
-              <input name="adminId" className="form-control form-control-sm" value={formData.adminId}
-                onChange={handleInputChange} readOnly={isView} required />
-            </div>
-          )}
+          <div className="col-12">
+            <label className="form-label fs-6">Gym Name *</label>
+            <input 
+              name="gymName" 
+              className="form-control form-control-sm" 
+              value={formData.gymName}
+              onChange={handleInputChange}
+              readOnly={isView} 
+              required
+            />
+          </div>
           <div className="col-12">
             <label className="form-label fs-6">Address *</label>
-            <input name="address" className="form-control form-control-sm" value={formData.address}
-              onChange={handleInputChange} readOnly={isView} required />
+            <input 
+              name="address" 
+              className="form-control form-control-sm" 
+              value={formData.address} 
+              onChange={handleInputChange}
+              readOnly={isView} 
+              required
+            />
           </div>
           <div className="col-12 col-md-6">
             <label className="form-label fs-6">Phone *</label>
-            <input name="phone" className="form-control form-control-sm" value={formData.phone}
-              onChange={handleInputChange} readOnly={isView} required />
+            <input 
+              name="phone" 
+              className="form-control form-control-sm" 
+              value={formData.phone} 
+              onChange={handleInputChange}
+              readOnly={isView} 
+              required
+            />
           </div>
           <div className="col-12 col-md-6">
             <label className="form-label fs-6">Email *</label>
-            <input name="email" type="email" className="form-control form-control-sm" value={formData.email}
-              onChange={handleInputChange} readOnly={isView} required />
+            <input 
+              name="email" 
+              type="email"
+              className="form-control form-control-sm" 
+              value={formData.email} 
+              onChange={handleInputChange}
+              readOnly={isView} 
+              required
+            />
           </div>
         </div>
       </div>
 
-      {/* Login Information */}
-      <div className="mb-4">
-        <h6 className="fw-bold mb-3 text-primary">Login Information</h6>
-        <div className="row g-2 mb-3">
-          <div className="col-12 col-md-6">
-            <label className="form-label fs-6">Username *</label>
-            <input name="username" className="form-control form-control-sm" value={formData.username}
-              onChange={handleInputChange} readOnly={isView} required />
-          </div>
-          {!isView && (
-            <div className="col-12 col-md-6">
+      {/* Login Info (Password only for add) */}
+      {isAdd && (
+        <div className="mb-4">
+          <h6 className="fw-bold mb-3 text-primary">Login Information</h6>
+          <div className="row g-2 mb-3">
+            <div className="col-12">
               <label className="form-label fs-6">Password *</label>
-              <input name="password" type="password" className="form-control form-control-sm" value={formData.password}
-                onChange={handleInputChange} required={isAdd} />
+              <input 
+                name="password" 
+                type="password" 
+                className="form-control form-control-sm" 
+                value={formData.password}
+                onChange={handleInputChange}
+                required
+              />
             </div>
-          )}
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Plan Selection — now by ID */}
+      {/* ✅ PLAN DROPDOWN + AUTO-FILL */}
       <div className="mb-4">
         <h6 className="fw-bold mb-3 text-primary">Plan Information</h6>
         <div className="row g-2 mb-3">
           <div className="col-12">
-            <label className="form-label fs-6">Select Plan</label>
-            <select
-              name="planId"
-              className="form-select form-select-sm"
-              value={formData.planId || ""}
-              onChange={handleInputChange}
-              disabled={isView || loadingPlans}
-            >
-              <option value="">No Plan</option>
-              {loadingPlans ? (
-                <option disabled>Loading plans...</option>
-              ) : (
-                plans
-                  .filter(plan => plan.status === 'Active')
-                  .map(plan => (
-                    <option key={plan.id} value={plan.id}>
-                      {plan.planName}
-                    </option>
-                  ))
-              )}
-            </select>
+            <label className="form-label fs-6">Select Plan *</label>
+            {loadingPlans ? (
+              <div className="form-control form-control-sm" disabled>Loading plans...</div>
+            ) : (
+              <select
+                className="form-select form-select-sm"
+                value={formData.selectedPlanId}
+                onChange={(e) => handlePlanChange(e.target.value)}
+                disabled={isView}
+                required={!isView}
+              >
+                <option value="">-- Choose Plan --</option>
+                {plans.map(plan => (
+                  <option key={plan.id} value={plan.id}>
+                    {plan.name} (₹{plan.price}, {plan.duration})
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
+
+          {formData.selectedPlanId && (
+            <>
+              <div className="col-12 col-md-6">
+                <label className="form-label fs-6">Price</label>
+                <input 
+                  className="form-control form-control-sm" 
+                  value={formData.planPrice} 
+                  readOnly
+                />
+              </div>
+              <div className="col-12 col-md-6">
+                <label className="form-label fs-6">Duration</label>
+                <input 
+                  className="form-control form-control-sm" 
+                  value={formData.planDuration} 
+                  readOnly
+                />
+              </div>
+              <div className="col-12">
+                <label className="form-label fs-6">Description</label>
+                <textarea
+                  name="planDescription"
+                  className="form-control form-control-sm"
+                  rows="2"
+                  value={formData.planDescription}
+                  onChange={handleInputChange}
+                  readOnly={isView}
+                ></textarea>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
-      {/* Status Tzoggle */}
+      {/* Status */}
       <div className="d-flex align-items-center mb-3">
         <label className="form-label me-3 mb-0 fs-6">Status</label>
         <div className="form-check form-switch">
           <input
             type="checkbox"
             className="form-check-input"
-            checked={formData.status === "Active"}
+            checked={formData.status === "active"}
             onChange={handleStatusToggle}
             disabled={isView}
           />
+          <span className="ms-2">{formData.status === "active" ? "Active" : "Inactive"}</span>
         </div>
       </div>
 
-      {/* Action Buttons */}
+      {/* Buttons */}
       <div className="d-flex justify-content-end gap-2">
         <button type="button" className="btn btn-outline-secondary btn-sm px-3" onClick={onCancel}>
           Close
