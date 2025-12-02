@@ -80,14 +80,27 @@ const SuperAdminAdmin = () => {
     setIsDeleteModalOpen(true);
   };
 
-  // ❌ TEMP: Delete still local (replace with real API later if needed)
-  const confirmDelete = () => {
+  // ✅ UPDATED: Real API integration for Delete
+  const confirmDelete = async () => {
     if (selectedAdmin) {
-      setAdmins(admins.filter(admin => admin.id !== selectedAdmin.id));
-      alert(`Admin "${selectedAdmin.fullName}" has been deleted.`);
+      try {
+        const response = await axiosInstance.delete(`/auth/user/${selectedAdmin.id}`);
+        
+        if (response.data.success) {
+          // Remove the admin from the list
+          setAdmins(admins.filter(admin => admin.id !== selectedAdmin.id));
+          alert(`Admin "${selectedAdmin.fullName}" has been deleted successfully.`);
+        } else {
+          throw new Error('Failed to delete admin');
+        }
+      } catch (error) {
+        console.error("Error deleting admin:", error);
+        alert(`Failed to delete admin. Please try again.`);
+      } finally {
+        setIsDeleteModalOpen(false);
+        setSelectedAdmin(null);
+      }
     }
-    setIsDeleteModalOpen(false);
-    setSelectedAdmin(null);
   };
 
   const closeModal = () => {
@@ -131,49 +144,67 @@ const SuperAdminAdmin = () => {
     }
   };
 
-  // ❌ TEMP: Add/Edit still local (you can later connect to /auth/register & PUT /users/:id)
-  const handleFormSubmit = (payload) => {
-    if (modalType === 'add') {
-      const newId = Math.max(...admins.map(admin => admin.id), 0) + 1;
-      const newAdmin = {
-        id: newId,
-        fullName: payload.fullName,
-        email: payload.email,
-        phone: payload.phone,
-        gymName: payload.gymName,
-        address: payload.address,
-        planName: payload.planName,
-        price: payload.planPrice,
-        duration: payload.planDuration,
-        description: payload.planDescription,
-        status: payload.status.toLowerCase(),
-        // roleId, branchId, etc. not shown in UI
-      };
-      setAdmins([...admins, newAdmin]);
-      alert('New admin added successfully!');
-    } else if (modalType === 'edit' && selectedAdmin) {
-      const updatedAdmins = admins.map(admin => {
-        if (admin.id === selectedAdmin.id) {
-          return {
-            ...admin,
-            fullName: payload.fullName,
-            email: payload.email,
-            phone: payload.phone,
-            gymName: payload.gymName,
-            address: payload.address,
-            planName: payload.planName,
-            price: payload.planPrice,
-            duration: payload.planDuration,
-            description: payload.planDescription,
-            status: payload.status.toLowerCase()
-          };
+  // ✅ UPDATED: Real API integration for Add and Edit
+  const handleFormSubmit = async (payload) => {
+    try {
+      if (modalType === 'add') {
+        // Add new admin
+        const response = await axiosInstance.post("/auth/register", {
+          fullName: payload.fullName,
+          email: payload.email,
+          phone: payload.phone,
+          password: payload.password,
+          roleId: 2, // Admin role
+          branchId: null,
+          gymName: payload.gymName,
+          address: payload.address,
+          planName: payload.planName,
+          price: payload.planPrice,
+          duration: payload.planDuration,
+          description: payload.planDescription,
+          status: payload.status.toLowerCase()
+        });
+        
+        if (response.data.success) {
+          // Add the new admin to the list
+          setAdmins([...admins, response.data.user]);
+          alert('New admin added successfully!');
+        } else {
+          throw new Error('Failed to add admin');
         }
-        return admin;
-      });
-      setAdmins(updatedAdmins);
-      alert('Admin updated successfully!');
+      } else if (modalType === 'edit' && selectedAdmin) {
+        // Update existing admin
+        const response = await axiosInstance.put(`/auth/user/${selectedAdmin.id}`, {
+          fullName: payload.fullName,
+          email: payload.email,
+          phone: payload.phone,
+          roleId: 2, // Admin role
+          branchId: null,
+          gymName: payload.gymName,
+          address: payload.address,
+          planName: payload.planName,
+          price: payload.planPrice,
+          duration: payload.planDuration,
+          description: payload.planDescription,
+          status: payload.status.toLowerCase()
+        });
+        
+        if (response.data.success) {
+          // Update the admin in the list
+          const updatedAdmins = admins.map(admin => 
+            admin.id === selectedAdmin.id ? response.data.user : admin
+          );
+          setAdmins(updatedAdmins);
+          alert('Admin updated successfully!');
+        } else {
+          throw new Error('Failed to update admin');
+        }
+      }
+      closeModal();
+    } catch (error) {
+      console.error("Error saving admin:", error);
+      alert(`Failed to ${modalType === 'add' ? 'add' : 'update'} admin. Please try again.`);
     }
-    closeModal();
   };
 
   return (
