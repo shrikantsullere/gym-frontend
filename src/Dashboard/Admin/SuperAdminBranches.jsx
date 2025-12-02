@@ -1,8 +1,8 @@
+// SuperAdminBranches.jsx (Pure Mock Version)
 import React, { useState, useEffect } from "react";
 import { FaEye, FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 
 const BUTTON_COLOR = "#6EB2CC";
-const DELETE_COLOR = "#dc3545";
 
 const sampleBranches = [
   { id: 1, name: "Central Gym", address: "MG Road, Pune", phone: "+91 98765 43210", status: "Active" },
@@ -32,7 +32,10 @@ const BranchForm = ({ initial = {}, onSave, onCancel }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!form.name.trim()) return alert("Branch name required");
+    if (!form.name.trim()) {
+      alert("Branch name is required");
+      return;
+    }
     onSave(form);
   };
 
@@ -42,17 +45,14 @@ const BranchForm = ({ initial = {}, onSave, onCancel }) => {
         <label className="form-label">Branch name</label>
         <input name="name" value={form.name} onChange={handleChange} className="form-control" />
       </div>
-
       <div className="mb-3">
         <label className="form-label">Address</label>
         <input name="address" value={form.address} onChange={handleChange} className="form-control" />
       </div>
-
       <div className="mb-3">
         <label className="form-label">Phone</label>
         <input name="phone" value={form.phone} onChange={handleChange} className="form-control" />
       </div>
-
       <div className="mb-3">
         <label className="form-label">Status</label>
         <select name="status" value={form.status} onChange={handleChange} className="form-select">
@@ -60,7 +60,6 @@ const BranchForm = ({ initial = {}, onSave, onCancel }) => {
           <option>Inactive</option>
         </select>
       </div>
-
       <div className="d-flex justify-content-end gap-2">
         <button type="button" className="btn btn-secondary" onClick={onCancel}>
           Cancel
@@ -74,6 +73,8 @@ const BranchForm = ({ initial = {}, onSave, onCancel }) => {
 };
 
 const SuperAdminBranches = () => {
+  console.log("✅ Running mock-only SuperAdminBranches — NO API");
+
   const [branches, setBranches] = useState(sampleBranches);
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState(null);
@@ -114,12 +115,10 @@ const SuperAdminBranches = () => {
     <div className="container-fluid mt-4 px-3 px-md-4">
       {/* TOP SECTION */}
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
-        <div className="mb-3 mb-md-0">
+        <div>
           <h4 className="mb-1">Branches</h4>
           <small className="text-muted">Manage your gym branches</small>
         </div>
-
-        {/* SEARCH + ADD BUTTON */}
         <div className="d-flex flex-column flex-sm-row gap-2 w-100 w-md-auto">
           <div className="input-group flex-grow-1">
             <input
@@ -135,10 +134,8 @@ const SuperAdminBranches = () => {
               background: BUTTON_COLOR,
               borderRadius: "6px",
               border: "none",
-              transition: "all 0.2s ease-in-out",
               fontWeight: "500",
               minWidth: "140px",
-              whiteSpace: "nowrap"
             }}
             onClick={openAdd}
           >
@@ -163,32 +160,33 @@ const SuperAdminBranches = () => {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((b) => (
-                  <tr key={b.id}>
-                    <td>{b.name}</td>
-                    <td>{b.address}</td>
-                    <td>{b.phone}</td>
-                    <td>
-                      <span className={`badge ${b.status === "Active" ? "bg-success" : "bg-secondary"}`}>
-                        {b.status}
-                      </span>
-                    </td>
-                    <td className="text-end">
-                      <div className="btn-group" role="group">
-                        <button className="btn btn-sm btn-outline-secondary" onClick={() => openView(b)}>
-                          <FaEye />
-                        </button>
-                        <button className="btn btn-sm btn-outline-primary" onClick={() => openEdit(b)}>
-                          <FaEdit />
-                        </button>
-                        <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(b.id)}>
-                          <FaTrash />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {filtered.length === 0 && (
+                {filtered.length > 0 ? (
+                  filtered.map((b) => (
+                    <tr key={b.id}>
+                      <td>{b.name}</td>
+                      <td>{b.address}</td>
+                      <td>{b.phone}</td>
+                      <td>
+                        <span className={`badge ${b.status === "Active" ? "bg-success" : "bg-secondary"}`}>
+                          {b.status}
+                        </span>
+                      </td>
+                      <td className="text-end">
+                        <div className="btn-group" role="group">
+                          <button className="btn btn-sm btn-outline-secondary" onClick={() => openView(b)}>
+                            <FaEye />
+                          </button>
+                          <button className="btn btn-sm btn-outline-primary" onClick={() => openEdit(b)}>
+                            <FaEdit />
+                          </button>
+                          <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(b.id)}>
+                            <FaTrash />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
                   <tr><td colSpan={5} className="text-center py-4">No branches found</td></tr>
                 )}
               </tbody>
@@ -199,38 +197,40 @@ const SuperAdminBranches = () => {
 
       {/* MOBILE CARD VIEW */}
       <div className="d-md-none">
-        {filtered.map((b) => (
-          <div className="card shadow-sm mb-3" key={b.id}>
-            <div className="card-body">
-              <div className="d-flex justify-content-between align-items-start mb-2">
-                <h5 className="card-title mb-0">{b.name}</h5>
-                <span className={`badge ${b.status === "Active" ? "bg-success" : "bg-secondary"}`}>
-                  {b.status}
-                </span>
-              </div>
-              <p className="card-text"><strong>Address:</strong> {b.address}</p>
-              <p className="card-text"><strong>Phone:</strong> {b.phone}</p>
-              <div className="d-flex justify-content-end gap-2 mt-3">
-                <button className="btn btn-sm btn-outline-secondary" onClick={() => openView(b)}>
-                  <FaEye />
-                </button>
-                <button className="btn btn-sm btn-outline-primary" onClick={() => openEdit(b)}>
-                  <FaEdit />
-                </button>
-                <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(b.id)}>
-                  <FaTrash />
-                </button>
+        {filtered.length > 0 ? (
+          filtered.map((b) => (
+            <div className="card shadow-sm mb-3" key={b.id}>
+              <div className="card-body">
+                <div className="d-flex justify-content-between align-items-start mb-2">
+                  <h5 className="card-title mb-0">{b.name}</h5>
+                  <span className={`badge ${b.status === "Active" ? "bg-success" : "bg-secondary"}`}>
+                    {b.status}
+                  </span>
+                </div>
+                <p><strong>Address:</strong> {b.address}</p>
+                <p><strong>Phone:</strong> {b.phone}</p>
+                <div className="d-flex justify-content-end gap-2 mt-3">
+                  <button className="btn btn-sm btn-outline-secondary" onClick={() => openView(b)}>
+                    <FaEye />
+                  </button>
+                  <button className="btn btn-sm btn-outline-primary" onClick={() => openEdit(b)}>
+                    <FaEdit />
+                  </button>
+                  <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(b.id)}>
+                    <FaTrash />
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-
-        {filtered.length === 0 && <p className="text-center mt-3">No branches found</p>}
+          ))
+        ) : (
+          <p className="text-center mt-3">No branches found</p>
+        )}
       </div>
 
       {/* MODAL */}
       {isModalOpen && (
-        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+        <div className="modal show d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
           <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable">
             <div className="modal-content">
               <div className="modal-header">
@@ -248,7 +248,11 @@ const SuperAdminBranches = () => {
                     <p><strong>Status:</strong> {selected?.status}</p>
                   </div>
                 ) : (
-                  <BranchForm initial={selected || {}} onSave={handleSave} onCancel={() => setIsModalOpen(false)} />
+                  <BranchForm
+                    initial={selected || {}}
+                    onSave={handleSave}
+                    onCancel={() => setIsModalOpen(false)}
+                  />
                 )}
               </div>
             </div>
