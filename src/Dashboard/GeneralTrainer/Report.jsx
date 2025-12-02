@@ -192,7 +192,7 @@ const Report = () => {
       
       {/* Graphical Report */}
       <Card className="mb-4 shadow-sm">
-        <Card.Header as="h5" className="bg-primary text-white">
+        <Card.Header as="h5" className="text-white">
           <FaChartBar className="me-2" /> Class Performance Report
         </Card.Header>
         <Card.Body className="p-3 p-md-4">
