@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  RiUserLine, RiSearchLine, RiNotificationLine, RiAddLine, RiQrScanLine
+  RiUserLine, RiSearchLine, RiNotificationLine, RiAddLine
 } from 'react-icons/ri';
 import {
   Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement,
@@ -151,14 +151,6 @@ const ReceptionistDashboard = () => {
 
         </div>
       </main>
-
-      {/* FAB */}
-      <button
-        className="position-fixed bottom-0 end-0 m-3 m-md-4 btn btn-primary rounded-circle shadow"
-        style={{ width: '3.5rem', height: '3.5rem' }}
-      >
-        <RiQrScanLine style={{ fontSize: '1.5rem' }} />
-      </button>
     </div>
   );
 };
