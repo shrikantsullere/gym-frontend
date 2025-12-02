@@ -1,10 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from "react-router-dom";
-import { FaDumbbell, FaUsers, FaChartLine, FaCalendarAlt, FaCreditCard, FaMobileAlt, FaStar, FaQuoteLeft, FaQuoteRight, FaFacebook, FaTwitter, FaInstagram, FaYoutube, FaArrowRight, FaPlay, FaMedal, FaTrophy, FaFire, FaHeartbeat, FaRunning, FaCrown, FaCheck } from 'react-icons/fa';
+import {
+  FaDumbbell, FaUsers, FaChartLine, FaCalendarAlt, FaCreditCard, FaMobileAlt,
+  FaStar, FaQuoteLeft, FaQuoteRight, FaFacebook, FaTwitter, FaInstagram, FaYoutube,
+  FaArrowRight, FaPlay, FaMedal, FaTrophy, FaFire, FaHeartbeat, FaRunning, FaCrown, FaCheck
+} from 'react-icons/fa';
 import { FiChevronDown, FiCheck as FiCheckIcon, FiArrowRight as FiArrowRightIcon } from 'react-icons/fi';
 import { Button, Container, Row, Col, Card } from 'react-bootstrap';
 import './LendingPage.css';
+import axiosInstance from './../Api/axiosInstance';
 
 const LendingPage = () => {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -17,8 +22,10 @@ const LendingPage = () => {
   const [selectedPlan, setSelectedPlan] = useState('Professional');
   const heroRef = useRef(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [plans, setPlans] = useState([]);
+  const [loadingPlans, setLoadingPlans] = useState(true);
   const navigate = useNavigate();
-  
+
   // Purchase modal form state
   const [purchaseFormData, setPurchaseFormData] = useState({
     selectedPlan: 'Professional',
@@ -27,6 +34,29 @@ const LendingPage = () => {
     billingDuration: 'Yearly',
     startDate: ''
   });
+
+  // ✅ FETCH PLANS FROM API
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const response = await axiosInstance.get("/plans");
+        if (response.data.success && Array.isArray(response.data.plans)) {
+          const sortedPlans = response.data.plans
+            .filter(plan => plan.status === "ACTIVE")
+            .sort((a, b) => a.price - b.price);
+          setPlans(sortedPlans);
+        } else {
+          setPlans([]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch plans:", error);
+        setPlans([]);
+      } finally {
+        setLoadingPlans(false);
+      }
+    };
+    fetchPlans();
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -65,26 +95,40 @@ const LendingPage = () => {
     }));
   };
 
-  const handlePurchaseSubmit = () => {
-    // Close the purchase modal
-    setShowPurchaseModal(false);
-    
-    // Show the success notification
-    setShowSuccessNotification(true);
-    
-    // Hide the success notification after 5 seconds
-    setTimeout(() => {
-      setShowSuccessNotification(false);
-    }, 5000);
-    
-    // Reset form
-    setPurchaseFormData({
-      selectedPlan: 'Professional',
-      companyName: '',
-      email: '',
-      billingDuration: 'Yearly',
-      startDate: ''
-    });
+  // ✅ Real purchase API call
+  const handlePurchaseSubmit = async () => {
+    if (!purchaseFormData.companyName.trim() || !purchaseFormData.email.trim() || !purchaseFormData.startDate) {
+      alert("Please fill all required fields.");
+      return;
+    }
+    try {
+      const payload = {
+        selectedPlan: purchaseFormData.selectedPlan,
+        companyName: purchaseFormData.companyName,
+        email: purchaseFormData.email,
+        billingDuration: purchaseFormData.billingDuration,
+        startDate: purchaseFormData.startDate
+      };
+      const response = await axiosInstance.post("/purchases", payload);
+      if (response.data.success) {
+        setShowPurchaseModal(false);
+        setShowSuccessNotification(true);
+        setTimeout(() => setShowSuccessNotification(false), 5000);
+        setPurchaseFormData({
+          selectedPlan: 'Professional',
+          companyName: '',
+          email: '',
+          billingDuration: 'Yearly',
+          startDate: ''
+        });
+      } else {
+        alert("Purchase request failed. Please try again.");
+      }
+    } catch (error) {
+      console.error("Purchase API error:", error);
+      const msg = error.response?.data?.message || "Something went wrong. Please try again.";
+      alert("Error: " + msg);
+    }
   };
 
   const features = [
@@ -172,37 +216,90 @@ const LendingPage = () => {
     { value: "24/7", label: "Support", icon: <FaHeartbeat /> }
   ];
 
-  const pricingPlans = [
-    {
-      name: "Basic",
-      price: "₹2,999",
-      period: "per month",
-      features: ["Up to 100 members", "Basic scheduling", "Payment processing", "Email support"],
-      popular: false
-    },
-    {
-      name: "Professional",
-      price: "₹4,999",
-      period: "per month",
-      features: ["Up to 500 members", "Advanced scheduling", "Payment processing", "Priority support", "Mobile app", "Analytics"],
-      popular: true
-    },
-    {
-      name: "Enterprise",
-      price: "Custom",
-      period: "pricing",
-      features: ["Unlimited members", "Custom scheduling", "Payment processing", "Dedicated support", "Mobile app", "Advanced analytics", "Custom integrations"],
-      popular: false
+  // ✅ Convert API plan to readable period
+  const getPeriodText = (durationDays) => {
+    if (!durationDays) return "per plan";
+    const days = parseInt(durationDays);
+    if (days === 365) return "per year";
+    if (days === 30) return "per month";
+    if (days === 7) return "per week";
+    return `per ${days} days`;
+  };
+
+  // ✅ Render dynamic pricing cards
+  const renderPricingCards = () => {
+    if (loadingPlans) {
+      return (
+        <div className="text-center col-12">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      );
     }
-  ];
+
+    if (plans.length === 0) {
+      return (
+        <div className="text-center col-12 text-muted py-5">
+          No active plans available at the moment.
+        </div>
+      );
+    }
+
+    // Mark middle plan as popular
+    const midIndex = Math.floor(plans.length / 2);
+
+    return plans.map((plan, index) => {
+      const isPopular = index === midIndex;
+      const period = getPeriodText(plan.duration);
+
+      return (
+        <motion.div
+          className={`pricing-card ${isPopular ? 'popular' : ''}`}
+          key={plan.id}
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: index * 0.2 }}
+          whileHover={{ y: -15 }}
+        >
+          {isPopular && <div className="popular-badge">Most Popular</div>}
+          <div className="pricing-header">
+            <h3>{plan.name}</h3>
+            <div className="pricing-price">
+              <span className="price">₹{plan.price.toLocaleString()}</span>
+              <span className="period">{period}</span>
+            </div>
+          </div>
+          <div className="pricing-features">
+            <ul>
+              <li>
+                <FiCheckIcon className="check-icon" />
+                {plan.description || "Full gym management access"}
+              </li>
+              <li>
+                <FiCheckIcon className="check-icon" />
+                Duration: {plan.duration} days
+              </li>
+            </ul>
+          </div>
+          <Button
+            variant={isPopular ? "primary" : "outline-primary"}
+            className="pricing-btn"
+            onClick={() => handlePurchaseClick(plan.name)}
+          >
+            Get Started
+          </Button>
+        </motion.div>
+      );
+    });
+  };
 
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: {
-        staggerChildren: 0.2
-      }
+      transition: { staggerChildren: 0.2 }
     }
   };
 
@@ -219,10 +316,7 @@ const LendingPage = () => {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: {
-        staggerChildren: 0.3,
-        delayChildren: 0.2
-      }
+      transition: { staggerChildren: 0.3, delayChildren: 0.2 }
     }
   };
 
@@ -299,8 +393,8 @@ const LendingPage = () => {
       {/* Navigation */}
       <nav className={`navbar navbar-expand-lg fixed-top ${isScrolled ? 'scrolled' : ''}`}>
         <Container>
-          <motion.a 
-            className="navbar-brand" 
+          <motion.a
+            className="navbar-brand"
             href="#"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -313,7 +407,6 @@ const LendingPage = () => {
               <span>FitManager Pro</span>
             </div>
           </motion.a>
-          
           <button
             className="navbar-toggler"
             type="button"
@@ -322,12 +415,11 @@ const LendingPage = () => {
           >
             <span className={`navbar-toggler-icon ${mobileMenuOpen ? 'open' : ''}`}></span>
           </button>
-          
           <div className={`navbar-collapse ${mobileMenuOpen ? 'show' : ''}`}>
             <ul className="navbar-nav ml-auto">
               {['Home', 'Features', 'Benefits', 'Testimonials', 'Pricing', 'Contact'].map((item) => (
-                <motion.li 
-                  className="nav-item" 
+                <motion.li
+                  className="nav-item"
                   key={item}
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -335,7 +427,7 @@ const LendingPage = () => {
                 >
                   <a className="nav-link" href={`#${item.toLowerCase()}`} onClick={() => setMobileMenuOpen(false)}>
                     {item}
-                    <motion.div 
+                    <motion.div
                       className="nav-underline"
                       layoutId="navUnderline"
                     />
@@ -374,10 +466,9 @@ const LendingPage = () => {
                   Transform Your <span className="highlight">Gym Business</span>
                 </h1>
                 <p className="hero-subtitle px-3">
-                  The all-in-one solution for modern gyms and fitness centers. Streamline operations, 
+                  The all-in-one solution for modern gyms and fitness centers. Streamline operations,
                   boost member engagement, and grow your business with our powerful management system.
                 </p>
-                
                 <div className=" row row-cols-4 cols-sm-4 g-3">
                   {stats.map((stat, index) => (
                     <Col key={index}>
@@ -394,9 +485,9 @@ const LendingPage = () => {
             <Col lg={6}>
               <div className=" h-100 d-flex align-items-center justify-content-center">
                 <div className="hero-image-wrapper position-relative overflow-hidden rounded-4 shadow-lg">
-                  <img 
-                    src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80" 
-                    alt="Modern Gym" 
+                  <img
+                    src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80"
+                    alt="Modern Gym"
                     className="hero-image img-fluid w-100"
                   />
                   <div className="hero-image-overlay position-absolute top-0 start-0 w-100 h-100"></div>
@@ -404,7 +495,6 @@ const LendingPage = () => {
               </div>
             </Col>
           </Row>
-          
           <div className="scroll-indicator position-absolute bottom-0 start-50 translate-middle-x">
             <FiChevronDown className="fs-3" />
           </div>
@@ -414,7 +504,7 @@ const LendingPage = () => {
       {/* Features Section */}
       <section id="features" className="features-section mt-0">
         <Container>
-          <motion.div 
+          <motion.div
             className="section-header"
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -427,8 +517,7 @@ const LendingPage = () => {
             <h2>Everything You Need to <span className="highlight">Manage Your Gym</span></h2>
             <p>Comprehensive tools designed specifically for fitness centers and gyms</p>
           </motion.div>
-
-          <motion.div 
+          <motion.div
             className="features-grid"
             variants={containerVariants}
             initial="hidden"
@@ -436,8 +525,8 @@ const LendingPage = () => {
             viewport={{ once: true }}
           >
             {features.map((feature, index) => (
-              <motion.div 
-                className="feature-card" 
+              <motion.div
+                className="feature-card"
                 key={index}
                 variants={itemVariants}
                 whileHover={{ y: -15 }}
@@ -446,9 +535,9 @@ const LendingPage = () => {
               >
                 <Card className="h-100">
                   <Card.Body className="d-flex flex-column">
-                    <motion.div 
+                    <motion.div
                       className="feature-icon-container"
-                      style={{ 
+                      style={{
                         background: hoveredFeature === index ? feature.color : feature.bg,
                         color: hoveredFeature === index ? 'white' : feature.color
                       }}
@@ -459,7 +548,7 @@ const LendingPage = () => {
                     </motion.div>
                     <Card.Title>{feature.title}</Card.Title>
                     <Card.Text className="mt-auto">{feature.description}</Card.Text>
-                    <motion.div 
+                    <motion.div
                       className="feature-arrow"
                       animate={{ x: hoveredFeature === index ? 5 : 0 }}
                     >
@@ -489,10 +578,9 @@ const LendingPage = () => {
                 </div>
                 <h2>Why <span className="highlight">FitManager Pro</span> Stands Out</h2>
                 <p>Our gym management system is designed to help you save time, increase revenue, and provide an exceptional experience for your members.</p>
-                
                 <div className="benefits-list">
                   {benefits.map((benefit, index) => (
-                    <motion.div 
+                    <motion.div
                       className="benefit-item"
                       key={index}
                       initial={{ opacity: 0, x: -20 }}
@@ -506,7 +594,6 @@ const LendingPage = () => {
                     </motion.div>
                   ))}
                 </div>
-                
                 <Button className="mt-4 demo-btn">
                   See All Benefits
                   <FiArrowRightIcon className="btn-icon" />
@@ -522,7 +609,7 @@ const LendingPage = () => {
                 transition={{ duration: 0.7 }}
               >
                 <div className="stats-container">
-                  <motion.div 
+                  <motion.div
                     className="stat-card"
                     whileHover={{ y: -10, scale: 1.03 }}
                     transition={{ duration: 0.3 }}
@@ -533,8 +620,7 @@ const LendingPage = () => {
                     <div className="stat-number">40%</div>
                     <div className="stat-label">Member Retention Increase</div>
                   </motion.div>
-                  
-                  <motion.div 
+                  <motion.div
                     className="stat-card"
                     whileHover={{ y: -10, scale: 1.03 }}
                     transition={{ duration: 0.3 }}
@@ -545,8 +631,7 @@ const LendingPage = () => {
                     <div className="stat-number">15+</div>
                     <div className="stat-label">Hours Saved Weekly</div>
                   </motion.div>
-                  
-                  <motion.div 
+                  <motion.div
                     className="stat-card"
                     whileHover={{ y: -10, scale: 1.03 }}
                     transition={{ duration: 0.3 }}
@@ -558,8 +643,7 @@ const LendingPage = () => {
                     <div className="stat-label">System Uptime</div>
                   </motion.div>
                 </div>
-                
-                <motion.div 
+                <motion.div
                   className="testimonial-preview"
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -587,7 +671,7 @@ const LendingPage = () => {
       {/* Testimonials Section */}
       <section id="testimonials" className="testimonials-section">
         <Container>
-          <motion.div 
+          <motion.div
             className="section-header"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -600,10 +684,9 @@ const LendingPage = () => {
             <h2>What Our <span className="highlight">Clients Say</span></h2>
             <p>Join thousands of satisfied gym owners and managers</p>
           </motion.div>
-
           <div className="testimonials-container">
             {testimonials.map((testimonial, index) => (
-              <motion.div 
+              <motion.div
                 className="testimonial-card"
                 key={index}
                 initial={{ opacity: 0, y: 30 }}
@@ -625,9 +708,9 @@ const LendingPage = () => {
                 <p className="testimonial-content">{testimonial.content}</p>
                 <div className="rating">
                   {[...Array(5)].map((_, i) => (
-                    <FaStar 
-                      key={i} 
-                      className={i < testimonial.rating ? "star filled" : "star"} 
+                    <FaStar
+                      key={i}
+                      className={i < testimonial.rating ? "star filled" : "star"}
                     />
                   ))}
                 </div>
@@ -640,10 +723,10 @@ const LendingPage = () => {
         </Container>
       </section>
 
-      {/* Pricing Section */}
+      {/* Pricing Section — NOW DYNAMIC */}
       <section id="pricing" className="pricing-section">
         <Container>
-          <motion.div 
+          <motion.div
             className="section-header"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -656,45 +739,8 @@ const LendingPage = () => {
             <h2>Choose Your <span className="highlight">Perfect Plan</span></h2>
             <p>Flexible pricing options for gyms of all sizes</p>
           </motion.div>
-
           <div className="pricing-container">
-            {pricingPlans.map((plan, index) => (
-              <motion.div 
-                className={`pricing-card ${plan.popular ? 'popular' : ''}`}
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.2 }}
-                whileHover={{ y: -15 }}
-              >
-                {plan.popular && <div className="popular-badge">Most Popular</div>}
-                <div className="pricing-header">
-                  <h3>{plan.name}</h3>
-                  <div className="pricing-price">
-                    <span className="price">{plan.price}</span>
-                    <span className="period">{plan.period}</span>
-                  </div>
-                </div>
-                <div className="pricing-features">
-                  <ul>
-                    {plan.features.map((feature, i) => (
-                      <li key={i}>
-                        <FiCheckIcon className="check-icon" />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <Button 
-                  variant={plan.popular ? "primary" : "outline-primary"} 
-                  className="pricing-btn"
-                  onClick={() => handlePurchaseClick(plan.name)}
-                >
-                  Get Started
-                </Button>
-              </motion.div>
-            ))}
+            {renderPricingCards()}
           </div>
         </Container>
       </section>
@@ -702,7 +748,7 @@ const LendingPage = () => {
       {/* CTA Section */}
       <section className="cta-section">
         <Container>
-          <motion.div 
+          <motion.div
             className="cta-content"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -799,35 +845,31 @@ const LendingPage = () => {
 
       {/* Purchase Modal */}
       {showPurchaseModal && (
-        <div 
-          className="modal d-block" 
+        <div
+          className="modal d-block"
           style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
         >
           <div className="modal-dialog modal-dialog-centered modal-lg">
             <div className="modal-content" style={{ borderRadius: '16px', border: 'none', overflow: 'hidden' }}>
-              {/* Modal Header */}
               <div className="modal-header border-0 pb-0 pt-4 px-4">
                 <h2 className="modal-title fw-bold" style={{ color: '#1a202c', fontSize: '1.75rem' }}>
                   Complete Your Purchase
                 </h2>
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   className="btn-close"
                   onClick={() => setShowPurchaseModal(false)}
                   style={{ fontSize: '0.9rem' }}
                 ></button>
               </div>
-
-              {/* Modal Body */}
               <div className="modal-body px-4 py-4">
-                {/* Selected Plan */}
                 <div className="mb-4">
                   <div className="d-flex align-items-center justify-content-between mb-3">
                     <label className="form-label mb-0" style={{ color: '#2d3748', fontSize: '0.9rem', fontWeight: '600' }}>
                       Selected Plan
                     </label>
                   </div>
-                  <input 
+                  <input
                     type="text"
                     name="selectedPlan"
                     className="form-control"
@@ -844,19 +886,17 @@ const LendingPage = () => {
                     }}
                   />
                 </div>
-
-                {/* Company Name */}
                 <div className="mb-4">
                   <div className="d-flex align-items-center justify-content-between mb-3">
                     <label className="form-label mb-0" style={{ color: '#2d3748', fontSize: '0.9rem', fontWeight: '600' }}>
-                      Company Name
+                      Gym Name
                     </label>
                   </div>
-                  <input 
+                  <input
                     type="text"
                     name="companyName"
                     className="form-control"
-                    placeholder="Enter company name"
+                    placeholder="Enter your gym name"
                     value={purchaseFormData.companyName}
                     onChange={handlePurchaseFormChange}
                     style={{
@@ -876,15 +916,13 @@ const LendingPage = () => {
                     }}
                   />
                 </div>
-
-                {/* Email Address */}
                 <div className="mb-4">
                   <div className="d-flex align-items-center justify-content-between mb-3">
                     <label className="form-label mb-0" style={{ color: '#2d3748', fontSize: '0.9rem', fontWeight: '600' }}>
                       Email Address
                     </label>
                   </div>
-                  <input 
+                  <input
                     type="email"
                     name="email"
                     className="form-control"
@@ -908,15 +946,13 @@ const LendingPage = () => {
                     }}
                   />
                 </div>
-
-                {/* Billing Duration */}
                 <div className="mb-4">
                   <label className="form-label d-block mb-2" style={{ color: '#2d3748', fontSize: '0.9rem', fontWeight: '600' }}>
                     Billing Duration
                   </label>
                   <div className="d-flex gap-4">
                     <div className="form-check">
-                      <input 
+                      <input
                         className="form-check-input"
                         type="radio"
                         name="billingDuration"
@@ -924,18 +960,18 @@ const LendingPage = () => {
                         value="Monthly"
                         checked={purchaseFormData.billingDuration === 'Monthly'}
                         onChange={handlePurchaseFormChange}
-                        style={{ 
-                          width: '18px', 
-                          height: '18px', 
+                        style={{
+                          width: '18px',
+                          height: '18px',
                           cursor: 'pointer',
                           marginTop: '2px'
                         }}
                       />
-                      <label 
-                        className="form-check-label ms-2" 
+                      <label
+                        className="form-check-label ms-2"
                         htmlFor="monthly"
-                        style={{ 
-                          fontSize: '0.95rem', 
+                        style={{
+                          fontSize: '0.95rem',
                           color: '#2d3748',
                           cursor: 'pointer',
                           fontWeight: '400'
@@ -945,7 +981,7 @@ const LendingPage = () => {
                       </label>
                     </div>
                     <div className="form-check">
-                      <input 
+                      <input
                         className="form-check-input"
                         type="radio"
                         name="billingDuration"
@@ -953,18 +989,18 @@ const LendingPage = () => {
                         value="Yearly"
                         checked={purchaseFormData.billingDuration === 'Yearly'}
                         onChange={handlePurchaseFormChange}
-                        style={{ 
-                          width: '18px', 
-                          height: '18px', 
+                        style={{
+                          width: '18px',
+                          height: '18px',
                           cursor: 'pointer',
                           marginTop: '2px'
                         }}
                       />
-                      <label 
-                        className="form-check-label ms-2" 
+                      <label
+                        className="form-check-label ms-2"
                         htmlFor="yearly"
-                        style={{ 
-                          fontSize: '0.95rem', 
+                        style={{
+                          fontSize: '0.95rem',
                           color: '#2d3748',
                           cursor: 'pointer',
                           fontWeight: '400'
@@ -975,15 +1011,13 @@ const LendingPage = () => {
                     </div>
                   </div>
                 </div>
-
-                {/* Start Date */}
                 <div className="mb-4">
                   <div className="d-flex align-items-center justify-content-between mb-3">
                     <label className="form-label mb-0" style={{ color: '#2d3748', fontSize: '0.9rem', fontWeight: '600' }}>
                       Start Date
                     </label>
                   </div>
-                  <input 
+                  <input
                     type="date"
                     name="startDate"
                     className="form-control"
@@ -1001,14 +1035,12 @@ const LendingPage = () => {
                       e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
                     }}
                     onBlur={(e) => {
-                      e.target.style.border = '1px solid #e2e8f0';
+                      e.target.style.border = '1px solid #e2e8f0',
                       e.target.style.boxShadow = 'none';
                     }}
                   />
                 </div>
-
-                {/* Confirm Button */}
-                <button 
+                <button
                   type="button"
                   onClick={handlePurchaseSubmit}
                   className="btn w-100 py-3 fw-semibold mt-2"
@@ -1088,7 +1120,7 @@ const LendingPage = () => {
                   <span style={{ color: '#2d3748', fontWeight: '500' }}>{purchaseFormData.selectedPlan}</span>
                 </div>
                 <div className="d-flex justify-content-between mb-2">
-                  <span style={{ color: '#718096' }}>Company:</span>
+                  <span style={{ color: '#718096' }}>Gym Name:</span>
                   <span style={{ color: '#2d3748', fontWeight: '500' }}>{purchaseFormData.companyName}</span>
                 </div>
                 <div className="d-flex justify-content-between mb-2">
