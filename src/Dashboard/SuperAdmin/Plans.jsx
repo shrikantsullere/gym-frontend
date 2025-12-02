@@ -11,6 +11,7 @@ const MembershipPlans = () => {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false); // Added loading state for delete operation
 
   // Form fields
   const [planName, setPlanName] = useState("");
@@ -18,6 +19,7 @@ const MembershipPlans = () => {
   const [duration, setDuration] = useState("90");
   const [status, setStatus] = useState("Active");
   const [descriptions, setDescriptions] = useState([""]);
+  const [category, setCategory] = useState("GYM"); // Added category field
 
   // Fetch all plans
   const fetchPlans = async () => {
@@ -32,6 +34,7 @@ const MembershipPlans = () => {
           duration: p.duration,
           status: p.status === "ACTIVE" ? "Active" : "Inactive",
           descriptions: p.description ? [p.description] : [""],
+          category: p.category || "GYM" // Added category mapping
         }));
         setPlans(mapped);
       }
@@ -60,6 +63,7 @@ const MembershipPlans = () => {
     setDuration("90");
     setStatus("Active");
     setDescriptions([""]);
+    setCategory("GYM"); // Reset category
   };
 
   // ---------------- Open Modals ----------------
@@ -79,6 +83,7 @@ const MembershipPlans = () => {
     setDuration(plan.duration.toString());
     setStatus(plan.status);
     setDescriptions(plan.descriptions);
+    setCategory(plan.category || "GYM"); // Set category from plan data
 
     setIsModalOpen(true);
   };
@@ -121,6 +126,7 @@ const MembershipPlans = () => {
       duration,
       description: descriptions[0] || "",
       status: status === "Active" ? "ACTIVE" : "INACTIVE",
+      category: category // Added category to payload
     };
 
     setSaving(true);
@@ -130,11 +136,32 @@ const MembershipPlans = () => {
         await axiosInstance.post("/plans/create", payload);
         alert("Plan created successfully!");
       } else {
-        await axiosInstance.put(`/plans/${selectedPlan.id}`, payload);
-        alert("Plan updated successfully!");
+        // Updated to use the correct PUT endpoint
+        const response = await axiosInstance.put(`/plans/update/${selectedPlan.id}`, payload);
+        
+        if (response.data.success) {
+          // Update the plan in the local state with the response data
+          const updatedPlans = plans.map(plan => 
+            plan.id === selectedPlan.id 
+              ? {
+                  ...plan,
+                  id: response.data.plan.id,
+                  planName: response.data.plan.name,
+                  basePrice: response.data.plan.price,
+                  duration: response.data.plan.duration,
+                  status: response.data.plan.status === "ACTIVE" ? "Active" : "Inactive",
+                  descriptions: [response.data.plan.description],
+                  category: response.data.plan.category
+                }
+              : plan
+          );
+          setPlans(updatedPlans);
+          alert("Plan updated successfully!");
+        } else {
+          throw new Error('Failed to update plan');
+        }
       }
 
-      fetchPlans();
       setIsModalOpen(false);
     } catch (error) {
       console.error(error);
@@ -146,13 +173,28 @@ const MembershipPlans = () => {
 
   // ---------------- Delete ----------------
   const deletePlan = async () => {
+    if (!selectedPlan) return;
+    
+    setDeleting(true);
+    
     try {
-      await axiosInstance.delete(`/plans/${selectedPlan.id}`);
-      alert("Plan deleted!");
-      fetchPlans();
-      setIsDeleteModalOpen(false);
-    } catch (err) {
-      alert("Failed to delete plan");
+      // Updated to use the correct DELETE endpoint
+      const response = await axiosInstance.delete(`/plans/delete/${selectedPlan.id}`);
+      
+      if (response.data.success) {
+        // Remove the plan from the local state
+        setPlans(plans.filter(plan => plan.id !== selectedPlan.id));
+        alert("Plan deleted successfully!");
+        setIsDeleteModalOpen(false);
+      } else {
+        throw new Error('Failed to delete plan');
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Failed to delete plan: " + (error.response?.data?.message || ""));
+    } finally {
+      setDeleting(false);
+      setSelectedPlan(null);
     }
   };
 
@@ -178,6 +220,7 @@ const MembershipPlans = () => {
                 <th>Name</th>
                 <th>Price</th>
                 <th>Duration</th>
+                <th>Category</th>
                 <th>Status</th>
                 <th>Description</th>
                 <th>Actions</th>
@@ -186,15 +229,16 @@ const MembershipPlans = () => {
 
             <tbody>
               {loading ? (
-                <tr><td colSpan="6" className="text-center py-3">Loading...</td></tr>
+                <tr><td colSpan="7" className="text-center py-3">Loading...</td></tr>
               ) : plans.length === 0 ? (
-                <tr><td colSpan="6" className="text-center text-muted py-4">No plans found</td></tr>
+                <tr><td colSpan="7" className="text-center text-muted py-4">No plans found</td></tr>
               ) : (
                 plans.map((plan) => (
                   <tr key={plan.id}>
                     <td>{plan.planName}</td>
                     <td>₹{plan.basePrice}</td>
                     <td>{plan.duration}</td>
+                    <td>{plan.category}</td>
                     <td>
                       <span className={`badge ${plan.status === "Active" ? "bg-success" : "bg-secondary"}`}>
                         {plan.status}
@@ -265,6 +309,19 @@ const MembershipPlans = () => {
                   onChange={(e) => setDuration(e.target.value)}
                 />
 
+                <label className="form-label">Category</label>
+                <select
+                  className="form-select mb-2"
+                  value={category}
+                  disabled={modalType === "view"}
+                  onChange={(e) => setCategory(e.target.value)}
+                >
+                  <option value="GYM">Gym</option>
+                  <option value="YOGA">Yoga</option>
+                  <option value="CARDIO">Cardio</option>
+                  <option value="PERSONAL_TRAINING">Personal Training</option>
+                </select>
+
                 <label className="form-label">Status</label>
                 <select
                   className="form-select mb-3"
@@ -325,8 +382,12 @@ const MembershipPlans = () => {
                 <p className="text-muted">This action cannot be undone.</p>
 
                 <div className="d-flex justify-content-center gap-3 mt-3">
-                  <button className="btn btn-secondary" onClick={() => setIsDeleteModalOpen(false)}>Cancel</button>
-                  <button className="btn btn-danger" onClick={deletePlan}>Delete</button>
+                  <button className="btn btn-secondary" onClick={() => setIsDeleteModalOpen(false)} disabled={deleting}>
+                    Cancel
+                  </button>
+                  <button className="btn btn-danger" onClick={deletePlan} disabled={deleting}>
+                    {deleting ? "Deleting..." : "Delete"}
+                  </button>
                 </div>
               </div>
             </div>
