@@ -323,6 +323,8 @@ const SuperAdminAdmin = () => {
       </div>
 
       {/* MODALS */}
+
+
       {isModalOpen && (
         <ModalWrapper title={getModalTitle()} onClose={closeModal}>
           <AdminForm
@@ -350,6 +352,8 @@ const SuperAdminAdmin = () => {
           </div>
         </ModalWrapper>
       )}
+
+
     </div>
   );
 };
@@ -507,7 +511,7 @@ const AdminForm = ({ mode, admin, onCancel, onSubmit, plans = [], loadingPlans =
         </div>
       </div>
 
-      {/* Status Toggle */}
+      {/* Status Tzoggle */}
       <div className="d-flex align-items-center mb-3">
         <label className="form-label me-3 mb-0 fs-6">Status</label>
         <div className="form-check form-switch">

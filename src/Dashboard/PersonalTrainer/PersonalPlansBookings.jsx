@@ -149,7 +149,7 @@ const PersonalPlansBookings = () => {
                   }}></div>
                   <Card.Body className="d-flex flex-column p-2 p-md-3">
                     <div className="text-center mb-2 mb-md-3">
-                      <div className="badge bg-primary mb-2 px-3 py-1" style={{ 
+                      <div className="badge p-2" style={{ 
                         backgroundColor: '#2f6a87', 
                         color: 'white', 
                         fontSize: '0.7rem',
@@ -157,7 +157,7 @@ const PersonalPlansBookings = () => {
                       }}>
                         PERSONAL TRAINING
                       </div>
-                      <h5 className="fw-bold mb-1" style={{ color: '#2f6a87', fontSize: '1rem' }}>{plan.name}</h5>
+                      <h5 className="fw-bold mb-1 mt-2" style={{ color: '#2f6a87', fontSize: '1rem' }}>{plan.name}</h5>
                     </div>
                     <ul className="list-unstyled mb-2 mb-md-3 flex-grow-1">
                       <li className="mb-2 d-flex align-items-center gap-2">

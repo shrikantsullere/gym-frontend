@@ -11,9 +11,9 @@ const GroupPlansBookings = () => {
 
   // Group Training Plans (Read-only, comes from admin)
   const groupPlans = [
-    { id: 1, name: "Starter Group Class", sessions: 8, validity: 30, price: "₹2,499", description: "Perfect for beginners" },
-    { id: 2, name: "Pro Group Class", sessions: 16, validity: 60, price: "₹4,499", description: "For intermediate users" },
-    { id: 3, name: "Unlimited Group Access", sessions: 30, validity: 90, price: "₹7,999", description: "Best value for dedicated users" },
+    { id: 1, name: "Starter Group Class", sessions: 8, validity: 30, price: "2,499", description: "Perfect for beginners" },
+    { id: 2, name: "Pro Group Class", sessions: 16, validity: 60, price: "4,499", description: "For intermediate users" },
+    { id: 3, name: "Unlimited Group Access", sessions: 30, validity: 90, price: "7,999", description: "Best value for dedicated users" },
   ];
 
   // Mock customer data for each group plan
@@ -173,15 +173,82 @@ const GroupPlansBookings = () => {
     setStatusFilter('all');
   };
 
+  // Mobile customer card view
+  const MobileCustomerCard = ({ customer, index }) => (
+    <Card className="mb-3 border shadow-sm">
+      <Card.Body className="p-3">
+        <div className="d-flex justify-content-between align-items-start mb-2">
+          <div className="d-flex align-items-center">
+            <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style={{ width: '32px', height: '32px', fontSize: '14px' }}>
+              {index + 1}
+            </div>
+            <h5 className="mb-0 fw-bold" style={{ color: '#2f6a87' }}>{customer.name}</h5>
+          </div>
+          <Button
+            variant="outline-primary"
+            size="sm"
+            onClick={() => handleViewCustomer(customer)}
+            style={{
+              borderColor: '#2f6a87',
+              color: '#2f6a87',
+              borderRadius: '50%',
+              width: '32px',
+              height: '32px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '0'
+            }}
+          >
+            <FaEye size={14} />
+          </Button>
+        </div>
+        
+        <div className="mb-2">
+          {getStatusIndicator(customer.sessionsRemaining, customer.expiryDate)}
+        </div>
+        
+        <div className="row g-2">
+          <div className="col-6">
+            <small className="text-muted d-block">Purchase Date</small>
+            <div className="d-flex align-items-center">
+              <FaCalendar size={12} className="text-muted me-1" />
+              <span className="small">{customer.purchaseDate}</span>
+            </div>
+          </div>
+          <div className="col-6">
+            <small className="text-muted d-block">Expiry Date</small>
+            <div className="d-flex align-items-center">
+              <FaCalendar size={12} className="text-muted me-1" />
+              <span className="small">{customer.expiryDate}</span>
+            </div>
+          </div>
+          <div className="col-6">
+            <small className="text-muted d-block">Sessions Booked</small>
+            <span className="badge bg-primary" style={{ backgroundColor: '#2f6a87' }}>
+              {customer.sessionsBooked}
+            </span>
+          </div>
+          <div className="col-6">
+            <small className="text-muted d-block">Sessions Remaining</small>
+            <span className="badge bg-success">
+              {customer.sessionsRemaining}
+            </span>
+          </div>
+        </div>
+      </Card.Body>
+    </Card>
+  );
+
   return (
     <div className="bg-light min-vh-100">
-      <Container fluid className="py-4 px-md-5">
-        <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-5">
-          <h1 className="fw-bold mb-3 mb-md-0" style={{ color: '#2f6a87', fontSize: '2.2rem' }}>
+      <Container fluid className="py-3 py-md-4 px-md-5 px-3">
+        <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4">
+          <h1 className="fw-bold mb-3 mb-md-0 text-center" style={{ color: '#2f6a87', fontSize: 'clamp(1.5rem, 5vw, 2.2rem)' }}>
             Group Training Plans & Bookings
           </h1>
-          <div className="d-flex gap-2">
-            <div className="d-flex align-items-center gap-2">
+          <div className="d-flex flex-column flex-sm-row gap-2 w-100 w-md-auto">
+            <div className="d-flex flex-column flex-sm-row align-items-center gap-2">
               <Form.Control
                 type="date"
                 size="sm"
@@ -190,7 +257,7 @@ const GroupPlansBookings = () => {
                 style={{ width: '150px' }}
               />
               <Dropdown>
-                <Dropdown.Toggle variant="outline-secondary" size="sm" id="status-filter-dropdown">
+                <Dropdown.Toggle variant="outline-secondary" size="sm" id="status-filter-dropdown" className="w-100">
                   <FaFilter className="me-1" />
                   {statusFilter === 'all' ? 'All Status' : 
                    statusFilter === 'active' ? 'Active' :
@@ -212,7 +279,7 @@ const GroupPlansBookings = () => {
 
         {/* Plans as Cards - Optimized Version */}
         <div className="mb-5">
-          <Row className="g-4">
+          <Row className="g-3 g-md-4">
             {groupPlans.map((plan) => (
               <Col xs={12} sm={6} lg={4} key={plan.id}>
                 <Card 
@@ -233,7 +300,7 @@ const GroupPlansBookings = () => {
                   }}></div>
                   <Card.Body className="d-flex flex-column p-3">
                     <div className="text-center mb-3">
-                      <div className="badge bg-primary mb-2 px-3 py-1" style={{ 
+                      <div className="badge mb-2 px-3 py-1" style={{ 
                         backgroundColor: '#2f6a87', 
                         color: 'white', 
                         fontSize: '0.75rem',
@@ -241,42 +308,42 @@ const GroupPlansBookings = () => {
                       }}>
                         GROUP CLASS
                       </div>
-                      <h5 className="fw-bold mb-1" style={{ color: '#2f6a87', fontSize: '1.2rem' }}>{plan.name}</h5>
+                      <h5 className="fw-bold mb-1" style={{ color: '#2f6a87', fontSize: '1.1rem' }}>{plan.name}</h5>
                       <p className="text-muted small mb-2">{plan.description}</p>
                     </div>
                     <ul className="list-unstyled mb-3 flex-grow-1">
                       <li className="mb-2 d-flex align-items-center gap-2">
-                        <div className="bg-light rounded-circle p-2 d-flex align-items-center justify-content-center" style={{ width: '36px', height: '36px' }}>
-                          <FaClock size={14} className="text-muted" />
+                        <div className="bg-light rounded-circle p-2 d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px' }}>
+                          <FaClock size={12} className="text-muted" />
                         </div>
                         <div>
-                          <div className="fw-medium" style={{ fontSize: '0.95rem' }}>{plan.sessions} Sessions</div>
+                          <div className="fw-medium" style={{ fontSize: '0.9rem' }}>{plan.sessions} Sessions</div>
                         </div>
                       </li>
                       <li className="mb-2 d-flex align-items-center gap-2">
-                        <div className="bg-light rounded-circle p-2 d-flex align-items-center justify-content-center" style={{ width: '36px', height: '36px' }}>
-                          <FaCalendar size={14} className="text-muted" />
+                        <div className="bg-light rounded-circle p-2 d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px' }}>
+                          <FaCalendar size={12} className="text-muted" />
                         </div>
                         <div>
-                          <div className="fw-medium" style={{ fontSize: '0.95rem' }}>{plan.validity} Days</div>
+                          <div className="fw-medium" style={{ fontSize: '0.9rem' }}>{plan.validity} Days</div>
                         </div>
                       </li>
                       <li className="mb-2 d-flex align-items-center gap-2">
-                        <div className="bg-light rounded-circle p-2 d-flex align-items-center justify-content-center" style={{ width: '36px', height: '36px' }}>
-                          <FaUsers size={14} className="text-muted" />
+                        <div className="bg-light rounded-circle p-2 d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px' }}>
+                          <FaUsers size={12} className="text-muted" />
                         </div>
                         <div>
-                          <div className="fw-medium" style={{ fontSize: '0.95rem' }}>
+                          <div className="fw-medium" style={{ fontSize: '0.9rem' }}>
                             {getCustomersForPlan(plan.id).length} Member{getCustomersForPlan(plan.id).length !== 1 ? 's' : ''}
                           </div>
                         </div>
                       </li>
                       <li className="mb-2 d-flex align-items-center gap-2">
-                        <div className="bg-light rounded-circle p-2 d-flex align-items-center justify-content-center" style={{ width: '36px', height: '36px' }}>
-                          <FaRupeeSign size={14} className="text-muted" />
+                        <div className="bg-light rounded-circle p-2 d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px' }}>
+                          <FaRupeeSign size={12} className="text-muted" />
                         </div>
                         <div>
-                          <div className="fw-medium" style={{ fontSize: '0.95rem' }}>{plan.price}</div>
+                          <div className="fw-medium" style={{ fontSize: '0.9rem' }}>{plan.price}</div>
                         </div>
                       </li>
                     </ul>
@@ -330,7 +397,7 @@ const GroupPlansBookings = () => {
                 <h5 className="fw-bold mb-2" style={{ color: '#2f6a87' }}>
                   {groupPlans.find(p => p.id === selectedPlanTab)?.name}
                 </h5>
-                <div className="d-flex flex-wrap gap-4 text-muted">
+                <div className="d-flex flex-wrap gap-3 gap-md-4 text-muted">
                   <div className="d-flex align-items-center gap-2">
                     <FaClock size={16} />
                     <span>{groupPlans.find(p => p.id === selectedPlanTab)?.sessions} Total Sessions</span>
@@ -346,8 +413,8 @@ const GroupPlansBookings = () => {
                 </div>
               </div>
               
-              {/* Members Table */}
-              <div className="table-responsive">
+              {/* Members Table - Desktop View */}
+              <div className="d-none d-md-block table-responsive">
                 <Table hover responsive className="align-middle mb-0">
                   <thead className="bg-light">
                     <tr>
@@ -432,22 +499,47 @@ const GroupPlansBookings = () => {
                   </tbody>
                 </Table>
               </div>
+              
+              {/* Mobile Card View */}
+              <div className="d-md-none">
+                {(() => {
+                  const customers = getCustomersForPlan(selectedPlanTab);
+                  
+                  if (customers.length === 0) {
+                    return (
+                      <div className="text-center py-5">
+                        <div className="text-muted">No members found matching the current filters.</div>
+                      </div>
+                    );
+                  }
+                  
+                  return customers.map((customer, index) => (
+                    <MobileCustomerCard key={customer.id} customer={customer} index={index} />
+                  ));
+                })()}
+              </div>
             </Card.Body>
           </Card>
         )}
 
-        {/* Member Details Modal - Simplified Version */}
-        <Modal show={showCustomerModal} onHide={() => setShowCustomerModal(false)} centered>
+        {/* Member Details Modal - Responsive Version */}
+        <Modal 
+          show={showCustomerModal} 
+          onHide={() => setShowCustomerModal(false)} 
+          centered
+          size="lg"
+          fullscreen="sm-down"
+        >
           <Modal.Header closeButton style={{ backgroundColor: '#f8f9fa', borderBottom: '1px solid #dee2e6' }}>
-            <Modal.Title style={{ color: '#333', fontWeight: '600' }}>
+            <Modal.Title style={{ color: '#333', fontWeight: '600', fontSize: '1.2rem' }}>
                Member Details
             </Modal.Title>
           </Modal.Header>
-          <Modal.Body className="p-3">
+          <Modal.Body className="p-3 p-md-4">
             {selectedCustomer && (
               <div>
                 <div className="mb-3">
-                  <h5 className="fw-bold mb-2" style={{ color: '#2f6a87' }}>{selectedCustomer.name}</h5>
+                  <h5 className="fw-bold mb-2" style={{ color: '#2f6a87', fontSize: '1.3rem' }}>{selectedCustomer.name}</h5>
                   <div className="d-flex align-items-center mb-2">
                     <span className="text-muted me-2">Status:</span>
                     {getStatusIndicator(selectedCustomer.sessionsRemaining, selectedCustomer.expiryDate)}
@@ -455,16 +547,16 @@ const GroupPlansBookings = () => {
                 </div>
                 
                 <div className="row mb-3">
-                  <div className="col-6">
+                  <div className="col-12 col-md-6 mb-3 mb-md-0">
                     <div className="mb-2">
                       <small className="text-muted d-block">Email</small>
                       <div className="d-flex align-items-center">
                         <FaEnvelope size={14} className="text-muted me-2" />
-                        <span>{selectedCustomer.email}</span>
+                        <span className="text-break">{selectedCustomer.email}</span>
                       </div>
                     </div>
                   </div>
-                  <div className="col-6">
+                  <div className="col-12 col-md-6">
                     <div className="mb-2">
                       <small className="text-muted d-block">Phone</small>
                       <div className="d-flex align-items-center">
@@ -476,7 +568,7 @@ const GroupPlansBookings = () => {
                 </div>
                 
                 <div className="row mb-3">
-                  <div className="col-6">
+                  <div className="col-12 col-md-6 mb-3 mb-md-0">
                     <div className="mb-2">
                       <small className="text-muted d-block">Purchase Date</small>
                       <div className="d-flex align-items-center">
@@ -485,7 +577,7 @@ const GroupPlansBookings = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="col-6">
+                  <div className="col-12 col-md-6">
                     <div className="mb-2">
                       <small className="text-muted d-block">Expiry Date</small>
                       <div className="d-flex align-items-center">
@@ -500,20 +592,20 @@ const GroupPlansBookings = () => {
                   <h6 className="fw-bold mb-3" style={{ color: '#2f6a87' }}>Session Details</h6>
                   <div className="row text-center">
                     <div className="col-4">
-                      <div className="p-2 bg-light rounded">
-                        <div className="fw-bold" style={{ color: '#2f6a87' }}>{selectedCustomer.sessionsBooked}</div>
+                      <div className="p-2 p-md-3 bg-light rounded">
+                        <div className="fw-bold" style={{ color: '#2f6a87', fontSize: '1.2rem' }}>{selectedCustomer.sessionsBooked}</div>
                         <small className="text-muted">Attended</small>
                       </div>
                     </div>
                     <div className="col-4">
-                      <div className="p-2 bg-light rounded">
-                        <div className="fw-bold" style={{ color: '#2f6a87' }}>{selectedCustomer.sessionsRemaining}</div>
+                      <div className="p-2 p-md-3 bg-light rounded">
+                        <div className="fw-bold" style={{ color: '#2f6a87', fontSize: '1.2rem' }}>{selectedCustomer.sessionsRemaining}</div>
                         <small className="text-muted">Remaining</small>
                       </div>
                     </div>
                     <div className="col-4">
-                      <div className="p-2 bg-light rounded">
-                        <div className="fw-bold" style={{ color: '#2f6a87' }}>
+                      <div className="p-2 p-md-3 bg-light rounded">
+                        <div className="fw-bold" style={{ color: '#2f6a87', fontSize: '1.2rem' }}>
                           {selectedCustomer.sessionsBooked + selectedCustomer.sessionsRemaining}
                         </div>
                         <small className="text-muted">Total</small>

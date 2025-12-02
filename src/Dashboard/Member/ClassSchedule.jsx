@@ -120,9 +120,9 @@ const ClassSchedule = () => {
               <div className="card shadow-sm border-0" style={{ borderRadius: '12px', overflow: 'hidden' }}>
                 {/* Card Header */}
                 <div 
-                  className="p-4 text-white" 
+                  className="p-4" 
                   style={{ 
-                    background: '#2f6a87',
+                    color: '#2f6a87',
                     minHeight: '60px'
                   }}
                 >
@@ -141,7 +141,7 @@ const ClassSchedule = () => {
                   </div>
                   <div className="d-flex align-items-center mb-3">
                     <FaRupeeSign size={16} className="me-2 text-success" />
-                    <strong className="text-success">{formatPrice(cls.price)}</strong>
+                    <strong className="text-success">{(cls.price)}</strong>
                   </div>
 
                   <div className="mt-4">

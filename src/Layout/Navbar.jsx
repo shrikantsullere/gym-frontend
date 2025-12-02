@@ -126,7 +126,7 @@ const Navbar = ({ toggleSidebar }) => {
                   overflow: "hidden",
                 }}
               >
-                <li>
+                {/* <li>
                   <button
                     className="dropdown-item"
                     onClick={() => {
@@ -136,7 +136,7 @@ const Navbar = ({ toggleSidebar }) => {
                   >
                     Profile
                   </button>
-                </li>
+                </li> */}
                 <li>
                   <hr className="dropdown-divider" />
                 </li>
