@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaEye, FaEdit, FaTrashAlt } from 'react-icons/fa';
-import axiosInstance from "../../Api/axiosInstance"; // Adjust path if needed
+import axiosInstance from "../../Api/axiosInstance"; // Keep your axios instance
 
 const SuperAdminAdmin = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -10,31 +10,33 @@ const SuperAdminAdmin = () => {
   const [admins, setAdmins] = useState([
     {
       id: 1,
-      name: "John Anderson",
-      adminId: "ADM01",
+      fullName: "John Anderson",
+      gymName: "FitLife Gym",
       address: "123 Main Street",
-      role: "Primary Admin",
       phone: "+1 555-123-4567",
       email: "john@admin.com",
-      status: "Active",
-      username: "john_admin",
-      plans: [{ planName: "Gold", price: "1200", duration: "12 Months", description: "Full access plan" }]
+      status: "active",
+      planName: "Gold",
+      price: "1200",
+      duration: "12 Months",
+      description: "Full access plan"
     },
     {
       id: 2,
-      name: "Emma Watson",
-      adminId: "ADM02",
+      fullName: "Emma Watson",
+      gymName: "Elite Fitness",
       address: "456 Park Avenue",
-      role: "Co-Admin",
       phone: "+1 555-987-6543",
       email: "emma@admin.com",
-      status: "Inactive",
-      username: "emma_admin",
-      plans: []
+      status: "inactive",
+      planName: "",
+      price: "",
+      duration: "",
+      description: ""
     }
   ]);
 
-  // Fetch plans from API
+  // ✅ FETCH PLANS FOR DROPDOWN
   const [plans, setPlans] = useState([]);
   const [loadingPlans, setLoadingPlans] = useState(true);
 
@@ -50,12 +52,11 @@ const SuperAdminAdmin = () => {
       } catch (error) {
         console.error("Failed to fetch plans:", error);
         setPlans([]);
-        alert("Failed to load plans. Using empty list.");
+        alert("Failed to load plans. Please try again.");
       } finally {
         setLoadingPlans(false);
       }
     };
-
     fetchPlans();
   }, []);
 
@@ -85,7 +86,7 @@ const SuperAdminAdmin = () => {
   const confirmDelete = () => {
     if (selectedAdmin) {
       setAdmins(admins.filter(admin => admin.id !== selectedAdmin.id));
-      alert(`Admin "${selectedAdmin.name}" has been deleted.`);
+      alert(`Admin "${selectedAdmin.fullName}" has been deleted.`);
     }
     setIsDeleteModalOpen(false);
     setSelectedAdmin(null);
@@ -107,17 +108,18 @@ const SuperAdminAdmin = () => {
   }, [isModalOpen, isDeleteModalOpen]);
 
   const getStatusBadge = (status) => {
+    const normalized = (status || 'inactive').toLowerCase();
     return (
       <span
         className="badge rounded-pill px-2 py-1 d-inline-block"
         style={{
-          backgroundColor: status === "Active" ? "#D1F4E1" : "#F8D7DA",
-          color: status === "Active" ? "#157347" : "#B02A37",
+          backgroundColor: normalized === "active" ? "#D1F4E1" : "#F8D7DA",
+          color: normalized === "active" ? "#157347" : "#B02A37",
           fontWeight: "500",
           fontSize: "0.75rem"
         }}
       >
-        {status}
+        {normalized === "active" ? "Active" : "Inactive"}
       </span>
     );
   };
@@ -136,20 +138,16 @@ const SuperAdminAdmin = () => {
       const newId = Math.max(...admins.map(admin => admin.id), 0) + 1;
       const newAdmin = {
         id: newId,
-        name: payload.name,
-        adminId: payload.adminId || `ADM${newId.toString().padStart(2, '0')}`,
-        address: payload.address,
-        role: "Primary Admin",
-        phone: payload.phone,
+        fullName: payload.fullName,
         email: payload.email,
-        status: payload.status,
-        username: payload.username,
-        plans: payload.selectedPlanId ? [{
-          planName: payload.planName,
-          price: payload.planPrice,
-          duration: payload.planDuration,
-          description: payload.planDescription
-        }] : []
+        phone: payload.phone,
+        gymName: payload.gymName,
+        address: payload.address,
+        planName: payload.planName,
+        price: payload.planPrice,
+        duration: payload.planDuration,
+        description: payload.planDescription,
+        status: payload.status.toLowerCase()
       };
       setAdmins([...admins, newAdmin]);
       alert('New admin added successfully!');
@@ -158,19 +156,16 @@ const SuperAdminAdmin = () => {
         if (admin.id === selectedAdmin.id) {
           return {
             ...admin,
-            name: payload.name,
-            adminId: payload.adminId,
-            address: payload.address,
-            phone: payload.phone,
+            fullName: payload.fullName,
             email: payload.email,
-            status: payload.status,
-            username: payload.username,
-            plans: payload.selectedPlanId ? [{
-              planName: payload.planName,
-              price: payload.planPrice,
-              duration: payload.planDuration,
-              description: payload.planDescription
-            }] : []
+            phone: payload.phone,
+            gymName: payload.gymName,
+            address: payload.address,
+            planName: payload.planName,
+            price: payload.planPrice,
+            duration: payload.planDuration,
+            description: payload.planDescription,
+            status: payload.status.toLowerCase()
           };
         }
         return admin;
@@ -220,9 +215,9 @@ const SuperAdminAdmin = () => {
                 <tr>
                   <th className="py-3">ADMIN NAME</th>
                   <th className="py-3">PLAN NAME</th>
-                  <th className="py-3">ADMIN ID</th>
+                  <th className="py-3">GYM NAME</th>
                   <th className="py-3">ADDRESS</th>
-                  <th className="py-3">CONTACT / ROLE</th>
+                  <th className="py-3">CONTACT</th>
                   <th className="py-3">STATUS</th>
                   <th className="py-3 text-center">ACTIONS</th>
                 </tr>
@@ -235,14 +230,11 @@ const SuperAdminAdmin = () => {
                     onMouseEnter={(e) => (e.currentTarget.style.background = "#F1FBFF")}
                     onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                   >
-                    <td><strong>{admin.name}</strong></td>
-                    <td>{admin.plans?.[0]?.planName || <span className="text-muted">No Plan</span>}</td>
-                    <td>{admin.adminId}</td>
+                    <td><strong>{admin.fullName}</strong></td>
+                    <td>{admin.planName || <span className="text-muted">No Plan</span>}</td>
+                    <td>{admin.gymName}</td>
                     <td><small className="text-muted">{admin.address}</small></td>
-                    <td>
-                      <strong>{admin.phone}</strong><br />
-                      <small className="text-muted">{admin.role}</small>
-                    </td>
+                    <td>{admin.phone}</td>
                     <td>{getStatusBadge(admin.status)}</td>
                     <td className="text-center">
                       <div className="d-flex justify-content-center gap-2">
@@ -269,32 +261,26 @@ const SuperAdminAdmin = () => {
               <div key={admin.id} className="card mb-3 shadow-sm" style={{ borderRadius: "12px" }}>
                 <div className="card-body p-3">
                   <div className="d-flex justify-content-between align-items-start mb-2">
-                    <h5 className="card-title mb-0 fw-bold">{admin.name}</h5>
+                    <h5 className="card-title mb-0 fw-bold">{admin.fullName}</h5>
                     {getStatusBadge(admin.status)}
                   </div>
                   <div className="row g-2 mb-2">
                     <div className="col-6">
-                      <small className="text-muted d-block">Admin ID</small>
-                      <span>{admin.adminId}</span>
+                      <small className="text-muted d-block">Gym</small>
+                      <span>{admin.gymName}</span>
                     </div>
                     <div className="col-6">
                       <small className="text-muted d-block">Plan</small>
-                      <span>{admin.plans?.[0]?.planName || <span className="text-muted">No Plan</span>}</span>
+                      <span>{admin.planName || <span className="text-muted">No Plan</span>}</span>
                     </div>
                   </div>
                   <div className="mb-2">
                     <small className="text-muted d-block">Address</small>
                     <span>{admin.address}</span>
                   </div>
-                  <div className="row g-2 mb-3">
-                    <div className="col-6">
-                      <small className="text-muted d-block">Phone</small>
-                      <span>{admin.phone}</span>
-                    </div>
-                    <div className="col-6">
-                      <small className="text-muted d-block">Role</small>
-                      <span>{admin.role}</span>
-                    </div>
+                  <div className="mb-2">
+                    <small className="text-muted d-block">Phone</small>
+                    <span>{admin.phone}</span>
                   </div>
                   <div className="d-flex justify-content-end gap-2">
                     <button className="btn btn-sm btn-outline-secondary" onClick={() => handleView(admin)}>
@@ -333,7 +319,7 @@ const SuperAdminAdmin = () => {
           <div className="text-center py-4">
             <h5>Are you sure?</h5>
             <p className="text-muted">
-              This will permanently delete <strong>{selectedAdmin?.name}</strong>.
+              This will permanently delete <strong>{selectedAdmin?.fullName}</strong>.
             </p>
             <div className="d-flex justify-content-center gap-3 mt-4">
               <button className="btn btn-outline-secondary px-4" onClick={closeDeleteModal}>Cancel</button>
@@ -375,20 +361,18 @@ const AdminForm = ({ mode, admin, onCancel, onSubmit, plans, loadingPlans }) => 
   const isAdd = mode === "add";
 
   const [formData, setFormData] = useState({
-    name: admin?.name || "",
-    gymName: "",
-    adminId: admin?.adminId || "",
+    fullName: admin?.fullName || "",
+    gymName: admin?.gymName || "",
     address: admin?.address || "",
     phone: admin?.phone || "",
     email: admin?.email || "",
-    username: admin?.username || "",
     password: "",
-    status: admin?.status || "Inactive",
-    selectedPlanId: admin?.plans?.[0]?.id || "", // Store plan.id
-    planName: admin?.plans?.[0]?.planName || "",
-    planPrice: admin?.plans?.[0]?.price || "",
-    planDuration: admin?.plans?.[0]?.duration || "",
-    planDescription: admin?.plans?.[0]?.description || ""
+    status: (admin?.status || "active"),
+    selectedPlanId: "", // for dropdown
+    planName: admin?.planName || "",
+    planPrice: admin?.price || "",
+    planDuration: admin?.duration || "",
+    planDescription: admin?.description || ""
   });
 
   const handleInputChange = (e) => {
@@ -396,11 +380,12 @@ const AdminForm = ({ mode, admin, onCancel, onSubmit, plans, loadingPlans }) => 
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  // ✅ HANDLE PLAN SELECTION FROM DROPDOWN
   const handlePlanChange = (planId) => {
     const selectedPlan = plans.find(p => p.id == planId);
     if (selectedPlan) {
-      // Convert duration (in days) to readable format, e.g., "120 days"
-      const durationText = `${selectedPlan.duration} days`;
+      // Convert duration (in days) to "X Months" or keep as is — adjust if needed
+      const durationText = selectedPlan.duration; // assuming it's already "1 Months", etc.
 
       setFormData(prev => ({
         ...prev,
@@ -408,7 +393,7 @@ const AdminForm = ({ mode, admin, onCancel, onSubmit, plans, loadingPlans }) => 
         planName: selectedPlan.name,
         planPrice: selectedPlan.price.toString(),
         planDuration: durationText,
-        planDescription: `Plan for ${durationText} @ ₹${selectedPlan.price}` // You can customize
+        planDescription: selectedPlan.description || `Plan for ${durationText} @ ₹${selectedPlan.price}`
       }));
     } else {
       setFormData(prev => ({
@@ -425,7 +410,7 @@ const AdminForm = ({ mode, admin, onCancel, onSubmit, plans, loadingPlans }) => 
   const handleStatusToggle = () => {
     setFormData(prev => ({
       ...prev,
-      status: prev.status === "Active" ? "Inactive" : "Active"
+      status: prev.status === "active" ? "inactive" : "active"
     }));
   };
 
@@ -434,17 +419,8 @@ const AdminForm = ({ mode, admin, onCancel, onSubmit, plans, loadingPlans }) => 
     if (isView) return onCancel();
 
     const payload = {
-      ...formData,
-      // Keep plans array structure consistent
-      plans: formData.selectedPlanId ? [{
-        id: formData.selectedPlanId,
-        planName: formData.planName,
-        price: formData.planPrice,
-        duration: formData.planDuration,
-        description: formData.planDescription
-      }] : []
+      ...formData
     };
-
     onSubmit(payload);
   };
 
@@ -454,45 +430,28 @@ const AdminForm = ({ mode, admin, onCancel, onSubmit, plans, loadingPlans }) => 
       <div className="mb-4">
         <h6 className="fw-bold mb-3 text-primary">Personal Information</h6>
         <div className="row g-2 mb-3">
-          <div className="col-12 col-md-6">
-            <label className="form-label fs-6">Admin Name *</label>
+          <div className="col-12">
+            <label className="form-label fs-6">Full Name *</label>
             <input 
-              name="name" 
+              name="fullName" 
               className="form-control form-control-sm" 
-              value={formData.name} 
+              value={formData.fullName} 
               onChange={handleInputChange} 
               readOnly={isView} 
               required
             />
           </div>
-
-          {isAdd ? (
-            <div className="col-12 col-md-6">
-              <label className="form-label fs-6">Gym Name *</label>
-              <input 
-                name="gymName" 
-                className="form-control form-control-sm" 
-                value={formData.gymName}
-                onChange={handleInputChange}
-                placeholder="Enter Gym Name" 
-                readOnly={isView} 
-                required
-              />
-            </div>
-          ) : (
-            <div className="col-12 col-md-6">
-              <label className="form-label fs-6">Admin ID *</label>
-              <input 
-                name="adminId" 
-                className="form-control form-control-sm" 
-                value={formData.adminId} 
-                onChange={handleInputChange}
-                readOnly={isView} 
-                required
-              />
-            </div>
-          )}
-
+          <div className="col-12">
+            <label className="form-label fs-6">Gym Name *</label>
+            <input 
+              name="gymName" 
+              className="form-control form-control-sm" 
+              value={formData.gymName}
+              onChange={handleInputChange}
+              readOnly={isView} 
+              required
+            />
+          </div>
           <div className="col-12">
             <label className="form-label fs-6">Address *</label>
             <input 
@@ -530,23 +489,12 @@ const AdminForm = ({ mode, admin, onCancel, onSubmit, plans, loadingPlans }) => 
         </div>
       </div>
 
-      {/* Login Info */}
-      <div className="mb-4">
-        <h6 className="fw-bold mb-3 text-primary">Login Information</h6>
-        <div className="row g-2 mb-3">
-          <div className="col-12 col-md-6">
-            <label className="form-label fs-6">Username *</label>
-            <input 
-              name="username" 
-              className="form-control form-control-sm" 
-              value={formData.username} 
-              onChange={handleInputChange}
-              readOnly={isView} 
-              required
-            />
-          </div>
-          {!isView && (
-            <div className="col-12 col-md-6">
+      {/* Login Info (Password only for add) */}
+      {isAdd && (
+        <div className="mb-4">
+          <h6 className="fw-bold mb-3 text-primary">Login Information</h6>
+          <div className="row g-2 mb-3">
+            <div className="col-12">
               <label className="form-label fs-6">Password *</label>
               <input 
                 name="password" 
@@ -554,18 +502,18 @@ const AdminForm = ({ mode, admin, onCancel, onSubmit, plans, loadingPlans }) => 
                 className="form-control form-control-sm" 
                 value={formData.password}
                 onChange={handleInputChange}
-                required={isAdd}
+                required
               />
             </div>
-          )}
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Plan Info */}
+      {/* ✅ PLAN DROPDOWN + AUTO-FILL */}
       <div className="mb-4">
         <h6 className="fw-bold mb-3 text-primary">Plan Information</h6>
         <div className="row g-2 mb-3">
-          <div className="col-12 col-md-6">
+          <div className="col-12">
             <label className="form-label fs-6">Select Plan *</label>
             {loadingPlans ? (
               <div className="form-control form-control-sm" disabled>Loading plans...</div>
@@ -575,12 +523,12 @@ const AdminForm = ({ mode, admin, onCancel, onSubmit, plans, loadingPlans }) => 
                 value={formData.selectedPlanId}
                 onChange={(e) => handlePlanChange(e.target.value)}
                 disabled={isView}
-                required
+                required={!isView}
               >
                 <option value="">-- Choose Plan --</option>
                 {plans.map(plan => (
                   <option key={plan.id} value={plan.id}>
-                    {plan.name} (₹{plan.price}, {plan.duration} days)
+                    {plan.name} (₹{plan.price}, {plan.duration})
                   </option>
                 ))}
               </select>
@@ -590,23 +538,23 @@ const AdminForm = ({ mode, admin, onCancel, onSubmit, plans, loadingPlans }) => 
           {formData.selectedPlanId && (
             <>
               <div className="col-12 col-md-6">
-                <label className="form-label fs-6">Price *</label>
+                <label className="form-label fs-6">Price</label>
                 <input 
                   className="form-control form-control-sm" 
                   value={formData.planPrice} 
-                  readOnly 
+                  readOnly
                 />
               </div>
               <div className="col-12 col-md-6">
-                <label className="form-label fs-6">Duration *</label>
+                <label className="form-label fs-6">Duration</label>
                 <input 
                   className="form-control form-control-sm" 
                   value={formData.planDuration} 
-                  readOnly 
+                  readOnly
                 />
               </div>
               <div className="col-12">
-                <label className="form-label fs-6">Description *</label>
+                <label className="form-label fs-6">Description</label>
                 <textarea
                   name="planDescription"
                   className="form-control form-control-sm"
@@ -614,7 +562,6 @@ const AdminForm = ({ mode, admin, onCancel, onSubmit, plans, loadingPlans }) => 
                   value={formData.planDescription}
                   onChange={handleInputChange}
                   readOnly={isView}
-                  required
                 ></textarea>
               </div>
             </>
@@ -629,10 +576,11 @@ const AdminForm = ({ mode, admin, onCancel, onSubmit, plans, loadingPlans }) => 
           <input
             type="checkbox"
             className="form-check-input"
-            checked={formData.status === "Active"}
+            checked={formData.status === "active"}
             onChange={handleStatusToggle}
             disabled={isView}
           />
+          <span className="ms-2">{formData.status === "active" ? "Active" : "Inactive"}</span>
         </div>
       </div>
 
