@@ -9,7 +9,6 @@ import {
 import { FiChevronDown, FiCheck as FiCheckIcon, FiArrowRight as FiArrowRightIcon } from 'react-icons/fi';
 import { Button, Container, Row, Col, Card } from 'react-bootstrap';
 import './LendingPage.css';
-import axiosInstance from './../Api/axiosInstance';
 
 const LendingPage = () => {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -22,8 +21,6 @@ const LendingPage = () => {
   const [selectedPlan, setSelectedPlan] = useState('Professional');
   const heroRef = useRef(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [plans, setPlans] = useState([]);
-  const [loadingPlans, setLoadingPlans] = useState(true);
   const navigate = useNavigate();
 
   // Purchase modal form state
@@ -35,28 +32,33 @@ const LendingPage = () => {
     startDate: ''
   });
 
-  // ✅ FETCH PLANS FROM API
-  useEffect(() => {
-    const fetchPlans = async () => {
-      try {
-        const response = await axiosInstance.get("/plans");
-        if (response.data.success && Array.isArray(response.data.plans)) {
-          const sortedPlans = response.data.plans
-            .filter(plan => plan.status === "ACTIVE")
-            .sort((a, b) => a.price - b.price);
-          setPlans(sortedPlans);
-        } else {
-          setPlans([]);
-        }
-      } catch (error) {
-        console.error("Failed to fetch plans:", error);
-        setPlans([]);
-      } finally {
-        setLoadingPlans(false);
-      }
-    };
-    fetchPlans();
-  }, []);
+  // Static plans data instead of API call
+  const [plans] = useState([
+    {
+      id: 1,
+      name: "Basic",
+      price: 999,
+      duration: 30,
+      description: "Essential features for small gyms",
+      status: "ACTIVE"
+    },
+    {
+      id: 2,
+      name: "Professional",
+      price: 1999,
+      duration: 30,
+      description: "Advanced features for growing gyms",
+      status: "ACTIVE"
+    },
+    {
+      id: 3,
+      name: "Enterprise",
+      price: 4999,
+      duration: 30,
+      description: "Complete solution for large fitness centers",
+      status: "ACTIVE"
+    }
+  ]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -95,40 +97,24 @@ const LendingPage = () => {
     }));
   };
 
-  // ✅ Real purchase API call
-  const handlePurchaseSubmit = async () => {
+  // Simplified purchase handler without API call
+  const handlePurchaseSubmit = () => {
     if (!purchaseFormData.companyName.trim() || !purchaseFormData.email.trim() || !purchaseFormData.startDate) {
       alert("Please fill all required fields.");
       return;
     }
-    try {
-      const payload = {
-        selectedPlan: purchaseFormData.selectedPlan,
-        companyName: purchaseFormData.companyName,
-        email: purchaseFormData.email,
-        billingDuration: purchaseFormData.billingDuration,
-        startDate: purchaseFormData.startDate
-      };
-      const response = await axiosInstance.post("/purchases", payload);
-      if (response.data.success) {
-        setShowPurchaseModal(false);
-        setShowSuccessNotification(true);
-        setTimeout(() => setShowSuccessNotification(false), 5000);
-        setPurchaseFormData({
-          selectedPlan: 'Professional',
-          companyName: '',
-          email: '',
-          billingDuration: 'Yearly',
-          startDate: ''
-        });
-      } else {
-        alert("Purchase request failed. Please try again.");
-      }
-    } catch (error) {
-      console.error("Purchase API error:", error);
-      const msg = error.response?.data?.message || "Something went wrong. Please try again.";
-      alert("Error: " + msg);
-    }
+    
+    // Simulate successful purchase
+    setShowPurchaseModal(false);
+    setShowSuccessNotification(true);
+    setTimeout(() => setShowSuccessNotification(false), 5000);
+    setPurchaseFormData({
+      selectedPlan: 'Professional',
+      companyName: '',
+      email: '',
+      billingDuration: 'Yearly',
+      startDate: ''
+    });
   };
 
   const features = [
@@ -216,7 +202,7 @@ const LendingPage = () => {
     { value: "24/7", label: "Support", icon: <FaHeartbeat /> }
   ];
 
-  // ✅ Convert API plan to readable period
+  // Convert plan duration to readable period
   const getPeriodText = (durationDays) => {
     if (!durationDays) return "per plan";
     const days = parseInt(durationDays);
@@ -226,26 +212,8 @@ const LendingPage = () => {
     return `per ${days} days`;
   };
 
-  // ✅ Render dynamic pricing cards
+  // Render pricing cards
   const renderPricingCards = () => {
-    if (loadingPlans) {
-      return (
-        <div className="text-center col-12">
-          <div className="spinner-border text-primary" role="status">
-            <span className="visually-hidden">Loading...</span>
-          </div>
-        </div>
-      );
-    }
-
-    if (plans.length === 0) {
-      return (
-        <div className="text-center col-12 text-muted py-5">
-          No active plans available at the moment.
-        </div>
-      );
-    }
-
     // Mark middle plan as popular
     const midIndex = Math.floor(plans.length / 2);
 
@@ -723,7 +691,7 @@ const LendingPage = () => {
         </Container>
       </section>
 
-      {/* Pricing Section — NOW DYNAMIC */}
+      {/* Pricing Section */}
       <section id="pricing" className="pricing-section">
         <Container>
           <motion.div

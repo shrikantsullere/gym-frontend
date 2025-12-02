@@ -124,11 +124,11 @@ const CreatePlan = () => {
     const currentPlans = newPlan.type === 'group' ? groupPlans : personalPlans;
     updatePlansByType(newPlan.type, [...currentPlans, plan]);
 
-    setNewPlan({ 
-      name: '', 
-      sessions: '', 
-      validity: '', 
-      price: '', 
+    setNewPlan({
+      name: '',
+      sessions: '',
+      validity: '',
+      price: '',
       type: activeTab === 'personal' ? 'personal' : 'group',
       branch: 'Downtown'
     });
@@ -168,7 +168,7 @@ const CreatePlan = () => {
 
     const currentPlans = getPlansByType(selectedPlan.type);
     updatePlansByType(
-      selectedPlan.type, 
+      selectedPlan.type,
       currentPlans.map(p => p.id === selectedPlan.id ? updatedPlan : p)
     );
 
@@ -218,17 +218,17 @@ const CreatePlan = () => {
   // Process status change
   const handleProcessStatus = (status) => {
     if (!requestToProcess) return;
-    
+
     setBookingRequests(
       bookingRequests.map(req =>
         req.id === requestToProcess.id ? { ...req, status } : req
       )
     );
-    
-    const statusMessage = status === 'approved' ? 
-      "✅ Booking Approved! Member will be notified." : 
+
+    const statusMessage = status === 'approved' ?
+      "✅ Booking Approved! Member will be notified." :
       "❌ Booking Rejected. Member will be notified.";
-    
+
     alert(statusMessage);
     setShowStatusModal(false);
     setRequestToProcess(null);
@@ -238,25 +238,25 @@ const CreatePlan = () => {
   const handleToggleRequestStatus = (requestId) => {
     const request = bookingRequests.find(req => req.id === requestId);
     if (!request) return;
-    
+
     // Only toggle between approved and rejected
     if (request.status === 'pending') {
       handleOpenStatusModal(request);
       return;
     }
-    
+
     const newStatus = request.status === 'approved' ? 'rejected' : 'approved';
-    
+
     setBookingRequests(
       bookingRequests.map(req =>
         req.id === requestId ? { ...req, status: newStatus } : req
       )
     );
-    
-    const statusMessage = newStatus === 'approved' ? 
-      "✅ Booking Approved! Member will be notified." : 
+
+    const statusMessage = newStatus === 'approved' ?
+      "✅ Booking Approved! Member will be notified." :
       "❌ Booking Rejected. Member will be notified.";
-    
+
     alert(statusMessage);
   };
 
@@ -745,9 +745,9 @@ const CreatePlan = () => {
         </div>
 
         {/* Status Change Modal - Responsive */}
-        <Modal 
-          show={showStatusModal} 
-          onHide={() => setShowStatusModal(false)} 
+        <Modal
+          show={showStatusModal}
+          onHide={() => setShowStatusModal(false)}
           centered
           size="sm"
           contentClassName="p-0"
@@ -806,7 +806,22 @@ const CreatePlan = () => {
           </Modal.Header>
           <Modal.Body className="p-3 p-md-4">
             <Form>
+              
               <Form.Group className="mb-4">
+                    <Form.Label className="fw-medium" style={{ color: '#333' }}>Plan Type</Form.Label>
+                    <Form.Select
+                      value={newPlan.type}
+                      onChange={(e) => setNewPlan({ ...newPlan, type: e.target.value })}
+                      required
+                      style={{ padding: '12px', fontSize: '1rem' }}
+                    >
+                      <option value="personal">Personal Training Plan</option>
+                      <option value="group">Group Class Plan</option>
+                    </Form.Select>
+                  </Form.Group>
+              <Row>
+                <Col md={6}>
+                 <Form.Group className="mb-4">
                 <Form.Label className="fw-medium" style={{ color: '#333' }}>Plan Name</Form.Label>
                 <Form.Control
                   type="text"
@@ -817,7 +832,7 @@ const CreatePlan = () => {
                   style={{ padding: '12px', fontSize: '1rem' }}
                 />
               </Form.Group>
-              <Row>
+                </Col>
                 <Col md={6}>
                   <Form.Group className="mb-4">
                     <Form.Label className="fw-medium" style={{ color: '#333' }}>Number of Sessions</Form.Label>
@@ -831,6 +846,8 @@ const CreatePlan = () => {
                     />
                   </Form.Group>
                 </Col>
+              </Row>
+              <Row>
                 <Col md={6}>
                   <Form.Group className="mb-4">
                     <Form.Label className="fw-medium" style={{ color: '#333' }}>Validity (Days)</Form.Label>
@@ -844,8 +861,6 @@ const CreatePlan = () => {
                     />
                   </Form.Group>
                 </Col>
-              </Row>
-              <Row>
                 <Col md={6}>
                   <Form.Group className="mb-4">
                     <Form.Label className="fw-medium" style={{ color: '#333' }}>Price (₹)</Form.Label>
@@ -857,21 +872,6 @@ const CreatePlan = () => {
                       required
                       style={{ padding: '12px', fontSize: '1rem' }}
                     />
-                  </Form.Group>
-                </Col>
-                <Col md={6}>
-                  <Form.Group className="mb-4">
-                    <Form.Label className="fw-medium" style={{ color: '#333' }}>Branch</Form.Label>
-                    <Form.Select
-                      value={newPlan.branch}
-                      onChange={(e) => setNewPlan({ ...newPlan, branch: e.target.value })}
-                      required
-                      style={{ padding: '12px', fontSize: '1rem' }}
-                    >
-                      {branches.map(branch => (
-                        <option key={branch} value={branch}>{branch}</option>
-                      ))}
-                    </Form.Select>
                   </Form.Group>
                 </Col>
               </Row>
@@ -903,7 +903,6 @@ const CreatePlan = () => {
             </Button>
           </Modal.Footer>
         </Modal>
-
         {/* Edit Plan Modal - Responsive */}
         <Modal show={showEditModal} onHide={() => setShowEditModal(false)} centered size="lg" fullscreen="sm-down">
           <Modal.Header closeButton style={{ backgroundColor: '#f8f9fa', borderBottom: `2px solid ${customColor}` }}>
