@@ -1,45 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import { FaEye, FaEdit, FaTrashAlt } from 'react-icons/fa';
-import axiosInstance from "../../Api/axiosInstance"; // Keep your axios instance
+import axiosInstance from "../../Api/axiosInstance";
 
 const SuperAdminAdmin = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [modalType, setModalType] = useState('add');
   const [selectedAdmin, setSelectedAdmin] = useState(null);
-  const [admins, setAdmins] = useState([
-    {
-      id: 1,
-      fullName: "John Anderson",
-      gymName: "FitLife Gym",
-      address: "123 Main Street",
-      phone: "+1 555-123-4567",
-      email: "john@admin.com",
-      status: "active",
-      planName: "Gold",
-      price: "1200",
-      duration: "12 Months",
-      description: "Full access plan"
-    },
-    {
-      id: 2,
-      fullName: "Emma Watson",
-      gymName: "Elite Fitness",
-      address: "456 Park Avenue",
-      phone: "+1 555-987-6543",
-      email: "emma@admin.com",
-      status: "inactive",
-      planName: "",
-      price: "",
-      duration: "",
-      description: ""
-    }
-  ]);
+  const [admins, setAdmins] = useState([]);
+  const [loading, setLoading] = useState(true); // for admins list
 
   // ✅ FETCH PLANS FOR DROPDOWN
   const [plans, setPlans] = useState([]);
   const [loadingPlans, setLoadingPlans] = useState(true);
 
+  // 🔁 FETCH ADMINS FROM REAL API
+  useEffect(() => {
+    const fetchAdmins = async () => {
+      try {
+        const response = await axiosInstance.get("/auth/admins");
+        if (response.data.success && Array.isArray(response.data.admins)) {
+          setAdmins(response.data.admins);
+        } else {
+          setAdmins([]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch admins:", error);
+        setAdmins([]);
+        alert("Failed to load admin list.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAdmins();
+  }, []);
+
+  // 🔁 FETCH PLANS
   useEffect(() => {
     const fetchPlans = async () => {
       try {
@@ -52,7 +49,7 @@ const SuperAdminAdmin = () => {
       } catch (error) {
         console.error("Failed to fetch plans:", error);
         setPlans([]);
-        alert("Failed to load plans. Please try again.");
+        alert("Failed to load plans.");
       } finally {
         setLoadingPlans(false);
       }
@@ -83,6 +80,7 @@ const SuperAdminAdmin = () => {
     setIsDeleteModalOpen(true);
   };
 
+  // ❌ TEMP: Delete still local (replace with real API later if needed)
   const confirmDelete = () => {
     if (selectedAdmin) {
       setAdmins(admins.filter(admin => admin.id !== selectedAdmin.id));
@@ -133,6 +131,7 @@ const SuperAdminAdmin = () => {
     }
   };
 
+  // ❌ TEMP: Add/Edit still local (you can later connect to /auth/register & PUT /users/:id)
   const handleFormSubmit = (payload) => {
     if (modalType === 'add') {
       const newId = Math.max(...admins.map(admin => admin.id), 0) + 1;
@@ -147,7 +146,8 @@ const SuperAdminAdmin = () => {
         price: payload.planPrice,
         duration: payload.planDuration,
         description: payload.planDescription,
-        status: payload.status.toLowerCase()
+        status: payload.status.toLowerCase(),
+        // roleId, branchId, etc. not shown in UI
       };
       setAdmins([...admins, newAdmin]);
       alert('New admin added successfully!');
@@ -196,48 +196,107 @@ const SuperAdminAdmin = () => {
               fontSize: '0.9rem'
             }}
             onClick={handleAddNew}
+            disabled={loading}
           >
             + Add New Admin
           </button>
         </div>
       </div>
 
-      {/* TABLE CARD */}
-      <div
-        className="card border-0 shadow-sm"
-        style={{ borderRadius: "16px", background: "#ffffff" }}
-      >
-        <div className="card-body p-0">
-          {/* Desktop Table */}
-          <div className="table-responsive d-none d-md-block">
-            <table className="table align-middle mb-0">
-              <thead style={{ background: "#F8F9FB" }}>
-                <tr>
-                  <th className="py-3">ADMIN NAME</th>
-                  <th className="py-3">PLAN NAME</th>
-                  <th className="py-3">GYM NAME</th>
-                  <th className="py-3">ADDRESS</th>
-                  <th className="py-3">CONTACT</th>
-                  <th className="py-3">STATUS</th>
-                  <th className="py-3 text-center">ACTIONS</th>
-                </tr>
-              </thead>
-              <tbody>
-                {admins.map((admin) => (
-                  <tr
-                    key={admin.id}
-                    style={{ transition: "0.3s ease" }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = "#F1FBFF")}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                  >
-                    <td><strong>{admin.fullName}</strong></td>
-                    <td>{admin.planName || <span className="text-muted">No Plan</span>}</td>
-                    <td>{admin.gymName}</td>
-                    <td><small className="text-muted">{admin.address}</small></td>
-                    <td>{admin.phone}</td>
-                    <td>{getStatusBadge(admin.status)}</td>
-                    <td className="text-center">
-                      <div className="d-flex justify-content-center gap-2">
+      {/* LOADING INDICATOR */}
+      {loading ? (
+        <div className="text-center py-4">Loading admins...</div>
+      ) : (
+        /* TABLE CARD */
+        <div
+          className="card border-0 shadow-sm"
+          style={{ borderRadius: "16px", background: "#ffffff" }}
+        >
+          <div className="card-body p-0">
+            {/* Desktop Table */}
+            <div className="table-responsive d-none d-md-block">
+              <table className="table align-middle mb-0">
+                <thead style={{ background: "#F8F9FB" }}>
+                  <tr>
+                    <th className="py-3">ADMIN NAME</th>
+                    <th className="py-3">PLAN NAME</th>
+                    <th className="py-3">GYM NAME</th>
+                    <th className="py-3">ADDRESS</th>
+                    <th className="py-3">CONTACT</th>
+                    <th className="py-3">STATUS</th>
+                    <th className="py-3 text-center">ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {admins.length === 0 ? (
+                    <tr>
+                      <td colSpan="7" className="text-center text-muted py-4">No admins found</td>
+                    </tr>
+                  ) : (
+                    admins.map((admin) => (
+                      <tr
+                        key={admin.id}
+                        style={{ transition: "0.3s ease" }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = "#F1FBFF")}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                      >
+                        <td><strong>{admin.fullName}</strong></td>
+                        <td>{admin.planName || <span className="text-muted">No Plan</span>}</td>
+                        <td>{admin.gymName || '-'}</td>
+                        <td><small className="text-muted">{admin.address || '-'}</small></td>
+                        <td>{admin.phone || '-'}</td>
+                        <td>{getStatusBadge(admin.status)}</td>
+                        <td className="text-center">
+                          <div className="d-flex justify-content-center gap-2">
+                            <button className="btn btn-sm btn-outline-secondary" onClick={() => handleView(admin)}>
+                              <FaEye size={14} />
+                            </button>
+                            <button className="btn btn-sm btn-outline-primary" onClick={() => handleEdit(admin)}>
+                              <FaEdit size={14} />
+                            </button>
+                            <button className="btn btn-sm btn-outline-danger" onClick={() => handleDeleteClick(admin)}>
+                              <FaTrashAlt size={14} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile View */}
+            <div className="d-md-none p-3">
+              {admins.length === 0 ? (
+                <div className="text-center text-muted py-4">No admins found</div>
+              ) : (
+                admins.map((admin) => (
+                  <div key={admin.id} className="card mb-3 shadow-sm" style={{ borderRadius: "12px" }}>
+                    <div className="card-body p-3">
+                      <div className="d-flex justify-content-between align-items-start mb-2">
+                        <h5 className="card-title mb-0 fw-bold">{admin.fullName}</h5>
+                        {getStatusBadge(admin.status)}
+                      </div>
+                      <div className="row g-2 mb-2">
+                        <div className="col-6">
+                          <small className="text-muted d-block">Gym</small>
+                          <span>{admin.gymName || '-'}</span>
+                        </div>
+                        <div className="col-6">
+                          <small className="text-muted d-block">Plan</small>
+                          <span>{admin.planName || <span className="text-muted">No Plan</span>}</span>
+                        </div>
+                      </div>
+                      <div className="mb-2">
+                        <small className="text-muted d-block">Address</small>
+                        <span>{admin.address || '-'}</span>
+                      </div>
+                      <div className="mb-2">
+                        <small className="text-muted d-block">Phone</small>
+                        <span>{admin.phone || '-'}</span>
+                      </div>
+                      <div className="d-flex justify-content-end gap-2">
                         <button className="btn btn-sm btn-outline-secondary" onClick={() => handleView(admin)}>
                           <FaEye size={14} />
                         </button>
@@ -248,57 +307,14 @@ const SuperAdminAdmin = () => {
                           <FaTrashAlt size={14} />
                         </button>
                       </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Mobile View */}
-          <div className="d-md-none p-3">
-            {admins.map((admin) => (
-              <div key={admin.id} className="card mb-3 shadow-sm" style={{ borderRadius: "12px" }}>
-                <div className="card-body p-3">
-                  <div className="d-flex justify-content-between align-items-start mb-2">
-                    <h5 className="card-title mb-0 fw-bold">{admin.fullName}</h5>
-                    {getStatusBadge(admin.status)}
-                  </div>
-                  <div className="row g-2 mb-2">
-                    <div className="col-6">
-                      <small className="text-muted d-block">Gym</small>
-                      <span>{admin.gymName}</span>
-                    </div>
-                    <div className="col-6">
-                      <small className="text-muted d-block">Plan</small>
-                      <span>{admin.planName || <span className="text-muted">No Plan</span>}</span>
                     </div>
                   </div>
-                  <div className="mb-2">
-                    <small className="text-muted d-block">Address</small>
-                    <span>{admin.address}</span>
-                  </div>
-                  <div className="mb-2">
-                    <small className="text-muted d-block">Phone</small>
-                    <span>{admin.phone}</span>
-                  </div>
-                  <div className="d-flex justify-content-end gap-2">
-                    <button className="btn btn-sm btn-outline-secondary" onClick={() => handleView(admin)}>
-                      <FaEye size={14} />
-                    </button>
-                    <button className="btn btn-sm btn-outline-primary" onClick={() => handleEdit(admin)}>
-                      <FaEdit size={14} />
-                    </button>
-                    <button className="btn btn-sm btn-outline-danger" onClick={() => handleDeleteClick(admin)}>
-                      <FaTrashAlt size={14} />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
+                ))
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* MODALS */}
       {isModalOpen && (
@@ -368,32 +384,44 @@ const AdminForm = ({ mode, admin, onCancel, onSubmit, plans, loadingPlans }) => 
     email: admin?.email || "",
     password: "",
     status: (admin?.status || "active"),
-    selectedPlanId: "", // for dropdown
+    selectedPlanId: "", // will be set if plan matches
     planName: admin?.planName || "",
     planPrice: admin?.price || "",
     planDuration: admin?.duration || "",
     planDescription: admin?.description || ""
   });
 
+  // On initial load, try to match plan by name/price to set selectedPlanId
+  useEffect(() => {
+    if (admin && plans.length > 0 && admin.planName) {
+      const matchedPlan = plans.find(p =>
+        p.name === admin.planName &&
+        p.price.toString() === (admin.price || "").toString()
+      );
+      if (matchedPlan) {
+        setFormData(prev => ({
+          ...prev,
+          selectedPlanId: matchedPlan.id
+        }));
+      }
+    }
+  }, [admin, plans]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // ✅ HANDLE PLAN SELECTION FROM DROPDOWN
   const handlePlanChange = (planId) => {
     const selectedPlan = plans.find(p => p.id == planId);
     if (selectedPlan) {
-      // Convert duration (in days) to "X Months" or keep as is — adjust if needed
-      const durationText = selectedPlan.duration; // assuming it's already "1 Months", etc.
-
       setFormData(prev => ({
         ...prev,
         selectedPlanId: planId,
         planName: selectedPlan.name,
         planPrice: selectedPlan.price.toString(),
-        planDuration: durationText,
-        planDescription: selectedPlan.description || `Plan for ${durationText} @ ₹${selectedPlan.price}`
+        planDuration: selectedPlan.duration,
+        planDescription: selectedPlan.description || `Plan for ${selectedPlan.duration} @ ₹${selectedPlan.price}`
       }));
     } else {
       setFormData(prev => ({
@@ -509,12 +537,12 @@ const AdminForm = ({ mode, admin, onCancel, onSubmit, plans, loadingPlans }) => 
         </div>
       )}
 
-      {/* ✅ PLAN DROPDOWN + AUTO-FILL */}
+      {/* PLAN DROPDOWN */}
       <div className="mb-4">
         <h6 className="fw-bold mb-3 text-primary">Plan Information</h6>
         <div className="row g-2 mb-3">
           <div className="col-12">
-            <label className="form-label fs-6">Select Plan *</label>
+            <label className="form-label fs-6">Select Plan</label>
             {loadingPlans ? (
               <div className="form-control form-control-sm" disabled>Loading plans...</div>
             ) : (
@@ -523,7 +551,6 @@ const AdminForm = ({ mode, admin, onCancel, onSubmit, plans, loadingPlans }) => 
                 value={formData.selectedPlanId}
                 onChange={(e) => handlePlanChange(e.target.value)}
                 disabled={isView}
-                required={!isView}
               >
                 <option value="">-- Choose Plan --</option>
                 {plans.map(plan => (
