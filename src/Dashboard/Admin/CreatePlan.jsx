@@ -529,7 +529,7 @@ const CreatePlan = () => {
                 size="sm"
                 className="p-1 rounded-circle"
                 style={{
-                  color: '#6c757d',
+                  color: '#6EB2CC',
                   backgroundColor: '#f8f9fa',
                   border: '1px solid #e9ecef',
                   transition: 'all 0.2s ease'
@@ -543,7 +543,7 @@ const CreatePlan = () => {
                 size="sm"
                 className="p-1 rounded-circle"
                 style={{
-                  color: '#0d6efd',
+                  color: '#6EB2CC',
                   backgroundColor: '#f8f9fa',
                   border: '1px solid #e9ecef',
                   transition: 'all 0.2s ease'
@@ -1295,7 +1295,7 @@ const CreatePlan = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="col-md-6">
+                  {/* <div className="col-md-6">
                     <div className="mb-3 d-flex align-items-center">
                       <span className="me-3" style={{ color: customColor, fontSize: '1.2rem' }}>📍</span>
                       <div>
@@ -1303,7 +1303,7 @@ const CreatePlan = () => {
                         <div className="fw-bold">{selectedPlan.branch}</div>
                       </div>
                     </div>
-                  </div>
+                  </div> */}
                   <div className="col-md-6">
                     <div className="mb-3 d-flex align-items-center">
                       <span className="me-3" style={{ color: customColor, fontSize: '1.2rem' }}>⚡</span>
