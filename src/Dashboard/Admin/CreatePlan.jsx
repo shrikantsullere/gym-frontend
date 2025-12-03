@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Nav, Tab, Button, Card, Alert, Modal, Form, Table } from 'react-bootstrap';
 import { FaEye, FaEdit, FaTrash, FaToggleOn, FaToggleOff, FaPlus } from 'react-icons/fa';
+import axiosInstance from '../../Api/axiosInstance'; // Import your axios instance
+import BaseUrl from '../../Api/BaseUrl'; // Import your base URL
 
 const CreatePlan = () => {
   const [activeTab, setActiveTab] = useState('group');
@@ -21,6 +23,10 @@ const CreatePlan = () => {
     type: 'group',
     branch: 'Downtown'
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [apiPlans, setApiPlans] = useState([]);
+  const [plansLoaded, setPlansLoaded] = useState(false);
 
   // Custom color for all blue elements
   const customColor = '#6EB2CC';
@@ -89,6 +95,70 @@ const CreatePlan = () => {
     },
   ]);
 
+  // Fetch plans from API on component mount
+  useEffect(() => {
+    fetchPlansFromAPI();
+  }, []);
+
+  // Function to fetch plans from API
+  const fetchPlansFromAPI = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      // Get adminId from localStorage using "userId" key
+      const adminId = localStorage.getItem('userId') || '4'; // Default to '4' if not found
+      
+      // Make API call to get plans by admin ID
+      const response = await axiosInstance.get(`${BaseUrl}/MemberPlan?adminId=${adminId}`);
+      
+      if (response.data.success) {
+        // Format the API response to match our component structure
+        const formattedPlans = response.data.plans.map(plan => ({
+          id: plan.id,
+          name: plan.name,
+          sessions: plan.sessions,
+          validity: plan.validityDays,
+          price: `₹${plan.price.toLocaleString()}`,
+          active: true, // Assuming all plans from API are active by default
+          branch: 'Downtown', // Default branch since API doesn't provide it
+          type: plan.type.toLowerCase() // Convert to lowercase for our component
+        }));
+        
+        setApiPlans(formattedPlans);
+        setPlansLoaded(true);
+        
+        // Merge API plans with existing plans
+        const newGroupPlans = [...groupPlans];
+        const newPersonalPlans = [...personalPlans];
+        
+        formattedPlans.forEach(plan => {
+          if (plan.type === 'group') {
+            // Check if plan already exists in our state
+            if (!newGroupPlans.some(p => p.id === plan.id)) {
+              newGroupPlans.push(plan);
+            }
+          } else {
+            // Check if plan already exists in our state
+            if (!newPersonalPlans.some(p => p.id === plan.id)) {
+              newPersonalPlans.push(plan);
+            }
+          }
+        });
+        
+        setGroupPlans(newGroupPlans);
+        setPersonalPlans(newPersonalPlans);
+      } else {
+        setError("Failed to fetch plans. Please try again.");
+      }
+    } catch (err) {
+      console.error("Error fetching plans:", err);
+      setError(err.response?.data?.message || "Failed to fetch plans. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Get the appropriate plan list based on type and filter by branch
   const getPlansByType = (type) => {
     const plans = type === 'group' ? groupPlans : personalPlans;
@@ -104,36 +174,73 @@ const CreatePlan = () => {
     }
   };
 
-  // Handle Plan Creation
-  const handleCreatePlan = () => {
+  // Handle Plan Creation with API
+  const handleCreatePlan = async () => {
     if (!newPlan.name || !newPlan.sessions || !newPlan.validity || !newPlan.price) {
-      alert("Please fill all fields");
+      setError("Please fill all fields");
       return;
     }
 
-    const plan = {
-      id: Date.now(),
-      name: newPlan.name,
-      sessions: parseInt(newPlan.sessions),
-      validity: parseInt(newPlan.validity),
-      price: `₹${newPlan.price}`,
-      active: true,
-      branch: newPlan.branch
-    };
+    setLoading(true);
+    setError(null);
 
-    const currentPlans = newPlan.type === 'group' ? groupPlans : personalPlans;
-    updatePlansByType(newPlan.type, [...currentPlans, plan]);
+    try {
+      // Get adminId from localStorage using "userId" key
+      const adminId = localStorage.getItem('userId') || '4'; // Default to '4' if not found
 
-    setNewPlan({
-      name: '',
-      sessions: '',
-      validity: '',
-      price: '',
-      type: activeTab === 'personal' ? 'personal' : 'group',
-      branch: 'Downtown'
-    });
-    setShowCreateModal(false);
-    alert(`✅ ${newPlan.type === 'group' ? 'Group' : 'Personal'} Plan Created: ${plan.name}`);
+      // Prepare payload according to API requirements
+      const payload = {
+        planName: newPlan.name,
+        sessions: parseInt(newPlan.sessions),
+        validity: parseInt(newPlan.validity),
+        price: parseInt(newPlan.price.replace('₹', '').replace(',', '')),
+        adminId: parseInt(adminId), // Convert to integer
+        type: newPlan.type.toUpperCase() // Convert to uppercase as per API response
+      };
+
+      // Make API call
+      const response = await axiosInstance.post(`${BaseUrl}/MemberPlan`, payload);
+      
+      if (response.data.success) {
+        // Format the response data to match our component structure
+        const plan = {
+          id: response.data.plan.id,
+          name: response.data.plan.name,
+          sessions: response.data.plan.sessions,
+          validity: response.data.plan.validityDays,
+          price: `₹${response.data.plan.price.toLocaleString()}`,
+          active: true,
+          branch: newPlan.branch,
+          type: newPlan.type
+        };
+
+        // Update local state
+        const currentPlans = newPlan.type === 'group' ? groupPlans : personalPlans;
+        updatePlansByType(newPlan.type, [...currentPlans, plan]);
+
+        // Also update API plans state
+        setApiPlans([...apiPlans, plan]);
+
+        // Reset form
+        setNewPlan({
+          name: '',
+          sessions: '',
+          validity: '',
+          price: '',
+          type: activeTab === 'personal' ? 'personal' : 'group',
+          branch: 'Downtown'
+        });
+        setShowCreateModal(false);
+        alert(`✅ ${newPlan.type === 'group' ? 'Group' : 'Personal'} Plan Created: ${plan.name}`);
+      } else {
+        setError("Failed to create plan. Please try again.");
+      }
+    } catch (err) {
+      console.error("Error creating plan:", err);
+      setError(err.response?.data?.message || "Failed to create plan. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Handle Plan Edit
@@ -143,7 +250,7 @@ const CreatePlan = () => {
       name: plan.name,
       sessions: plan.sessions.toString(),
       validity: plan.validity.toString(),
-      price: plan.price.replace('₹', ''),
+      price: plan.price.replace('₹', '').replace(',', ''),
       type: planType,
       branch: plan.branch
     });
@@ -151,31 +258,67 @@ const CreatePlan = () => {
   };
 
   // Handle Plan Update
-  const handleUpdatePlan = () => {
+  const handleUpdatePlan = async () => {
     if (!newPlan.name || !newPlan.sessions || !newPlan.validity || !newPlan.price) {
-      alert("Please fill all fields");
+      setError("Please fill all fields");
       return;
     }
 
-    const updatedPlan = {
-      ...selectedPlan,
-      name: newPlan.name,
-      sessions: parseInt(newPlan.sessions),
-      validity: parseInt(newPlan.validity),
-      price: `₹${newPlan.price}`,
-      branch: newPlan.branch
-    };
+    setLoading(true);
+    setError(null);
 
-    const currentPlans = getPlansByType(selectedPlan.type);
-    updatePlansByType(
-      selectedPlan.type,
-      currentPlans.map(p => p.id === selectedPlan.id ? updatedPlan : p)
-    );
+    try {
+      // Get adminId from localStorage using "userId" key
+      const adminId = localStorage.getItem('userId') || '4'; // Default to '4' if not found
 
-    setNewPlan({ name: '', sessions: '', validity: '', price: '', type: 'group', branch: 'Downtown' });
-    setShowEditModal(false);
-    setSelectedPlan(null);
-    alert(`✅ Plan Updated: ${updatedPlan.name}`);
+      // Prepare payload according to API requirements
+      const payload = {
+        planName: newPlan.name,
+        sessions: parseInt(newPlan.sessions),
+        validity: parseInt(newPlan.validity),
+        price: parseInt(newPlan.price.replace('₹', '').replace(',', '')),
+        adminId: parseInt(adminId), // Convert to integer
+        type: newPlan.type.toUpperCase() // Convert to uppercase as per API response
+      };
+
+      // Make API call - assuming you have an update endpoint
+      const response = await axiosInstance.put(`${BaseUrl}/MemberPlan/${selectedPlan.id}`, payload);
+      
+      if (response.data.success) {
+        // Format the response data to match our component structure
+        const updatedPlan = {
+          ...selectedPlan,
+          name: response.data.plan.name,
+          sessions: response.data.plan.sessions,
+          validity: response.data.plan.validityDays,
+          price: `₹${response.data.plan.price.toLocaleString()}`,
+          branch: newPlan.branch
+        };
+
+        // Update local state
+        const currentPlans = getPlansByType(selectedPlan.type);
+        updatePlansByType(
+          selectedPlan.type,
+          currentPlans.map(p => p.id === selectedPlan.id ? updatedPlan : p)
+        );
+
+        // Also update API plans state
+        setApiPlans(apiPlans.map(p => p.id === selectedPlan.id ? updatedPlan : p));
+
+        // Reset form
+        setNewPlan({ name: '', sessions: '', validity: '', price: '', type: 'group', branch: 'Downtown' });
+        setShowEditModal(false);
+        setSelectedPlan(null);
+        alert(`✅ Plan Updated: ${updatedPlan.name}`);
+      } else {
+        setError("Failed to update plan. Please try again.");
+      }
+    } catch (err) {
+      console.error("Error updating plan:", err);
+      setError(err.response?.data?.message || "Failed to update plan. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Handle Plan Delete
@@ -184,12 +327,34 @@ const CreatePlan = () => {
     setShowDeleteModal(true);
   };
 
-  const handleConfirmDelete = () => {
-    const { id, type } = planToDelete;
-    const currentPlans = getPlansByType(type);
-    updatePlansByType(type, currentPlans.filter(p => p.id !== id));
-    setShowDeleteModal(false);
-    alert("✅ Plan Deleted!");
+  const handleConfirmDelete = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Make API call - assuming you have a delete endpoint
+      const response = await axiosInstance.delete(`${BaseUrl}/MemberPlan/${planToDelete.id}`);
+      
+      if (response.data.success) {
+        // Update local state
+        const { id, type } = planToDelete;
+        const currentPlans = getPlansByType(type);
+        updatePlansByType(type, currentPlans.filter(p => p.id !== id));
+        
+        // Also update API plans state
+        setApiPlans(apiPlans.filter(p => p.id !== id));
+        
+        setShowDeleteModal(false);
+        alert("✅ Plan Deleted!");
+      } else {
+        setError("Failed to delete plan. Please try again.");
+      }
+    } catch (err) {
+      console.error("Error deleting plan:", err);
+      setError(err.response?.data?.message || "Failed to delete plan. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCancelDelete = () => {
@@ -198,15 +363,49 @@ const CreatePlan = () => {
   };
 
   // Handle Plan Toggle (Activate/Deactivate)
-  const handleTogglePlan = (planId, planType) => {
-    const currentPlans = getPlansByType(planType);
-    updatePlansByType(
-      planType,
-      currentPlans.map(p =>
-        p.id === planId ? { ...p, active: !p.active } : p
-      )
-    );
-    alert(`✅ Plan ${planType === 'group' ? 'Group' : 'Personal'} updated!`);
+  const handleTogglePlan = async (planId, planType) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Find the plan to toggle
+      const currentPlans = getPlansByType(planType);
+      const plan = currentPlans.find(p => p.id === planId);
+      
+      if (!plan) {
+        setError("Plan not found");
+        return;
+      }
+
+      // Make API call - assuming you have an update endpoint for status
+      const response = await axiosInstance.patch(`${BaseUrl}/MemberPlan/${planId}`, {
+        active: !plan.active
+      });
+      
+      if (response.data.success) {
+        // Update local state
+        updatePlansByType(
+          planType,
+          currentPlans.map(p =>
+            p.id === planId ? { ...p, active: !p.active } : p
+          )
+        );
+        
+        // Also update API plans state
+        setApiPlans(apiPlans.map(p => 
+          p.id === planId ? { ...p, active: !p.active } : p
+        ));
+        
+        alert(`✅ Plan ${planType === 'group' ? 'Group' : 'Personal'} updated!`);
+      } else {
+        setError("Failed to update plan status. Please try again.");
+      }
+    } catch (err) {
+      console.error("Error toggling plan status:", err);
+      setError(err.response?.data?.message || "Failed to update plan status. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Open status change modal
@@ -429,7 +628,6 @@ const CreatePlan = () => {
             </Button>
           </div>
           <Button
-            variant="outline-primary"
             onClick={() => {
               setNewPlan(prev => ({
                 ...prev,
@@ -439,8 +637,9 @@ const CreatePlan = () => {
             }}
             className="px-3 px-md-4 py-2 d-flex align-items-center justify-content-center"
             style={{
+              backgroundColor: customColor,
               borderColor: customColor,
-              color: customColor,
+              color: 'white',
               transition: "all 0.3s ease",
               width: '100%',
               maxWidth: '200px'
@@ -580,9 +779,9 @@ const CreatePlan = () => {
                             <td className="py-3">{req.planName}</td>
                             <td className="py-3">
                               {req.planType === 'Group' ? (
-                                <span className="badge bg-primary px-3 py-2" style={{ backgroundColor: customColor, color: 'white', borderRadius: '20px' }}>Group</span>
+                                <span className="badge px-3 py-2" style={{ backgroundColor: customColor, color: 'white', borderRadius: '20px' }}>Group</span>
                               ) : (
-                                <span className="badge bg-primary px-3 py-2" style={{ backgroundColor: customColor, color: 'white', borderRadius: '20px' }}>Personal</span>
+                                <span className="badge px-3 py-2" style={{ backgroundColor: customColor, color: 'white', borderRadius: '20px' }}>Personal</span>
                               )}
                             </td>
                             <td className="py-3 d-none d-lg-table-cell">{req.sessions} total</td>
@@ -805,33 +1004,33 @@ const CreatePlan = () => {
             <Modal.Title style={{ color: '#333', fontWeight: '600' }}>Create New {newPlan.type === 'group' ? 'Group' : 'Personal'} Plan</Modal.Title>
           </Modal.Header>
           <Modal.Body className="p-3 p-md-4">
+            {error && <Alert variant="danger">{error}</Alert>}
             <Form>
-              
               <Form.Group className="mb-4">
-                    <Form.Label className="fw-medium" style={{ color: '#333' }}>Plan Type</Form.Label>
-                    <Form.Select
-                      value={newPlan.type}
-                      onChange={(e) => setNewPlan({ ...newPlan, type: e.target.value })}
-                      required
-                      style={{ padding: '12px', fontSize: '1rem' }}
-                    >
-                      <option value="personal">Personal Training Plan</option>
-                      <option value="group">Group Class Plan</option>
-                    </Form.Select>
-                  </Form.Group>
-              <Row>
-                <Col md={6}>
-                 <Form.Group className="mb-4">
-                <Form.Label className="fw-medium" style={{ color: '#333' }}>Plan Name</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="e.g., Premium Pack"
-                  value={newPlan.name}
-                  onChange={(e) => setNewPlan({ ...newPlan, name: e.target.value })}
+                <Form.Label className="fw-medium" style={{ color: '#333' }}>Plan Type</Form.Label>
+                <Form.Select
+                  value={newPlan.type}
+                  onChange={(e) => setNewPlan({ ...newPlan, type: e.target.value })}
                   required
                   style={{ padding: '12px', fontSize: '1rem' }}
-                />
+                >
+                  <option value="personal">Personal Training Plan</option>
+                  <option value="group">Group Class Plan</option>
+                </Form.Select>
               </Form.Group>
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-4">
+                    <Form.Label className="fw-medium" style={{ color: '#333' }}>Plan Name</Form.Label>
+                    <Form.Control
+                      type="text"
+                      placeholder="e.g., Premium Pack"
+                      value={newPlan.name}
+                      onChange={(e) => setNewPlan({ ...newPlan, name: e.target.value })}
+                      required
+                      style={{ padding: '12px', fontSize: '1rem' }}
+                    />
+                  </Form.Group>
                 </Col>
                 <Col md={6}>
                   <Form.Group className="mb-4">
@@ -892,6 +1091,7 @@ const CreatePlan = () => {
             </Button>
             <Button
               onClick={handleCreatePlan}
+              disabled={loading}
               className="w-100 w-sm-auto mt-2 mt-sm-0"
               style={{
                 backgroundColor: customColor,
@@ -899,16 +1099,18 @@ const CreatePlan = () => {
                 transition: 'background-color 0.3s ease'
               }}
             >
-              <span className="fw-medium">Create Plan</span>
+              {loading ? 'Creating...' : <span className="fw-medium">Create Plan</span>}
             </Button>
           </Modal.Footer>
         </Modal>
+        
         {/* Edit Plan Modal - Responsive */}
         <Modal show={showEditModal} onHide={() => setShowEditModal(false)} centered size="lg" fullscreen="sm-down">
           <Modal.Header closeButton style={{ backgroundColor: '#f8f9fa', borderBottom: `2px solid ${customColor}` }}>
             <Modal.Title style={{ color: '#333', fontWeight: '600' }}>Edit {selectedPlan?.type === 'group' ? 'Group' : 'Personal'} Plan</Modal.Title>
           </Modal.Header>
           <Modal.Body className="p-3 p-md-4">
+            {error && <Alert variant="danger">{error}</Alert>}
             <Form>
               <Form.Group className="mb-4">
                 <Form.Label className="fw-medium" style={{ color: '#333' }}>Plan Name</Form.Label>
@@ -997,6 +1199,7 @@ const CreatePlan = () => {
             <Button
               variant="info"
               onClick={handleUpdatePlan}
+              disabled={loading}
               className="w-100 w-sm-auto mt-2 mt-sm-0"
               style={{
                 backgroundColor: customColor,
@@ -1005,7 +1208,7 @@ const CreatePlan = () => {
                 transition: 'background-color 0.3s ease'
               }}
             >
-              <span className="fw-medium">Update Plan</span>
+              {loading ? 'Updating...' : <span className="fw-medium">Update Plan</span>}
             </Button>
           </Modal.Footer>
         </Modal>
@@ -1097,6 +1300,7 @@ const CreatePlan = () => {
             <Modal.Title style={{ color: '#333' }}>Confirm Deletion</Modal.Title>
           </Modal.Header>
           <Modal.Body>
+            {error && <Alert variant="danger">{error}</Alert>}
             <p className="text-center fw-medium" style={{ fontSize: '1.1rem' }}>
               Are you sure you want to delete this plan?
             </p>
@@ -1120,6 +1324,7 @@ const CreatePlan = () => {
             <Button
               variant="danger"
               onClick={handleConfirmDelete}
+              disabled={loading}
               className="w-100 w-sm-auto mt-2 mt-sm-0"
               style={{
                 backgroundColor: '#dc3545',
@@ -1127,7 +1332,7 @@ const CreatePlan = () => {
                 minWidth: '100px'
               }}
             >
-              Delete
+              {loading ? 'Deleting...' : 'Delete'}
             </Button>
           </Modal.Footer>
         </Modal>
