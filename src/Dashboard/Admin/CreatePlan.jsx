@@ -27,6 +27,7 @@ const CreatePlan = () => {
   const [error, setError] = useState(null);
   const [apiPlans, setApiPlans] = useState([]);
   const [plansLoaded, setPlansLoaded] = useState(false);
+  const [viewLoading, setViewLoading] = useState(false);
 
   // Custom color for all blue elements
   const customColor = '#6EB2CC';
@@ -101,20 +102,77 @@ const CreatePlan = () => {
   }, []);
 
   // Function to fetch plans from API
-  const fetchPlansFromAPI = async () => {
-    setLoading(true);
+    const fetchPlansFromAPI = async () => {
+      setLoading(true);
+      setError(null);
+      
+      try {
+        // Get adminId from localStorage using "userId" key
+        const adminId = localStorage.getItem('userId') || '4'; // Default to '4' if not found
+        
+        // Make API call to get plans by admin ID
+        const response = await axiosInstance.get(`${BaseUrl}/MemberPlan?adminId=${adminId}`);
+        
+        if (response.data.success) {
+          // Format the API response to match our component structure
+          const formattedPlans = response.data.plans.map(plan => ({
+            id: plan.id,
+            name: plan.name,
+            sessions: plan.sessions,
+            validity: plan.validityDays,
+            price: `₹${plan.price.toLocaleString()}`,
+            active: true, // Assuming all plans from API are active by default
+            branch: 'Downtown', // Default branch since API doesn't provide it
+            type: plan.type.toLowerCase() // Convert to lowercase for our component
+          }));
+          
+          setApiPlans(formattedPlans);
+          setPlansLoaded(true);
+          
+          // Merge API plans with existing plans
+          const newGroupPlans = [...groupPlans];
+          const newPersonalPlans = [...personalPlans];
+          
+          formattedPlans.forEach(plan => {
+            if (plan.type === 'group') {
+              // Check if plan already exists in our state
+              if (!newGroupPlans.some(p => p.id === plan.id)) {
+                newGroupPlans.push(plan);
+              }
+            } else {
+              // Check if plan already exists in our state
+              if (!newPersonalPlans.some(p => p.id === plan.id)) {
+                newPersonalPlans.push(plan);
+              }
+            }
+          });
+          
+          setGroupPlans(newGroupPlans);
+          setPersonalPlans(newPersonalPlans);
+        } else {
+          setError("Failed to fetch plans. Please try again.");
+        }
+      } catch (err) {
+        console.error("Error fetching plans:", err);
+        setError(err.response?.data?.message || "Failed to fetch plans. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+  // Function to fetch a single plan by ID from API
+  const fetchPlanById = async (planId) => {
+    setViewLoading(true);
     setError(null);
     
     try {
-      // Get adminId from localStorage using "userId" key
-      const adminId = localStorage.getItem('userId') || '4'; // Default to '4' if not found
-      
-      // Make API call to get plans by admin ID
-      const response = await axiosInstance.get(`${BaseUrl}/MemberPlan?adminId=${adminId}`);
+      // Make API call to get plan by ID
+      const response = await axiosInstance.get(`${BaseUrl}/MemberPlan/${planId}`);
       
       if (response.data.success) {
+        const plan = response.data.plan;
         // Format the API response to match our component structure
-        const formattedPlans = response.data.plans.map(plan => ({
+        const formattedPlan = {
           id: plan.id,
           name: plan.name,
           sessions: plan.sessions,
@@ -122,40 +180,21 @@ const CreatePlan = () => {
           price: `₹${plan.price.toLocaleString()}`,
           active: true, // Assuming all plans from API are active by default
           branch: 'Downtown', // Default branch since API doesn't provide it
-          type: plan.type.toLowerCase() // Convert to lowercase for our component
-        }));
+          type: plan.type.toLowerCase(), // Convert to lowercase for our component
+          createdAt: plan.createdAt,
+          updatedAt: plan.updatedAt
+        };
         
-        setApiPlans(formattedPlans);
-        setPlansLoaded(true);
-        
-        // Merge API plans with existing plans
-        const newGroupPlans = [...groupPlans];
-        const newPersonalPlans = [...personalPlans];
-        
-        formattedPlans.forEach(plan => {
-          if (plan.type === 'group') {
-            // Check if plan already exists in our state
-            if (!newGroupPlans.some(p => p.id === plan.id)) {
-              newGroupPlans.push(plan);
-            }
-          } else {
-            // Check if plan already exists in our state
-            if (!newPersonalPlans.some(p => p.id === plan.id)) {
-              newPersonalPlans.push(plan);
-            }
-          }
-        });
-        
-        setGroupPlans(newGroupPlans);
-        setPersonalPlans(newPersonalPlans);
+        setSelectedPlan(formattedPlan);
+        setShowViewModal(true);
       } else {
-        setError("Failed to fetch plans. Please try again.");
+        setError("Failed to fetch plan details. Please try again.");
       }
     } catch (err) {
-      console.error("Error fetching plans:", err);
-      setError(err.response?.data?.message || "Failed to fetch plans. Please try again.");
+      console.error("Error fetching plan details:", err);
+      setError(err.response?.data?.message || "Failed to fetch plan details. Please try again.");
     } finally {
-      setLoading(false);
+      setViewLoading(false);
     }
   };
 
@@ -476,13 +515,13 @@ const CreatePlan = () => {
         <Card.Body className="d-flex flex-column p-3">
           <div className="d-flex justify-content-between align-items-start mb-2">
             <div>
-              <div className="badge bg-primary mb-2 px-2 py-1" style={{ backgroundColor: customColor, color: 'white', fontSize: '0.7rem' }}>
+              <div className="badge  mb-2 px-2 py-1" style={{ backgroundColor: customColor, color: 'white', fontSize: '0.7rem' }}>
                 {planType === 'group' ? 'GROUP' : 'PERSONAL'}
               </div>
               <h5 className="fw-bold mb-0" style={{ color: customColor, fontSize: 'clamp(0.9rem, 2vw, 1.1rem)' }}>{plan.name}</h5>
-              <div className="badge bg-light text-dark mb-2 px-2 py-1" style={{ fontSize: '0.7rem' }}>
+              {/* <div className="badge bg-light text-dark mb-2 px-2 py-1" style={{ fontSize: '0.7rem' }}>
                 📍 {plan.branch}
-              </div>
+              </div> */}
             </div>
             <div className="d-flex gap-1">
               <Button
@@ -490,15 +529,12 @@ const CreatePlan = () => {
                 size="sm"
                 className="p-1 rounded-circle"
                 style={{
-                  color: '#6c757d',
+                  color: '#6EB2CC',
                   backgroundColor: '#f8f9fa',
                   border: '1px solid #e9ecef',
                   transition: 'all 0.2s ease'
                 }}
-                onClick={() => {
-                  setSelectedPlan(plan);
-                  setShowViewModal(true);
-                }}
+                onClick={() => fetchPlanById(plan.id)}
               >
                 <FaEye size={14} />
               </Button>
@@ -507,7 +543,7 @@ const CreatePlan = () => {
                 size="sm"
                 className="p-1 rounded-circle"
                 style={{
-                  color: '#0d6efd',
+                  color: '#6EB2CC',
                   backgroundColor: '#f8f9fa',
                   border: '1px solid #e9ecef',
                   transition: 'all 0.2s ease'
@@ -651,7 +687,7 @@ const CreatePlan = () => {
         </div>
 
         {/* Branch Filter - Responsive */}
-        <div className="mb-4 p-3 bg-white rounded shadow-sm border">
+        {/* <div className="mb-4 p-3 bg-white rounded shadow-sm border">
           <div className="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-3">
             <Form.Label className="mb-0 fw-medium" style={{ color: '#333' }}>Filter by Branch:</Form.Label>
             <Form.Select
@@ -670,7 +706,7 @@ const CreatePlan = () => {
               ))}
             </Form.Select>
           </div>
-        </div>
+        </div> */}
 
         <Tab.Container activeKey={activeTab} onSelect={(k) => setActiveTab(k)}>
           <Row>
@@ -1219,7 +1255,16 @@ const CreatePlan = () => {
             <Modal.Title style={{ color: '#333', fontWeight: '600' }}>View Plan Details</Modal.Title>
           </Modal.Header>
           <Modal.Body className="p-3 p-md-4">
-            {selectedPlan && (
+            {viewLoading ? (
+              <div className="text-center py-5">
+                <div className="spinner-border text-primary" role="status" style={{ color: customColor }}>
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+                <p className="mt-3">Fetching plan details...</p>
+              </div>
+            ) : error ? (
+              <Alert variant="danger">{error}</Alert>
+            ) : selectedPlan ? (
               <div className="p-4 bg-light rounded">
                 <h5 className="fw-bold mb-4" style={{ color: '#333', fontSize: '1.3rem' }}>{selectedPlan.name} ({selectedPlan.type === 'group' ? 'Group' : 'Personal'})</h5>
                 <div className="row">
@@ -1250,7 +1295,7 @@ const CreatePlan = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="col-md-6">
+                  {/* <div className="col-md-6">
                     <div className="mb-3 d-flex align-items-center">
                       <span className="me-3" style={{ color: customColor, fontSize: '1.2rem' }}>📍</span>
                       <div>
@@ -1258,7 +1303,7 @@ const CreatePlan = () => {
                         <div className="fw-bold">{selectedPlan.branch}</div>
                       </div>
                     </div>
-                  </div>
+                  </div> */}
                   <div className="col-md-6">
                     <div className="mb-3 d-flex align-items-center">
                       <span className="me-3" style={{ color: customColor, fontSize: '1.2rem' }}>⚡</span>
@@ -1274,7 +1319,33 @@ const CreatePlan = () => {
                       </div>
                     </div>
                   </div>
+                  {selectedPlan.createdAt && (
+                    <div className="col-md-6">
+                      <div className="mb-3 d-flex align-items-center">
+                        <span className="me-3" style={{ color: customColor, fontSize: '1.2rem' }}>🕒</span>
+                        <div>
+                          <div className="text-muted small">Created At</div>
+                          <div className="fw-bold">{new Date(selectedPlan.createdAt).toLocaleString()}</div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {selectedPlan.updatedAt && (
+                    <div className="col-md-6">
+                      <div className="mb-3 d-flex align-items-center">
+                        <span className="me-3" style={{ color: customColor, fontSize: '1.2rem' }}>🔄</span>
+                        <div>
+                          <div className="text-muted small">Last Updated</div>
+                          <div className="fw-bold">{new Date(selectedPlan.updatedAt).toLocaleString()}</div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
+              </div>
+            ) : (
+              <div className="text-center py-5">
+                <p>No plan details available.</p>
               </div>
             )}
           </Modal.Body>
