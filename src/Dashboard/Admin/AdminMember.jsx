@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import axiosInstance from '../../Api/axiosInstance'; // Import your axios instance
+import BaseUrl from '../../Api/BaseUrl';
 import {
   Search,
   UserPlus,
@@ -16,57 +18,8 @@ import {
   Filter
 } from "lucide-react";
 
-// Initial members data
-const initialMembers = [
-  {
-    id: 1,
-    name: "John Doe",
-    phone: "+1 234-567-8900",
-    email: "john.doe@example.com",
-    branch: "Downtown",
-    plan: "Premium Annual",
-    planStart: "2024-12-15",
-    expiry: "2025-12-15",
-    status: "Active",
-    address: "123 Main St, New York, NY",
-    gender: "Male",
-    dob: "1985-05-15",
-    interestedIn: "Personal Training" // Added field
-  },
-  {
-    id: 2,
-    name: "Sarah Miller",
-    phone: "+1 234-567-8901",
-    email: "sarah.miller@example.com",
-    branch: "North Branch",
-    plan: "Basic Monthly",
-    planStart: "2024-01-28",
-    expiry: "2025-01-28",
-    status: "Expired",
-    address: "456 Oak Ave, Los Angeles, CA",
-    gender: "Female",
-    dob: "1990-08-22",
-    interestedIn: "Group Classes" // Added field
-  },
-  {
-    id: 3,
-    name: "Michael Johnson",
-    phone: "+1 234-567-8902",
-    email: "michael.j@example.com",
-    branch: "Downtown",
-    plan: "Standard Quarterly",
-    planStart: "2025-01-10",
-    expiry: "2025-03-10",
-    status: "Frozen",
-    address: "789 Pine Rd, Chicago, IL",
-    gender: "Male",
-    dob: "1982-11-30",
-    interestedIn: "Both" // Added field
-  }
-];
-
 const AdminMember = () => {
-  const [members, setMembers] = useState(initialMembers);
+  const [members, setMembers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
   const [showRenewForm, setShowRenewForm] = useState(false);
@@ -75,6 +28,15 @@ const AdminMember = () => {
   const [selectedMember, setSelectedMember] = useState(null);
   const [filterStatus, setFilterStatus] = useState("");
   const [filterBranch, setFilterBranch] = useState("");
+  const [loading, setLoading] = useState(false); // Add loading state
+  const [editLoading, setEditLoading] = useState(false); // Add edit loading state
+  const [deleteLoading, setDeleteLoading] = useState(false); // Add delete loading state
+  
+  // Plans state
+  const [apiPlans, setApiPlans] = useState([]);
+  const [plansLoaded, setPlansLoaded] = useState(false);
+  const [planError, setPlanError] = useState(null);
+  const [planLoading, setPlanLoading] = useState(false);
   
   // Form states
   const [newMember, setNewMember] = useState({
@@ -126,79 +88,214 @@ const AdminMember = () => {
     return matchesSearch && matchesStatus && matchesBranch;
   });
 
-  // Handle add member
-  const handleAddMember = (e) => {
-    e.preventDefault();
+  // Fetch plans from API
+  const fetchPlansFromAPI = async () => {
+    setPlanLoading(true);
+    setPlanError(null);
     
-    // Check if phone number is unique
-    const isPhoneUnique = !members.some(member => member.phone === newMember.phone);
-    if (!isPhoneUnique) {
-      alert("Phone number already exists. Please use a different phone number.");
-      return;
+    try {
+      // Get adminId from localStorage using "userId" key with fallback to '4'
+      const adminId = localStorage.getItem('userId') || '4';
+      
+      // Make API call to get plans by admin ID
+      const response = await axiosInstance.get(`${BaseUrl}/MemberPlan?adminId=${adminId}`);
+      
+      if (response.data && response.data.success) {
+        // Format the API response to match our component structure
+        const formattedPlans = response.data.plans.map(plan => ({
+          id: plan.id,
+          name: plan.name,
+          sessions: plan.sessions,
+          validity: plan.validityDays,
+          price: `₹${plan.price.toLocaleString()}`,
+          active: true, // Assuming all plans from API are active by default
+          branch: 'Downtown', // Default branch since API doesn't provide it
+          type: plan.type.toLowerCase() // Convert to lowercase for our component
+        }));
+        
+        setApiPlans(formattedPlans);
+        setPlansLoaded(true);
+        console.log("Plans loaded successfully:", formattedPlans);
+      } else {
+        setPlanError("Failed to fetch plans. Please try again.");
+        console.error("API response error:", response.data);
+      }
+    } catch (err) {
+      console.error("Error fetching plans:", err);
+      setPlanError(err.response?.data?.message || "Failed to fetch plans. Please try again.");
+    } finally {
+      setPlanLoading(false);
     }
-    
-    const id = members.length ? Math.max(...members.map(m => m.id)) + 1 : 1;
-    const planStart = newMember.startDate;
-    
-    // Calculate expiry based on plan
-    let expiry = new Date(planStart);
-    if (newMember.planId.includes("Monthly")) {
-      expiry.setMonth(expiry.getMonth() + 1);
-    } else if (newMember.planId.includes("Quarterly")) {
-      expiry.setMonth(expiry.getMonth() + 3);
-    } else if (newMember.planId.includes("Annual")) {
-      expiry.setFullYear(expiry.getFullYear() + 1);
-    }
-    
-    const member = {
-      id,
-      name: newMember.fullName,
-      phone: newMember.phone,
-      email: newMember.email,
-      branch: newMember.branchId,
-      plan: newMember.planId,
-      address: newMember.address,
-      gender: newMember.gender,
-      dob: newMember.dateOfBirth,
-      planStart,
-      expiry: expiry.toISOString().split('T')[0],
-      status: newMember.status, // Use the selected status
-      interestedIn: newMember.interestedIn // Added field
-    };
-    
-    setMembers([...members, member]);
-    setNewMember({
-      fullName: "",
-      phone: "",
-      email: "",
-      password: "",
-      branchId: "",
-      planId: "",
-      address: "",
-      gender: "",
-      dateOfBirth: "",
-      startDate: new Date().toISOString().split('T')[0],
-      paymentMode: "cash",
-      amountPaid: "",
-      interestedIn: "", // Reset new field
-      status: "Active" // Reset status
-    });
-    setShowAddForm(false);
   };
 
-  // Handle edit member
-  const handleEditMember = (e) => {
+  // Fetch plans when component mounts
+  useEffect(() => {
+    fetchPlansFromAPI();
+  }, []);
+
+  // Handle add member with API call
+  const handleAddMember = async (e) => {
     e.preventDefault();
-    setMembers(members.map(member => 
-      member.id === editMember.id ? {...member, ...editMember} : member
-    ));
-    setShowEditForm(false);
+    setLoading(true);
+    
+    try {
+      // Prepare the payload for the API
+      const payload = {
+        fullName: newMember.fullName,
+        email: newMember.email,
+        password: newMember.password,
+        phone: newMember.phone,
+        gender: newMember.gender,
+        dateOfBirth: newMember.dateOfBirth,
+        address: newMember.address,
+        interestedIn: newMember.interestedIn,
+        branchId: parseInt(newMember.branchId), // Convert to number
+        planId: parseInt(newMember.planId), // Convert to number
+        membershipFrom: newMember.startDate, // Map startDate to membershipFrom
+        paymentMode: newMember.paymentMode.charAt(0).toUpperCase() + newMember.paymentMode.slice(1), // Capitalize first letter
+        amountPaid: parseFloat(newMember.amountPaid) // Convert to number
+      };
+      
+      // Make the API call using axiosInstance and BaseUrl
+      const response = await axiosInstance.post(`${BaseUrl}/members/create`, payload);
+      
+      // If the API call is successful, add the member to the local state
+      if (response.data) {
+        // Calculate expiry based on plan
+        let expiry = new Date(newMember.startDate);
+        
+        // Find the selected plan to determine its validity
+        const selectedPlan = apiPlans.find(plan => plan.id.toString() === newMember.planId);
+        if (selectedPlan) {
+          // Add validity days from the plan
+          expiry.setDate(expiry.getDate() + parseInt(selectedPlan.validity));
+        } else {
+          // Fallback to plan name parsing if plan not found
+          if (newMember.planId.includes("Monthly")) {
+            expiry.setMonth(expiry.getMonth() + 1);
+          } else if (newMember.planId.includes("Quarterly")) {
+            expiry.setMonth(expiry.getMonth() + 3);
+          } else if (newMember.planId.includes("Annual")) {
+            expiry.setFullYear(expiry.getFullYear() + 1);
+          }
+        }
+        
+        // Find the plan name for display
+        const planName = selectedPlan ? selectedPlan.name : newMember.planId;
+        
+        // Find the branch name for display
+        let branchName = newMember.branchId;
+        if (newMember.branchId === "1") branchName = "Downtown";
+        else if (newMember.branchId === "2") branchName = "North Branch";
+        else if (newMember.branchId === "3") branchName = "South Branch";
+        else if (newMember.branchId === "4") branchName = "East Branch";
+        
+        // Create the member object for local state
+        const member = {
+          id: response.data.id || members.length ? Math.max(...members.map(m => m.id)) + 1 : 1,
+          name: newMember.fullName,
+          phone: newMember.phone,
+          email: newMember.email,
+          branch: branchName,
+          plan: planName,
+          address: newMember.address,
+          gender: newMember.gender,
+          dob: newMember.dateOfBirth,
+          planStart: newMember.startDate,
+          expiry: expiry.toISOString().split('T')[0],
+          status: newMember.status,
+          interestedIn: newMember.interestedIn
+        };
+        
+        setMembers([...members, member]);
+        
+        // Reset the form
+        setNewMember({
+          fullName: "",
+          phone: "",
+          email: "",
+          password: "",
+          branchId: "",
+          planId: "",
+          address: "",
+          gender: "",
+          dateOfBirth: "",
+          startDate: new Date().toISOString().split('T')[0],
+          paymentMode: "cash",
+          amountPaid: "",
+          interestedIn: "",
+          status: "Active"
+        });
+        
+        setShowAddForm(false);
+        alert("Member added successfully!");
+      }
+    } catch (error) {
+      console.error("Error adding member:", error);
+      alert("Failed to add member. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Handle delete member
-  const handleDeleteMember = (id) => {
+  // Handle edit member with API call
+  const handleEditMember = async (e) => {
+    e.preventDefault();
+    setEditLoading(true);
+    
+    try {
+      // Prepare the payload for the API
+      const payload = {
+        fullName: editMember.name,
+        email: editMember.email,
+        phone: editMember.phone,
+        gender: editMember.gender,
+        address: editMember.address,
+        interestedIn: editMember.interestedIn
+      };
+      
+      // Make the API call using axiosInstance and BaseUrl
+      const response = await axiosInstance.put(`${BaseUrl}/members/update/${editMember.id}`, payload);
+      
+      // If the API call is successful, update the member in the local state
+      if (response.data) {
+        setMembers(members.map(member => 
+          member.id === editMember.id ? {...member, ...editMember} : member
+        ));
+        
+        setShowEditForm(false);
+        alert("Member updated successfully!");
+      }
+    } catch (error) {
+      console.error("Error updating member:", error);
+      alert("Failed to update member. Please try again.");
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  // Handle delete member with API call
+  const handleDeleteMember = async (id) => {
     if (window.confirm("Are you sure you want to delete this member?")) {
-      setMembers(members.filter(member => member.id !== id));
+      setDeleteLoading(true);
+      
+      try {
+        // Make the API call using axiosInstance and BaseUrl
+        const response = await axiosInstance.delete(`${BaseUrl}/members/delete/${id}`);
+        
+        // If the API call is successful, remove the member from the local state
+        if (response.data && response.data.success) {
+          setMembers(members.filter(member => member.id !== id));
+          alert("Member deleted successfully!");
+        } else {
+          alert("Failed to delete member. Please try again.");
+        }
+      } catch (error) {
+        console.error("Error deleting member:", error);
+        alert("Failed to delete member. Please try again.");
+      } finally {
+        setDeleteLoading(false);
+      }
     }
   };
 
@@ -222,19 +319,31 @@ const AdminMember = () => {
     
     // Calculate expiry based on plan
     let expiry = new Date(today);
-    if (renewPlan.plan.includes("Monthly")) {
-      expiry.setMonth(expiry.getMonth() + 1);
-    } else if (renewPlan.plan.includes("Quarterly")) {
-      expiry.setMonth(expiry.getMonth() + 3);
-    } else if (renewPlan.plan.includes("Annual")) {
-      expiry.setFullYear(expiry.getFullYear() + 1);
+    
+    // Find the selected plan to determine its validity
+    const selectedPlan = apiPlans.find(plan => plan.id.toString() === renewPlan.plan);
+    if (selectedPlan) {
+      // Add validity days from the plan
+      expiry.setDate(expiry.getDate() + parseInt(selectedPlan.validity));
+    } else {
+      // Fallback to plan name parsing if plan not found
+      if (renewPlan.plan.includes("Monthly")) {
+        expiry.setMonth(expiry.getMonth() + 1);
+      } else if (renewPlan.plan.includes("Quarterly")) {
+        expiry.setMonth(expiry.getMonth() + 3);
+      } else if (renewPlan.plan.includes("Annual")) {
+        expiry.setFullYear(expiry.getFullYear() + 1);
+      }
     }
+    
+    // Find the plan name for display
+    const planName = selectedPlan ? selectedPlan.name : renewPlan.plan;
     
     setMembers(members.map(member => 
       member.id === parseInt(renewPlan.memberId) 
         ? {
             ...member, 
-            plan: renewPlan.plan,
+            plan: planName,
             planStart,
             expiry: expiry.toISOString().split('T')[0],
             status: "Active"
@@ -403,8 +512,15 @@ const AdminMember = () => {
                               className="btn btn-sm btn-outline-danger"
                               onClick={() => handleDeleteMember(member.id)}
                               title="Delete"
+                              disabled={deleteLoading}
                             >
-                              <Trash2 size={16} />
+                              {deleteLoading ? (
+                                <div className="spinner-border spinner-border-sm" role="status">
+                                  <span className="visually-hidden">Loading...</span>
+                                </div>
+                              ) : (
+                                <Trash2 size={16} />
+                              )}
                             </button>
                           </div>
                         </td>
@@ -469,8 +585,20 @@ const AdminMember = () => {
                           <button 
                             className="dropdown-item text-danger" 
                             onClick={() => handleDeleteMember(member.id)}
+                            disabled={deleteLoading}
                           >
-                            <Trash2 size={16} className="me-2" /> Delete
+                            {deleteLoading ? (
+                              <>
+                                <div className="spinner-border spinner-border-sm me-2" role="status">
+                                  <span className="visually-hidden">Loading...</span>
+                                </div>
+                                Deleting...
+                              </>
+                            ) : (
+                              <>
+                                <Trash2 size={16} className="me-2" /> Delete
+                              </>
+                            )}
                           </button>
                         </li>
                       </ul>
@@ -689,31 +817,52 @@ const AdminMember = () => {
                         required
                       >
                         <option value="">Select Branch</option>
-                        <option value="Downtown">Downtown</option>
-                        <option value="North Branch">North Branch</option>
-                        <option value="South Branch">South Branch</option>
-                        <option value="East Branch">East Branch</option>
+                        <option value="1">Downtown</option>
+                        <option value="2">North Branch</option>
+                        <option value="3">South Branch</option>
+                        <option value="4">East Branch</option>
                       </select>
                     </div>
                     <div className="col-12 col-md-6">
                       <label className="form-label">Plan <span className="text-danger">*</span></label>
-                      <select 
-                        className="form-select" 
-                        value={newMember.planId}
-                        onChange={(e) => setNewMember({...newMember, planId: e.target.value})}
-                        required
-                      >
-                        <option value="">Select Plan</option>
-                        <option value="Basic Monthly">Basic Monthly</option>
-                        <option value="Basic Quarterly">Basic Quarterly</option>
-                        <option value="Basic Annual">Basic Annual</option>
-                        <option value="Standard Monthly">Standard Monthly</option>
-                        <option value="Standard Quarterly">Standard Quarterly</option>
-                        <option value="Standard Annual">Standard Annual</option>
-                        <option value="Premium Monthly">Premium Monthly</option>
-                        <option value="Premium Quarterly">Premium Quarterly</option>
-                        <option value="Premium Annual">Premium Annual</option>
-                      </select>
+                      {planLoading ? (
+                        <div className="form-select text-center">
+                          <div className="spinner-border spinner-border-sm text-primary" role="status">
+                            <span className="visually-hidden">Loading...</span>
+                          </div>
+                          <span className="ms-2">Loading plans...</span>
+                        </div>
+                      ) : planError ? (
+                        <div className="alert alert-danger py-2">{planError}</div>
+                      ) : (
+                        <select 
+                          className="form-select" 
+                          value={newMember.planId}
+                          onChange={(e) => setNewMember({...newMember, planId: e.target.value})}
+                          required
+                        >
+                          <option value="">Select Plan</option>
+                          {plansLoaded && apiPlans.map(plan => (
+                            <option key={plan.id} value={plan.id}>
+                              {plan.name} - {plan.price} ({plan.validity} days)
+                            </option>
+                          ))}
+                          {/* Fallback options if API plans aren't loaded */}
+                          {!plansLoaded && (
+                            <>
+                              <option value="11">Basic Monthly</option>
+                              <option value="12">Basic Quarterly</option>
+                              <option value="13">Basic Annual</option>
+                              <option value="14">Standard Monthly</option>
+                              <option value="15">Standard Quarterly</option>
+                              <option value="16">Standard Annual</option>
+                              <option value="17">Premium Monthly</option>
+                              <option value="18">Premium Quarterly</option>
+                              <option value="19">Premium Annual</option>
+                            </>
+                          )}
+                        </select>
+                      )}
                     </div>
                     <div className="col-12 col-md-6">
                       <label className="form-label">Start Date <span className="text-danger">*</span></label>
@@ -762,8 +911,9 @@ const AdminMember = () => {
                       type="submit" 
                       className="btn text-white"
                       style={{backgroundColor: "#6EB2CC"}}
+                      disabled={loading}
                     >
-                      Add Member
+                      {loading ? 'Adding...' : 'Add Member'}
                     </button>
                   </div>
                 </form>
@@ -843,15 +993,25 @@ const AdminMember = () => {
                         required
                       >
                         <option value="">Select Plan</option>
-                        <option value="Basic Monthly">Basic Monthly</option>
-                        <option value="Basic Quarterly">Basic Quarterly</option>
-                        <option value="Basic Annual">Basic Annual</option>
-                        <option value="Standard Monthly">Standard Monthly</option>
-                        <option value="Standard Quarterly">Standard Quarterly</option>
-                        <option value="Standard Annual">Standard Annual</option>
-                        <option value="Premium Monthly">Premium Monthly</option>
-                        <option value="Premium Quarterly">Premium Quarterly</option>
-                        <option value="Premium Annual">Premium Annual</option>
+                        {plansLoaded && apiPlans.map(plan => (
+                          <option key={plan.id} value={plan.id}>
+                            {plan.name} - {plan.price} ({plan.validity} days)
+                          </option>
+                        ))}
+                        {/* Fallback options if API plans aren't loaded */}
+                        {!plansLoaded && (
+                          <>
+                            <option value="Basic Monthly">Basic Monthly</option>
+                            <option value="Basic Quarterly">Basic Quarterly</option>
+                            <option value="Basic Annual">Basic Annual</option>
+                            <option value="Standard Monthly">Standard Monthly</option>
+                            <option value="Standard Quarterly">Standard Quarterly</option>
+                            <option value="Standard Annual">Standard Annual</option>
+                            <option value="Premium Monthly">Premium Monthly</option>
+                            <option value="Premium Quarterly">Premium Quarterly</option>
+                            <option value="Premium Annual">Premium Annual</option>
+                          </>
+                        )}
                       </select>
                     </div>
                     <div className="col-12 col-md-6">
@@ -940,8 +1100,9 @@ const AdminMember = () => {
                       type="submit" 
                       className="btn text-white"
                       style={{backgroundColor: "#6EB2CC"}}
+                      disabled={editLoading}
                     >
-                      Save Changes
+                      {editLoading ? 'Updating...' : 'Save Changes'}
                     </button>
                   </div>
                 </form>
@@ -975,15 +1136,25 @@ const AdminMember = () => {
                       required
                     >
                       <option value="">Select Plan</option>
-                      <option value="Basic Monthly">Basic Monthly</option>
-                      <option value="Basic Quarterly">Basic Quarterly</option>
-                      <option value="Basic Annual">Basic Annual</option>
-                      <option value="Standard Monthly">Standard Monthly</option>
-                      <option value="Standard Quarterly">Standard Quarterly</option>
-                      <option value="Standard Annual">Standard Annual</option>
-                      <option value="Premium Monthly">Premium Monthly</option>
-                      <option value="Premium Quarterly">Premium Quarterly</option>
-                      <option value="Premium Annual">Premium Annual</option>
+                      {plansLoaded && apiPlans.map(plan => (
+                        <option key={plan.id} value={plan.id}>
+                          {plan.name} - {plan.price} ({plan.validity} days)
+                        </option>
+                      ))}
+                      {/* Fallback options if API plans aren't loaded */}
+                      {!plansLoaded && (
+                        <>
+                          <option value="Basic Monthly">Basic Monthly</option>
+                          <option value="Basic Quarterly">Basic Quarterly</option>
+                          <option value="Basic Annual">Basic Annual</option>
+                          <option value="Standard Monthly">Standard Monthly</option>
+                          <option value="Standard Quarterly">Standard Quarterly</option>
+                          <option value="Standard Annual">Standard Annual</option>
+                          <option value="Premium Monthly">Premium Monthly</option>
+                          <option value="Premium Quarterly">Premium Quarterly</option>
+                          <option value="Premium Annual">Premium Annual</option>
+                        </>
+                      )}
                     </select>
                   </div>
                   <div className="mb-3">
