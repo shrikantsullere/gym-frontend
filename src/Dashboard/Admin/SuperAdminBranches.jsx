@@ -124,7 +124,7 @@ const SuperAdminBranches = () => {
 
     const fetchUserBranches = async () => {
       try {
-        const response = await axiosInstance.get(`/branches/${userId}`);
+        const response = await axiosInstance.get(`/branches/by-admin/${userId}`);
         let branchesData = Array.isArray(response.data)
           ? response.data
           : response.data?.branches || response.data?.branch
@@ -473,6 +473,8 @@ const handleSave = async (form) => {
           </div>
         </div>
       )}
+
+
     </div>
   );
 };

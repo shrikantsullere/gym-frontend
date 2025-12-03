@@ -31,7 +31,9 @@ const AdminMember = () => {
   const [loading, setLoading] = useState(false); // Add loading state
   const [editLoading, setEditLoading] = useState(false); // Add edit loading state
   const [deleteLoading, setDeleteLoading] = useState(false); // Add delete loading state
-  
+  const [branches, setBranches] = useState([]);
+const [branchesLoading, setBranchesLoading] = useState(false);
+const [branchesError, setBranchesError] = useState(null);
   // Plans state
   const [apiPlans, setApiPlans] = useState([]);
   const [plansLoaded, setPlansLoaded] = useState(false);
@@ -131,8 +133,28 @@ const AdminMember = () => {
   // Fetch plans when component mounts
   useEffect(() => {
     fetchPlansFromAPI();
+    fetchBranches(); // 👈 Add this
   }, []);
-
+  const fetchBranches = async () => {
+    setBranchesLoading(true);
+    setBranchesError(null);
+    try {
+      const adminId = localStorage.getItem('userId') || '5'; // fallback to 5 as per your note
+      const response = await axiosInstance.get(`${BaseUrl}/branches/by-admin/${adminId}`);
+      if (response.data?.success && Array.isArray(response.data.branches)) {
+        setBranches(response.data.branches);
+      } else {
+        setBranchesError("No branches found.");
+        setBranches([]);
+      }
+    } catch (err) {
+      console.error("Error fetching branches:", err);
+      setBranchesError("Failed to load branches.");
+      setBranches([]);
+    } finally {
+      setBranchesLoading(false);
+    }
+  };
   // Handle add member with API call
   const handleAddMember = async (e) => {
     e.preventDefault();
@@ -811,17 +833,24 @@ const AdminMember = () => {
                     <div className="col-12 col-md-6">
                       <label className="form-label">Branch <span className="text-danger">*</span></label>
                       <select 
-                        className="form-select" 
-                        value={newMember.branchId}
-                        onChange={(e) => setNewMember({...newMember, branchId: e.target.value})}
-                        required
-                      >
-                        <option value="">Select Branch</option>
-                        <option value="1">Downtown</option>
-                        <option value="2">North Branch</option>
-                        <option value="3">South Branch</option>
-                        <option value="4">East Branch</option>
-                      </select>
+  className="form-select" 
+  value={newMember.branchId}
+  onChange={(e) => setNewMember({...newMember, branchId: e.target.value})}
+  required
+>
+  <option value="">Select Branch</option>
+  {branchesLoading ? (
+    <option>Loading branches...</option>
+  ) : branchesError ? (
+    <option className="text-danger">{branchesError}</option>
+  ) : (
+    branches.map(branch => (
+      <option key={branch.id} value={branch.id}>
+        {branch.name}
+      </option>
+    ))
+  )}
+</select>
                     </div>
                     <div className="col-12 col-md-6">
                       <label className="form-label">Plan <span className="text-danger">*</span></label>
