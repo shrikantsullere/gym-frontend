@@ -1,6 +1,7 @@
 // src/components/SettingsPage.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaUser, FaLock, FaSave, FaTimes } from 'react-icons/fa';
+import axiosInstance from '../../../Api/axiosInstance'; // Adjust the path based on your project structure
 
 const SettingsPage = () => {
   // State for profile photo URL
@@ -9,9 +10,9 @@ const SettingsPage = () => {
   // State for all form data
   const [settingsData, setSettingsData] = useState({
     // Profile Section
-    fullName: 'Admin',
-    email: 'admin@gymapp.com',
-    phone: '+91 90000 00000',
+    fullName: '',
+    email: '',
+    phone: '',
     profilePhoto: null, // For file upload
 
     // Password Section
@@ -20,8 +21,49 @@ const SettingsPage = () => {
     confirmNewPassword: '',
   });
 
+  // State for loading
+  const [loading, setLoading] = useState(true);
+  
   // State for showing success message
   const [showSaveMessage, setShowSaveMessage] = useState(false);
+
+  // Fetch user data on component mount
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const userId = localStorage.getItem('userId');
+        if (!userId) {
+          console.error('User ID not found in localStorage');
+          return;
+        }
+
+        const response = await axiosInstance.get(`/auth/user/${userId}`);
+        const userData = response.data.user;
+        
+        // Update form data with fetched user data
+        setSettingsData(prev => ({
+          ...prev,
+          fullName: userData.fullName,
+          email: userData.email,
+          phone: userData.phone || '',
+        }));
+        
+        // If there's a profile photo URL in the user data, use it
+        // Note: Based on the API response you provided, there doesn't seem to be a profile photo URL
+        // You might need to adjust this if your API provides one
+        if (userData.profilePhoto) {
+          setProfilePhotoUrl(userData.profilePhoto);
+        }
+        
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   // Generic handler for input changes
   const handleInputChange = (e) => {
@@ -51,15 +93,74 @@ const SettingsPage = () => {
   };
 
   // Handler for form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Here you would typically send data to your backend API
-    console.log('Saving settings:', settingsData);
     
-    // Show a success message
-    setShowSaveMessage(true);
-    setTimeout(() => setShowSaveMessage(false), 3000); // Hide after 3 seconds
+    // Validate password fields if any of them is filled
+    if (settingsData.currentPassword || settingsData.newPassword || settingsData.confirmNewPassword) {
+      if (!settingsData.currentPassword) {
+        alert('Please enter your current password');
+        return;
+      }
+      if (!settingsData.newPassword) {
+        alert('Please enter a new password');
+        return;
+      }
+      if (settingsData.newPassword !== settingsData.confirmNewPassword) {
+        alert('New passwords do not match');
+        return;
+      }
+    }
+    
+    try {
+      const userId = localStorage.getItem('userId');
+      
+      // Create payload object for the PUT request with only the fields you want to update
+      const payload = {
+        fullName: settingsData.fullName,
+        email: settingsData.email,
+        phone: settingsData.phone,
+      };
+      
+      // Only include password fields if they're filled
+      if (settingsData.currentPassword && settingsData.newPassword) {
+        payload.currentPassword = settingsData.currentPassword;
+        payload.newPassword = settingsData.newPassword;
+      }
+      
+      // Send data to backend API
+      const response = await axiosInstance.put(`/auth/user/${userId}`, payload);
+      
+      console.log('Settings saved:', response.data);
+      
+      // Show a success message
+      setShowSaveMessage(true);
+      setTimeout(() => setShowSaveMessage(false), 3000); // Hide after 3 seconds
+      
+      // Clear password fields after successful save
+      setSettingsData(prev => ({
+        ...prev,
+        currentPassword: '',
+        newPassword: '',
+        confirmNewPassword: ''
+      }));
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      alert('Error saving settings. Please try again.');
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="container-fluid p-3 p-md-4">
+        <div className="d-flex justify-content-center align-items-center" style={{ height: '50vh' }}>
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container-fluid p-3 p-md-4">

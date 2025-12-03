@@ -81,6 +81,7 @@ const AdminMember = () => {
     fullName: "",
     phone: "",
     email: "",
+    password: "",
     branchId: "",
     planId: "",
     address: "",
@@ -89,7 +90,8 @@ const AdminMember = () => {
     startDate: new Date().toISOString().split('T')[0],
     paymentMode: "cash",
     amountPaid: "",
-    interestedIn: "" // Added field for "Interested In" selection
+    interestedIn: "", // Added field for "Interested In" selection
+    status: "Active" // Added status field
   });
   
   const [editMember, setEditMember] = useState({
@@ -160,7 +162,7 @@ const AdminMember = () => {
       dob: newMember.dateOfBirth,
       planStart,
       expiry: expiry.toISOString().split('T')[0],
-      status: "Active",
+      status: newMember.status, // Use the selected status
       interestedIn: newMember.interestedIn // Added field
     };
     
@@ -169,6 +171,7 @@ const AdminMember = () => {
       fullName: "",
       phone: "",
       email: "",
+      password: "",
       branchId: "",
       planId: "",
       address: "",
@@ -177,7 +180,8 @@ const AdminMember = () => {
       startDate: new Date().toISOString().split('T')[0],
       paymentMode: "cash",
       amountPaid: "",
-      interestedIn: "" // Reset new field
+      interestedIn: "", // Reset new field
+      status: "Active" // Reset status
     });
     setShowAddForm(false);
   };
@@ -264,6 +268,7 @@ const AdminMember = () => {
       case "Expired": return "bg-danger";
       case "Frozen": return "bg-info";
       case "Pending": return "bg-warning";
+      case "Inactive": return "bg-secondary";
       default: return "bg-secondary";
     }
   };
@@ -329,6 +334,7 @@ const AdminMember = () => {
             <option value="Expired">Expired</option>
             <option value="Frozen">Frozen</option>
             <option value="Pending">Pending</option>
+            <option value="Inactive">Inactive</option>
           </select>
         </div>
       </div>
@@ -345,6 +351,7 @@ const AdminMember = () => {
                     <th>Name</th>
                     <th>Phone</th>
                     <th>Email</th>
+                    <th>Gender</th>
                     <th>Branch</th>
                     <th>Plan</th>
                     <th>Expiry</th>
@@ -359,6 +366,7 @@ const AdminMember = () => {
                         <td>{member.name}</td>
                         <td>{member.phone}</td>
                         <td>{member.email}</td>
+                        <td>{member.gender}</td>
                         <td>{member.branch}</td>
                         <td>{member.plan}</td>
                         <td>{new Date(member.expiry).toLocaleDateString()}</td>
@@ -404,7 +412,7 @@ const AdminMember = () => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="8" className="text-center py-4">No members found</td>
+                      <td colSpan="9" className="text-center py-4">No members found</td>
                     </tr>
                   )}
                 </tbody>
@@ -473,6 +481,9 @@ const AdminMember = () => {
                       <strong>Phone:</strong> {member.phone}
                     </div>
                     <div className="col-6">
+                      <strong>Gender:</strong> {member.gender}
+                    </div>
+                    <div className="col-6">
                       <strong>Branch:</strong> {member.branch}
                     </div>
                     <div className="col-6">
@@ -494,7 +505,7 @@ const AdminMember = () => {
         </div>
       </div>
 
-      {/* Add Member Modal - Fixed with editable start date and Interested In section */}
+      {/* Add Member Modal - Fixed with editable start date, Interested In section, email, password, and status */}
       {showAddForm && (
         <div className="modal fade show d-block" tabIndex="-1" style={{backgroundColor: "rgba(0,0,0,0.5)"}}>
           <div className="modal-dialog modal-lg modal-dialog-centered">
@@ -531,12 +542,23 @@ const AdminMember = () => {
                       />
                     </div>
                     <div className="col-12 col-md-6">
-                      <label className="form-label">Email</label>
+                      <label className="form-label">Email <span className="text-danger">*</span></label>
                       <input 
                         type="email" 
                         className="form-control" 
                         value={newMember.email}
                         onChange={(e) => setNewMember({...newMember, email: e.target.value})}
+                        required
+                      />
+                    </div>
+                    <div className="col-12 col-md-6">
+                      <label className="form-label">Password <span className="text-danger">*</span></label>
+                      <input 
+                        type="password" 
+                        className="form-control" 
+                        value={newMember.password}
+                        onChange={(e) => setNewMember({...newMember, password: e.target.value})}
+                        required
                       />
                     </div>
                     <div className="col-12 col-md-6">
@@ -547,6 +569,18 @@ const AdminMember = () => {
                         value={newMember.dateOfBirth}
                         onChange={(e) => setNewMember({...newMember, dateOfBirth: e.target.value})}
                       />
+                    </div>
+                    <div className="col-12 col-md-6">
+                      <label className="form-label">Status <span className="text-danger">*</span></label>
+                      <select 
+                        className="form-select" 
+                        value={newMember.status}
+                        onChange={(e) => setNewMember({...newMember, status: e.target.value})}
+                        required
+                      >
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                      </select>
                     </div>
                     <div className="col-12">
                       <label className="form-label">Gender <span className="text-danger">*</span></label>
@@ -1033,6 +1067,10 @@ const AdminMember = () => {
                       <div className="col-12 col-sm-6">
                         <strong>Email:</strong>
                         <div>{selectedMember.email}</div>
+                      </div>
+                      <div className="col-12 col-sm-6">
+                        <strong>Gender:</strong>
+                        <div>{selectedMember.gender}</div>
                       </div>
                       <div className="col-12 col-sm-6">
                         <strong>Branch:</strong>
