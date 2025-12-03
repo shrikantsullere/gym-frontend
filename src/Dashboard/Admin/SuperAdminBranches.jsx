@@ -184,70 +184,77 @@ const SuperAdminBranches = () => {
     }
   };
 
-  // ✅ FULL UPDATE (PUT) WITH API CALL
-  const handleSave = async (form) => {
-    const userId = localStorage.getItem("userId");
-    if (!userId) {
-      alert("User ID not found. Please log in again.");
-      return;
-    }
+// ✅ FULL UPDATE (PUT) WITH API CALL — userId = adminId
+const handleSave = async (form) => {
+  const userIdStr = localStorage.getItem("userId");
+  if (!userIdStr) {
+    alert("User not logged in. Please log in again.");
+    return;
+  }
 
-    if (mode === "add") {
-      setSaving(true);
-      const payload = {
-        name: form.name.trim(),
-        address: form.address.trim() || null,
-        phone: form.phone.trim(),
-        status: mapStatusToApi(form.status),
-        userId: parseInt(userId, 10),
+  const userId = parseInt(userIdStr, 10);
+  if (isNaN(userId)) {
+    alert("Invalid user ID. Please log in again.");
+    return;
+  }
+
+  if (mode === "add") {
+    setSaving(true);
+    const payload = {
+      name: form.name.trim(),
+      address: form.address.trim() || null,
+      phone: form.phone.trim(),
+      status: mapStatusToApi(form.status),
+      userId: userId,        // 👈 this is also your adminId
+      adminId: userId,       // 👈 send same value as adminId
+    };
+
+    try {
+      const response = await axiosInstance.post("/branches/create", payload);
+      const newBranch = {
+        ...response.data.branch,
+        status: mapStatusFromApi(response.data.branch.status),
       };
-
-      try {
-        const response = await axiosInstance.post("/branches/create", payload);
-        const newBranch = {
-          ...response.data.branch,
-          status: mapStatusFromApi(response.data.branch.status),
-        };
-        setBranches((prev) => [newBranch, ...prev]);
-        alert("Branch created successfully!");
-        setIsModalOpen(false);
-      } catch (error) {
-        console.error("Create branch error:", error);
-        const msg = error?.response?.data?.message || "Failed to create branch.";
-        alert(msg);
-      } finally {
-        setSaving(false);
-      }
-    } else if (mode === "edit" && selected?.id) {
-      setSaving(true);
-      const payload = {
-        name: form.name.trim(),
-        address: form.address.trim() || null,
-        phone: form.phone.trim(),
-        status: mapStatusToApi(form.status),
-        // userId not needed for update if ownership is verified server-side
-      };
-
-      try {
-        const response = await axiosInstance.put(`/branches/${selected.id}`, payload);
-        const updatedBranch = {
-          ...response.data.branch,
-          status: mapStatusFromApi(response.data.branch.status),
-        };
-        setBranches((prev) =>
-          prev.map((b) => (b.id === selected.id ? updatedBranch : b))
-        );
-        alert("Branch updated successfully!");
-        setIsModalOpen(false);
-      } catch (error) {
-        console.error("Update branch error:", error);
-        const msg = error?.response?.data?.message || "Failed to update branch.";
-        alert(msg);
-      } finally {
-        setSaving(false);
-      }
+      setBranches((prev) => [newBranch, ...prev]);
+      alert("Branch created successfully!");
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Create branch error:", error);
+      const msg = error?.response?.data?.message || "Failed to create branch.";
+      alert(msg);
+    } finally {
+      setSaving(false);
     }
-  };
+  } else if (mode === "edit" && selected?.id) {
+    setSaving(true);
+    const payload = {
+      name: form.name.trim(),
+      address: form.address.trim() || null,
+      phone: form.phone.trim(),
+      status: mapStatusToApi(form.status),
+      adminId: userId, // 👈 again, use userId as adminId
+    };
+
+    try {
+      const response = await axiosInstance.put(`/branches/${selected.id}`, payload);
+      const updatedBranch = {
+        ...response.data.branch,
+        status: mapStatusFromApi(response.data.branch.status),
+      };
+      setBranches((prev) =>
+        prev.map((b) => (b.id === selected.id ? updatedBranch : b))
+      );
+      alert("Branch updated successfully!");
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Update branch error:", error);
+      const msg = error?.response?.data?.message || "Failed to update branch.";
+      alert(msg);
+    } finally {
+      setSaving(false);
+    }
+  }
+};
 
   const filtered = branches.filter((b) => {
     const q = query.toLowerCase();
