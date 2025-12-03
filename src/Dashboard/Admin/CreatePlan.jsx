@@ -28,6 +28,7 @@ const CreatePlan = () => {
   const [apiPlans, setApiPlans] = useState([]);
   const [plansLoaded, setPlansLoaded] = useState(false);
   const [viewLoading, setViewLoading] = useState(false);
+  const [bookingRequests, setBookingRequests] = useState([]);
 
   // Custom color for all blue elements
   const customColor = '#6EB2CC';
@@ -36,129 +37,92 @@ const CreatePlan = () => {
   const branches = ['Downtown', 'North Branch', 'South Branch', 'East Branch'];
 
   // Plans (Admin-created only)
-  const [groupPlans, setGroupPlans] = useState([
-    { id: 1, name: "Starter Pack", sessions: 8, validity: 30, price: "₹2,499", active: true, branch: "Downtown" },
-    { id: 2, name: "Pro Pack", sessions: 16, validity: 60, price: "₹4,499", active: true, branch: "North Branch" },
-    { id: 3, name: "Unlimited", sessions: 30, validity: 90, price: "₹7,999", active: true, branch: "South Branch" },
-  ]);
-
-  const [personalPlans, setPersonalPlans] = useState([
-    { id: 4, name: "Basic 1:1", sessions: 6, validity: 30, price: "₹4,999", active: true, branch: "Downtown" },
-    { id: 5, name: "Advanced 1:1", sessions: 12, validity: 60, price: "₹8,999", active: true, branch: "East Branch" },
-    { id: 6, name: "Elite 1:1", sessions: 20, validity: 90, price: "₹14,999", active: true, branch: "North Branch" },
-  ]);
-
-  // Mock Booking Requests from Members
-  const [bookingRequests, setBookingRequests] = useState([
-    {
-      id: 101,
-      memberName: "Rahul Sharma",
-      planName: "Pro Pack",
-      planType: "Group",
-      sessions: 16,
-      validity: 60,
-      sessionsUsed: 1,
-      requestedAt: "2025-05-20 10:30 AM",
-      status: "pending"
-    },
-    {
-      id: 102,
-      memberName: "Priya Patel",
-      planName: "Advanced 1:1",
-      planType: "Personal",
-      sessions: 12,
-      validity: 60,
-      sessionsUsed: 1,
-      requestedAt: "2025-05-20 11:15 AM",
-      status: "approved"
-    },
-    {
-      id: 103,
-      memberName: "Amit Kumar",
-      planName: "Starter Pack",
-      planType: "Group",
-      sessions: 8,
-      validity: 30,
-      sessionsUsed: 1,
-      requestedAt: "2025-05-19 03:45 PM",
-      status: "rejected"
-    },
-    {
-      id: 104,
-      memberName: "Neha Gupta",
-      planName: "Elite 1:1",
-      planType: "Personal",
-      sessions: 20,
-      validity: 90,
-      sessionsUsed: 1,
-      requestedAt: "2025-05-21 09:00 AM",
-      status: "pending"
-    },
-  ]);
+  const [groupPlans, setGroupPlans] = useState([]);
+  const [personalPlans, setPersonalPlans] = useState([]);
 
   // Fetch plans from API on component mount
   useEffect(() => {
     fetchPlansFromAPI();
+    fetchBookingRequests();
   }, []);
 
   // Function to fetch plans from API
-    const fetchPlansFromAPI = async () => {
-      setLoading(true);
-      setError(null);
+  const fetchPlansFromAPI = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      // Get adminId from localStorage using "userId" key
+      const adminId = localStorage.getItem('userId') || '4'; // Default to '4' if not found
       
-      try {
-        // Get adminId from localStorage using "userId" key
-        const adminId = localStorage.getItem('userId') || '4'; // Default to '4' if not found
+      // Make API call to get plans by admin ID
+      const response = await axiosInstance.get(`${BaseUrl}/MemberPlan?adminId=${adminId}`);
+      
+      if (response.data.success) {
+        // Format the API response to match our component structure
+        const formattedPlans = response.data.plans.map(plan => ({
+          id: plan.id,
+          name: plan.name,
+          sessions: plan.sessions,
+          validity: plan.validityDays,
+          price: `₹${plan.price.toLocaleString()}`,
+          active: true, // Assuming all plans from API are active by default
+          branch: 'Downtown', // Default branch since API doesn't provide it
+          type: plan.type.toLowerCase() // Convert to lowercase for our component
+        }));
         
-        // Make API call to get plans by admin ID
-        const response = await axiosInstance.get(`${BaseUrl}/MemberPlan?adminId=${adminId}`);
+        setApiPlans(formattedPlans);
+        setPlansLoaded(true);
         
-        if (response.data.success) {
-          // Format the API response to match our component structure
-          const formattedPlans = response.data.plans.map(plan => ({
-            id: plan.id,
-            name: plan.name,
-            sessions: plan.sessions,
-            validity: plan.validityDays,
-            price: `₹${plan.price.toLocaleString()}`,
-            active: true, // Assuming all plans from API are active by default
-            branch: 'Downtown', // Default branch since API doesn't provide it
-            type: plan.type.toLowerCase() // Convert to lowercase for our component
-          }));
-          
-          setApiPlans(formattedPlans);
-          setPlansLoaded(true);
-          
-          // Merge API plans with existing plans
-          const newGroupPlans = [...groupPlans];
-          const newPersonalPlans = [...personalPlans];
-          
-          formattedPlans.forEach(plan => {
-            if (plan.type === 'group') {
-              // Check if plan already exists in our state
-              if (!newGroupPlans.some(p => p.id === plan.id)) {
-                newGroupPlans.push(plan);
-              }
-            } else {
-              // Check if plan already exists in our state
-              if (!newPersonalPlans.some(p => p.id === plan.id)) {
-                newPersonalPlans.push(plan);
-              }
-            }
-          });
-          
-          setGroupPlans(newGroupPlans);
-          setPersonalPlans(newPersonalPlans);
-        } else {
-          setError("Failed to fetch plans. Please try again.");
-        }
-      } catch (err) {
-        console.error("Error fetching plans:", err);
-        setError(err.response?.data?.message || "Failed to fetch plans. Please try again.");
-      } finally {
-        setLoading(false);
+        // Separate plans by type
+        const newGroupPlans = formattedPlans.filter(plan => plan.type === 'group');
+        const newPersonalPlans = formattedPlans.filter(plan => plan.type === 'personal');
+        
+        setGroupPlans(newGroupPlans);
+        setPersonalPlans(newPersonalPlans);
+      } else {
+        setError("Failed to fetch plans. Please try again.");
       }
-    };
+    } catch (err) {
+      console.error("Error fetching plans:", err);
+      setError(err.response?.data?.message || "Failed to fetch plans. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Function to fetch booking requests from API
+  const fetchBookingRequests = async () => {
+    try {
+      // Get adminId from localStorage using "userId" key
+      const adminId = localStorage.getItem('userId') || '4'; // Default to '4' if not found
+      
+      // Make API call to get booking requests
+      // const response = await axiosInstance.get(`${BaseUrl}/BookingRequest?adminId=${adminId}`);
+      
+      if (response.data.success) {
+        // Format the API response to match our component structure
+        const formattedRequests = response.data.requests.map(request => ({
+          id: request.id,
+          memberName: request.memberName,
+          planName: request.planName,
+          planType: request.planType,
+          sessions: request.sessions,
+          validity: request.validity,
+          sessionsUsed: request.sessionsUsed,
+          requestedAt: new Date(request.requestedAt).toLocaleString(),
+          status: request.status.toLowerCase()
+        }));
+        
+        setBookingRequests(formattedRequests);
+      } else {
+        setError("Failed to fetch booking requests. Please try again.");
+      }
+    } catch (err) {
+      console.error("Error fetching booking requests:", err);
+      setError(err.response?.data?.message || "Failed to fetch booking requests. Please try again.");
+    }
+  };
 
   // Function to fetch a single plan by ID from API
   const fetchPlanById = async (planId) => {
@@ -454,26 +418,40 @@ const CreatePlan = () => {
   };
 
   // Process status change
-  const handleProcessStatus = (status) => {
+  const handleProcessStatus = async (status) => {
     if (!requestToProcess) return;
 
-    setBookingRequests(
-      bookingRequests.map(req =>
-        req.id === requestToProcess.id ? { ...req, status } : req
-      )
-    );
+    try {
+      // Make API call to update booking request status
+      const response = await axiosInstance.patch(`${BaseUrl}/BookingRequest/${requestToProcess.id}`, {
+        status: status.toUpperCase()
+      });
+      
+      if (response.data.success) {
+        setBookingRequests(
+          bookingRequests.map(req =>
+            req.id === requestToProcess.id ? { ...req, status } : req
+          )
+        );
 
-    const statusMessage = status === 'approved' ?
-      "✅ Booking Approved! Member will be notified." :
-      "❌ Booking Rejected. Member will be notified.";
+        const statusMessage = status === 'approved' ?
+          "✅ Booking Approved! Member will be notified." :
+          "❌ Booking Rejected. Member will be notified.";
 
-    alert(statusMessage);
-    setShowStatusModal(false);
-    setRequestToProcess(null);
+        alert(statusMessage);
+        setShowStatusModal(false);
+        setRequestToProcess(null);
+      } else {
+        setError("Failed to update booking request status. Please try again.");
+      }
+    } catch (err) {
+      console.error("Error updating booking request status:", err);
+      setError(err.response?.data?.message || "Failed to update booking request status. Please try again.");
+    }
   };
 
   // Toggle status for approved/rejected requests
-  const handleToggleRequestStatus = (requestId) => {
+  const handleToggleRequestStatus = async (requestId) => {
     const request = bookingRequests.find(req => req.id === requestId);
     if (!request) return;
 
@@ -485,17 +463,31 @@ const CreatePlan = () => {
 
     const newStatus = request.status === 'approved' ? 'rejected' : 'approved';
 
-    setBookingRequests(
-      bookingRequests.map(req =>
-        req.id === requestId ? { ...req, status: newStatus } : req
-      )
-    );
+    try {
+      // Make API call to update booking request status
+      const response = await axiosInstance.patch(`${BaseUrl}/BookingRequest/${requestId}`, {
+        status: newStatus.toUpperCase()
+      });
+      
+      if (response.data.success) {
+        setBookingRequests(
+          bookingRequests.map(req =>
+            req.id === requestId ? { ...req, status: newStatus } : req
+          )
+        );
 
-    const statusMessage = newStatus === 'approved' ?
-      "✅ Booking Approved! Member will be notified." :
-      "❌ Booking Rejected. Member will be notified.";
+        const statusMessage = newStatus === 'approved' ?
+          "✅ Booking Approved! Member will be notified." :
+          "❌ Booking Rejected. Member will be notified.";
 
-    alert(statusMessage);
+        alert(statusMessage);
+      } else {
+        setError("Failed to update booking request status. Please try again.");
+      }
+    } catch (err) {
+      console.error("Error updating booking request status:", err);
+      setError(err.response?.data?.message || "Failed to update booking request status. Please try again.");
+    }
   };
 
   // Filter requests by status
@@ -519,9 +511,6 @@ const CreatePlan = () => {
                 {planType === 'group' ? 'GROUP' : 'PERSONAL'}
               </div>
               <h5 className="fw-bold mb-0" style={{ color: customColor, fontSize: 'clamp(0.9rem, 2vw, 1.1rem)' }}>{plan.name}</h5>
-              {/* <div className="badge bg-light text-dark mb-2 px-2 py-1" style={{ fontSize: '0.7rem' }}>
-                📍 {plan.branch}
-              </div> */}
             </div>
             <div className="d-flex gap-1">
               <Button
@@ -686,44 +675,50 @@ const CreatePlan = () => {
           </Button>
         </div>
 
-        {/* Branch Filter - Responsive */}
-        {/* <div className="mb-4 p-3 bg-white rounded shadow-sm border">
-          <div className="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-3">
-            <Form.Label className="mb-0 fw-medium" style={{ color: '#333' }}>Filter by Branch:</Form.Label>
-            <Form.Select
-              value={selectedBranch}
-              onChange={(e) => setSelectedBranch(e.target.value)}
-              style={{
-                width: '100%',
-                maxWidth: '200px',
-                borderColor: customColor,
-                color: selectedBranch === 'all' ? '#6c757d' : customColor
-              }}
-            >
-              <option value="all">All Branches</option>
-              {branches.map(branch => (
-                <option key={branch} value={branch}>{branch}</option>
-              ))}
-            </Form.Select>
-          </div>
-        </div> */}
-
         <Tab.Container activeKey={activeTab} onSelect={(k) => setActiveTab(k)}>
           <Row>
             <Col md={12}>
               <Tab.Content>
                 {/* Group Plans Tab */}
                 <Tab.Pane eventKey="group">
-                  <Row className="g-2 g-md-3">
-                    {getPlansByType('group').map(plan => renderPlanCard(plan, 'group'))}
-                  </Row>
+                  {loading && !plansLoaded ? (
+                    <div className="text-center py-5">
+                      <div className="spinner-border text-primary" role="status" style={{ color: customColor }}>
+                        <span className="visually-hidden">Loading...</span>
+                      </div>
+                      <p className="mt-3">Loading plans...</p>
+                    </div>
+                  ) : groupPlans.length === 0 ? (
+                    <div className="text-center py-5">
+                      <div className="display-4 mb-3">📋</div>
+                      <p className="fs-5">No group plans found. Create your first plan!</p>
+                    </div>
+                  ) : (
+                    <Row className="g-2 g-md-3">
+                      {getPlansByType('group').map(plan => renderPlanCard(plan, 'group'))}
+                    </Row>
+                  )}
                 </Tab.Pane>
 
                 {/* Personal Plans Tab */}
                 <Tab.Pane eventKey="personal">
-                  <Row className="g-2 g-md-3">
-                    {getPlansByType('personal').map(plan => renderPlanCard(plan, 'personal'))}
-                  </Row>
+                  {loading && !plansLoaded ? (
+                    <div className="text-center py-5">
+                      <div className="spinner-border text-primary" role="status" style={{ color: customColor }}>
+                        <span className="visually-hidden">Loading...</span>
+                      </div>
+                      <p className="mt-3">Loading plans...</p>
+                    </div>
+                  ) : personalPlans.length === 0 ? (
+                    <div className="text-center py-5">
+                      <div className="display-4 mb-3">📋</div>
+                      <p className="fs-5">No personal plans found. Create your first plan!</p>
+                    </div>
+                  ) : (
+                    <Row className="g-2 g-md-3">
+                      {getPlansByType('personal').map(plan => renderPlanCard(plan, 'personal'))}
+                    </Row>
+                  )}
                 </Tab.Pane>
               </Tab.Content>
             </Col>
@@ -1295,15 +1290,6 @@ const CreatePlan = () => {
                       </div>
                     </div>
                   </div>
-                  {/* <div className="col-md-6">
-                    <div className="mb-3 d-flex align-items-center">
-                      <span className="me-3" style={{ color: customColor, fontSize: '1.2rem' }}>📍</span>
-                      <div>
-                        <div className="text-muted small">Branch</div>
-                        <div className="fw-bold">{selectedPlan.branch}</div>
-                      </div>
-                    </div>
-                  </div> */}
                   <div className="col-md-6">
                     <div className="mb-3 d-flex align-items-center">
                       <span className="me-3" style={{ color: customColor, fontSize: '1.2rem' }}>⚡</span>
