@@ -101,63 +101,63 @@ const CreatePlan = () => {
   }, []);
 
   // Function to fetch plans from API
-  const fetchPlansFromAPI = async () => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      // Get adminId from localStorage using "userId" key
-      const adminId = localStorage.getItem('userId') || '4'; // Default to '4' if not found
+    const fetchPlansFromAPI = async () => {
+      setLoading(true);
+      setError(null);
       
-      // Make API call to get plans by admin ID
-      const response = await axiosInstance.get(`${BaseUrl}/MemberPlan?adminId=${adminId}`);
-      
-      if (response.data.success) {
-        // Format the API response to match our component structure
-        const formattedPlans = response.data.plans.map(plan => ({
-          id: plan.id,
-          name: plan.name,
-          sessions: plan.sessions,
-          validity: plan.validityDays,
-          price: `₹${plan.price.toLocaleString()}`,
-          active: true, // Assuming all plans from API are active by default
-          branch: 'Downtown', // Default branch since API doesn't provide it
-          type: plan.type.toLowerCase() // Convert to lowercase for our component
-        }));
+      try {
+        // Get adminId from localStorage using "userId" key
+        const adminId = localStorage.getItem('userId') || '4'; // Default to '4' if not found
         
-        setApiPlans(formattedPlans);
-        setPlansLoaded(true);
+        // Make API call to get plans by admin ID
+        const response = await axiosInstance.get(`${BaseUrl}/MemberPlan?adminId=${adminId}`);
         
-        // Merge API plans with existing plans
-        const newGroupPlans = [...groupPlans];
-        const newPersonalPlans = [...personalPlans];
-        
-        formattedPlans.forEach(plan => {
-          if (plan.type === 'group') {
-            // Check if plan already exists in our state
-            if (!newGroupPlans.some(p => p.id === plan.id)) {
-              newGroupPlans.push(plan);
+        if (response.data.success) {
+          // Format the API response to match our component structure
+          const formattedPlans = response.data.plans.map(plan => ({
+            id: plan.id,
+            name: plan.name,
+            sessions: plan.sessions,
+            validity: plan.validityDays,
+            price: `₹${plan.price.toLocaleString()}`,
+            active: true, // Assuming all plans from API are active by default
+            branch: 'Downtown', // Default branch since API doesn't provide it
+            type: plan.type.toLowerCase() // Convert to lowercase for our component
+          }));
+          
+          setApiPlans(formattedPlans);
+          setPlansLoaded(true);
+          
+          // Merge API plans with existing plans
+          const newGroupPlans = [...groupPlans];
+          const newPersonalPlans = [...personalPlans];
+          
+          formattedPlans.forEach(plan => {
+            if (plan.type === 'group') {
+              // Check if plan already exists in our state
+              if (!newGroupPlans.some(p => p.id === plan.id)) {
+                newGroupPlans.push(plan);
+              }
+            } else {
+              // Check if plan already exists in our state
+              if (!newPersonalPlans.some(p => p.id === plan.id)) {
+                newPersonalPlans.push(plan);
+              }
             }
-          } else {
-            // Check if plan already exists in our state
-            if (!newPersonalPlans.some(p => p.id === plan.id)) {
-              newPersonalPlans.push(plan);
-            }
-          }
-        });
-        
-        setGroupPlans(newGroupPlans);
-        setPersonalPlans(newPersonalPlans);
-      } else {
-        setError("Failed to fetch plans. Please try again.");
+          });
+          
+          setGroupPlans(newGroupPlans);
+          setPersonalPlans(newPersonalPlans);
+        } else {
+          setError("Failed to fetch plans. Please try again.");
+        }
+      } catch (err) {
+        console.error("Error fetching plans:", err);
+        setError(err.response?.data?.message || "Failed to fetch plans. Please try again.");
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error("Error fetching plans:", err);
-      setError(err.response?.data?.message || "Failed to fetch plans. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
   // Get the appropriate plan list based on type and filter by branch
   const getPlansByType = (type) => {
