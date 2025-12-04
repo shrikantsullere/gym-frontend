@@ -1,7 +1,7 @@
 // src/pages/Login.js
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axiosInstance from "../Api/axiosInstance"; // ✅ Adjust path if needed
+import axiosInstance from "../Api/axiosInstance";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -11,7 +11,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Redirect map for all roles
+  // Role-based redirect paths (must match .toUpperCase() version of roleName from API)
   const roleRedirectMap = {
     SUPERADMIN: "/superadmin/dashboard",
     ADMIN: "/admin/admin-dashboard",
@@ -19,7 +19,7 @@ const Login = () => {
     PERSONALTRAINER: "/personaltrainer/dashboard",
     MEMBER: "/member/dashboard",
     HOUSEKEEPING: "/housekeeping/dashboard",
-    RECEPTIONIST: "/receptionist/dashboard"
+    RECEPTIONIST: "/receptionist/dashboard",
   };
 
   const handleSubmit = async (e) => {
@@ -34,7 +34,9 @@ const Login = () => {
       });
 
       const { token, user } = response.data;
-      const normalizedRole = (user.role || "").toUpperCase().trim();
+
+      // ✅ Use roleName (not role) — as per your API response
+      const normalizedRole = (user.roleName || "").toUpperCase().trim();
 
       // Save auth info in localStorage
       localStorage.setItem("authToken", token);
@@ -49,7 +51,7 @@ const Login = () => {
       console.error("Login error:", err);
       const msg = err.response?.data?.message || "Invalid email or password";
       setError(msg);
-      alert("Login failed: " + msg);
+      // ❌ Removed alert — better UX to show inline error only
     } finally {
       setLoading(false);
     }
@@ -72,8 +74,6 @@ const Login = () => {
             <div className="w-100">
               <h2 className="fw-bold mb-3 text-center">Welcome Back!</h2>
               <p className="text-muted text-center mb-4">Please login to your account</p>
-
-              {/* ❌ Quick login buttons — COMPLETELY REMOVED */}
 
               <form onSubmit={handleSubmit}>
                 {error && (
